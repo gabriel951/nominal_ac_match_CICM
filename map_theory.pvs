@@ -26,9 +26,6 @@ map_theory [T1, T2: TYPE]: THEORY
   lst_of_lsts: VAR list[list[T1]]
   mult: VAR list[nat]
 
-map_append: LEMMA
-    map(f, append(l1, l2)) = append(map(f, l1), map(f, l2))
-
 map_append2: LEMMA
     map(f)(append(l1, l2)) = append(map(f)(l1), map(f)(l2))
 

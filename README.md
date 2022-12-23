@@ -1,14 +1,5 @@
-# First Order AC-Unification
-A formalisation of first-order AC-unification in PVS.  
-
-## Highlights 
-
-### Major Theorems 
-| Theorem | Location | PVS name |  
-| ----    | ----     | ----     |  
-| Soundness of Unification | `first_order_AC_unif@unification_alg` | `unify_alg_correct_cor` |  
-| Completeness of Unification | `first_order_AC_unif@unification_alg` | `unify_alg_complete_cor` |   
-
+# Info 
+A repository that will contain (hopefully) a formalisation of nominal AC-matching. 
 
 # Contributors 
 * [Mauricio Ayala-Rincón](https://www.mat.unb.br/ayala/), University of Brasília, Brazil

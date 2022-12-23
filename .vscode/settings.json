@@ -18,5 +18,9 @@
         "**/.vscode": true
     },
     "workbench.iconTheme": "pvs",
-    "editor.guides.indentation": false
+    "editor.guides.indentation": false,
+    "workbench.tree.renderIndentGuides": false,
+    "[pvs]": {
+        "editor.wordSeparators": "`~!@#$%^&*()-=+[{]}|;:'\",.<>/"
+    }
 }
