@@ -127,8 +127,8 @@ DS_member: LEMMA
    member(a, ds(pi1,pi2)) = member(a, DS(pi1,pi2))
 
 
-%%%%%%%%%%%%%%%%% Extra lemma needed 
+%%%%%%%%%%%%%%%%% Extra lemmas
 act_reverse_aux1: LEMMA
    act((: :)) = act(append(pi, reverse(pi)))
    
-end atoms
+END atoms

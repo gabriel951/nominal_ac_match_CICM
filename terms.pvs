@@ -331,6 +331,7 @@ num_arg_select_delete: LEMMA
     num_arg(f, t) > 1 IMPLIES
     num_arg(f, t) = num_arg(f, select(f, t)(i)) + num_arg(f, delete(f, t)(i)) 
 
+
 % delete (from a lst of args)
 delete_size2: LEMMA
     i < length(args) IMPLIES size(delete(args, f, i, j)) < size(args)
@@ -462,14 +463,18 @@ map_get_args_get_ac_from_args: LEMMA
 %%% additional lemmas about variables of a term, subterms and proper subterms
 IMPORTING list_theory[variable], map_theory[term, variable], map_theory[term, term]
 
-% TO DO: needed for some tccs
-%subterms_aux_TCC: LEMMA every[number, number, f_symbol, ac_symbol]
-%          (LAMBDA (x: number): number_field_pred(x) AND real_pred(x) AND rational_pred(x)
-%              AND integer_pred(x) AND (x >= 0), LAMBDA (x: number):
-%           number_field_pred(x) AND real_pred(x) AND rational_pred(x)
-%           AND integer_pred(x) AND (x >= 0), LAMBDA (x: f_symbol):
-%           TRUE, LAMBDA (x: ac_symbol): TRUE)
-%          (select(sym, t)(n))
+
+% TODO: needed for some TCCs
+subterms_aux_TCC: LEMMA every[number, perm, number, f_symbol, ac_symbol]
+          (LAMBDA (x: number):
+                  number_field_pred(x) AND real_pred(x) AND rational_pred(x)
+              AND integer_pred(x) AND (x >= 0),
+           LAMBDA (x: perm): TRUE,
+           LAMBDA (x: number):
+                  number_field_pred(x) AND real_pred(x) AND rational_pred(x)
+              AND integer_pred(x) AND (x >= 0),
+           LAMBDA (x: f_symbol): TRUE, LAMBDA (x: ac_symbol): TRUE)
+          (select(f, t)(1 + i))
 
 % variables of a term "t".
 vars(t): RECURSIVE finite_set[variable] =
@@ -657,6 +662,19 @@ var_lst(lst_nat): RECURSIVE list[term] =
    ENDIF
 MEASURE lst_nat BY << 
 
+% apply the permutation pi to a term t
+ext(pi)(t): RECURSIVE term =
+   CASES t OF
+         at(a): at(act(pi)(a)),
+   	 *(pm, X): *(append(pi, pm), X),
+	 unit: unit,
+   	 pair(t1, t2): pair(ext(pi)(t1), ext(pi)(t2)),
+   	 app(sym, arg): app(sym, ext(pi)(arg)),
+	 ac_app(sym, arg): ac_app(sym, ext(pi)(arg)), 
+   	 abs(a, bd): abs(act(pi)(a), ext(pi)(bd))
+  ENDCASES
+MEASURE t BY <<
+
 % lemmas
 % vars 
 vars_append: LEMMA
@@ -760,7 +778,6 @@ all_var?_lst_args: LEMMA
     FORALL args:
        member(args, lst_args) IMPLIES all_var?(args) 
     
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EVERYTHING HERE IS CONJECTURE
 % not_var_args
 not_var_args_append: LEMMA
     not_var_args(append(args1, args2)) = append(not_var_args(args1), not_var_args(args2))
@@ -915,6 +932,33 @@ well_formed_get_args: LEMMA
 alm_well_formed_get_args: LEMMA 
     alm_well_formed?(t) AND is_ac_sym?(t, f) IMPLIES well_formed?(get_args(f)(t))
 
+% ext
+ext_identity: LEMMA
+   ext((::))(t) = t
+
+ext_append: LEMMA
+   ext(append(pi1,pi2))(t) = ext(pi1)(ext(pi2)(t))
+
+ext_preserves_type: LEMMA
+   ord(ext(pi)(t)) = ord(t)
+
+ext_num_arg: LEMMA
+   num_arg(f, ext(pi)(t)) = num_arg(f, t)
+
+ext_num_arg2: LEMMA
+   num_arg(ext(pi)(t)) = num_arg(t)
+
+ext_select: LEMMA
+   ext(pi)(select(f, t)(i)) = select(f, ext(pi)(t))(i)
+
+ext_delete: LEMMA
+   ext(pi)(delete(f, t)(i)) = delete(f, ext(pi)(t))(i)
+
+ext_vars: LEMMA
+   vars(ext(pi)(t)) = vars(t) 
+
+ext_size2: LEMMA
+   size2(ext(pi)(t)) = size2(t)
 
 END term_properties
 

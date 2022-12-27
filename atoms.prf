@@ -297,7 +297,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
     (act def-decl "atom" atoms nil)
-    (PRED type-eq-decl nil defined_types nil) nil
+    (PRED type-eq-decl nil defined_types nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (member def-decl "bool" list_props nil)
     (Atoms def-decl "list[atom]" atoms nil)
@@ -327,7 +327,7 @@
     nil)
    ((list type-decl nil list_adt nil) (perm type-eq-decl nil atoms nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
-    (PRED type-eq-decl nil defined_types nil) nil
+    (PRED type-eq-decl nil defined_types nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (Atoms def-decl "list[atom]" atoms nil)
     (append def-decl "list[T]" list_props nil)
@@ -395,7 +395,7 @@
     (set type-eq-decl nil sets nil)
     (ds const-decl "set[atom]" atoms nil)
     (OR const-decl "[bool, bool -> bool]" booleans nil)
-    (PRED type-eq-decl nil defined_types nil) nil
+    (PRED type-eq-decl nil defined_types nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (member def-decl "bool" list_props nil)
     (Atoms def-decl "list[atom]" atoms nil)
@@ -550,7 +550,7 @@
   (ds_list_member-2 nil 3745910001
    ("" (induct "l") (("1" (grind) nil nil) ("2" (grind) nil nil)) nil)
    ((list type-decl nil list_adt nil)
-    (PRED type-eq-decl nil defined_types nil) nil
+    (PRED type-eq-decl nil defined_types nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (perm type-eq-decl nil atoms nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
@@ -628,8 +628,7 @@
     (member_append formula-decl nil list_theory nil)
     (member const-decl "bool" sets nil)
     (ds_list_member formula-decl nil atoms nil)
-    (PRED type-eq-decl nil defined_types nil)
-    (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil) nil
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (Atoms def-decl "list[atom]" atoms nil)
     (append def-decl "list[T]" list_props nil)
@@ -688,5 +687,29 @@
     (>= const-decl "bool" reals nil) (atom type-eq-decl nil atoms nil)
     (act_reverse2 formula-decl nil atoms nil)
     (act_append formula-decl nil atoms nil))
-   SHOSTAK)))
+   SHOSTAK))
+ (ds_reverse 0
+  (ds_reverse-1 nil 3880830883
+   ("" (skeep)
+    (("" (lemma "act_reverse_invariance")
+      (("" (decompose-equality 1)
+        (("" (iff)
+          (("" (prop)
+            (("1" (expand "ds")
+              (("1" (flatten)
+                (("1" (inst -2 "reverse(pi1)" "reverse(pi2)")
+                  (("1" (assert)
+                    (("1" (expand "act" -2) (("1" (postpone) nil nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (postpone) nil nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   nil shostak)))
 
