@@ -1,0 +1,3 @@
+# TO DO
+## substitution.pvs
+-> some lemmas that depend on "equal?(t, s) => equal?(sigma t, sigma s)" were not proved. 

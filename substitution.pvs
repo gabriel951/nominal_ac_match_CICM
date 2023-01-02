@@ -13,9 +13,12 @@ BEGIN
 	
 a, i, j, n, k, inc, start: VAR nat
 X, Y, Z, Z_: VAR variable
-t, t1, t2, s, ti, arg: VAR term
+t, t1, t2, s, ti, arg, bd: VAR term
 args, args1, args2: VAR args
 lst_args: VAR list[args]
+
+G: VAR fresh_context
+pi, pi1, pi2: VAR perm
 
 set_vars, set_vars1, V1, V1_: VAR finite_set[variable]
 fin_set_t: VAR finite_set[term]
@@ -33,14 +36,15 @@ subs(sigma_basic, t): RECURSIVE term =
     LET X = sigma_basic`1,
     	s = sigma_basic`2
 	IN CASES t OF
-           const(a): const(a),
-	   variable(Y): IF X = Y THEN s
-		     	ELSE variable(Y)
+           at(a): at(a),
+	   *(pi, Y):    IF X = Y THEN ext(pi)(s)
+		     	ELSE pi * Y
 		     	ENDIF,
 	   unit: unit,
 	   pair(t1, t2): pair(subs(sigma_basic, t1), subs(sigma_basic, t2)),
 	   app(f, arg): app(f, subs(sigma_basic, arg)),
-	   ac_app(f, arg): ac_app(f, subs(sigma_basic, arg))
+	   ac_app(f, arg): ac_app(f, subs(sigma_basic, arg)), 
+	   abs(a, bd): abs(a, subs(sigma_basic, bd)) 
     ENDCASES
 MEASURE t by <<
 
@@ -63,7 +67,7 @@ subs(sigma)(t): RECURSIVE term =
 MEASURE sigma BY << 
 
 % action of a substitution on a variable
-subs(sigma)(X): term = subs(sigma)(variable(X))
+subs(sigma)(X): term = subs(sigma)(null * X)
 
 % apply substitution to a list of terms
 subs(sigma)(args): RECURSIVE args =
@@ -77,24 +81,24 @@ subs(sigma)(fin_set_t): finite_set[term] =
     {t | EXISTS s: member(s, fin_set_t) AND t = subs(sigma)(s)}
 
 % define when two substitutions are equal, modulo AC
-equal?(sigma, delta): bool =
-    FORALL X: equal?(subs(sigma)(X), subs(delta)(X))
+equal?(G)(sigma, delta): bool =
+    FORALL X: equal?(G)(subs(sigma)(X), subs(delta)(X))
 
 % equality modulo AC between substitutions restricted to variables in "set_vars"
-equal?(sigma, delta, set_vars): bool =
+equal?(G)(sigma, delta, set_vars): bool =
     FORALL X:
        member(X, set_vars) IMPLIES
-       equal?(subs(sigma)(X), subs(delta)(X))
+       equal?(G)(subs(sigma)(X), subs(delta)(X))
 
 equal_syn?(sigma, delta, set_vars): bool = 
     FORALL X: member(X, set_vars) IMPLIES subs(sigma)(X) = subs(delta)(X)
 
 % define when delta is more general than sigma
-more_general?(delta, sigma): bool = 
-    EXISTS delta2: equal?(sigma, append(delta2, delta))
+more_general?(G)(delta, sigma): bool = 
+    EXISTS delta2: equal?(G)(sigma, append(delta2, delta))
     
-more_general?(delta, sigma, set_vars): bool = 
-    EXISTS delta2: equal?(sigma, append(delta2, delta), set_vars)
+more_general?(G)(delta, sigma, set_vars): bool = 
+    EXISTS delta2: equal?(G)(sigma, append(delta2, delta), set_vars)
 
 % a superset of the domain of a substitution sigma
 supset_dom(sigma): RECURSIVE finite_set[variable] = 
@@ -106,10 +110,10 @@ MEASURE sigma BY <<
 % if subs(sigma)(X) /= variable(X) then member(X, supset_dom(sigma))
 % needed for the TCC of dom
 supset_dom_correct: LEMMA
-   subs(sigma)(X) /= variable(X) IMPLIES member(X, supset_dom(sigma))
+   subs(sigma)(X) /= *(null, X) IMPLIES member(X, supset_dom(sigma))
 
 % domain of a substitution
-dom(sigma): finite_set[variable] = {X | subs(sigma)(X) /= variable(X)}
+dom(sigma): finite_set[variable] = {X | subs(sigma)(X) /= *(null, X)}
 
 supset_dom_correct2: LEMMA
     subset?(dom(sigma), supset_dom(sigma))
@@ -137,8 +141,8 @@ contained?(delta, set_vars): bool =
 
 % creates a substitution {X_start -> X_start + inc, ..., X_{start + n} -> X_{start + n} + inc}
 shift(start, n, inc): RECURSIVE sub = 
-   IF n = 0 THEN cons((start, variable(start + inc)), null)
-   ELSE cons((start, variable(start + inc)), shift(start+1, n-1, inc))
+   IF n = 0 THEN cons((start, (null * (start + inc))), null)
+   ELSE cons((start, (null * (start + inc))), shift(start+1, n-1, inc))
    ENDIF
 MEASURE n 
 
@@ -155,7 +159,7 @@ shift(V1, V1_, n): sub = shift(finset2list(V1), finset2list(V1_), n)
 % a renaming sigma always instantiates a variable to a variable and
 % is injective for the variables in the domain.  
 renaming?(sigma): bool =
-   (FORALL t: member(t, img(sigma)) IMPLIES var?(t)) AND 
+   (FORALL t: member(t, img(sigma)) IMPLIES var?(t) AND p(t) = null) AND 
    (FORALL X, Y:
     member(X, dom(sigma)) AND member(Y, dom(sigma)) AND 
     subs(sigma)(X) = subs(sigma)(Y) IMPLIES X = Y)
@@ -164,10 +168,24 @@ renaming?(sigma): bool =
 renaming: TYPE = {sigma: sub | renaming?(sigma)}
 rho: VAR renaming
 
+keep_fresh?(G, sigma): bool = 
+    FORALL (a, X): member((a, X), G) IMPLIES fresh(G)(a, subs(sigma)(X))
+
+% action of a substitution in a context Gamma
+subs(rho, G): RECURSIVE fresh_context = 
+   IF null?(G) THEN null 
+   ELSE LET (a, X) = car(G) IN cons((a, V(subs(rho)(X))), subs(rho, cdr(G)))
+   ENDIF
+MEASURE G by << 
+
+keep_fresh_ren?(G, rho): bool = 
+    FORALL (a, X): member((a, X), G) IFF member((a, V(subs(rho)(X))), G)
+
 %%%%%%%%%%%%%%%%%%% Theorems
 % substitution and their effects on the terms
 subs_const: LEMMA
-    subs(sigma)(const(a)) = const(a)
+    subs(sigma)(at(a)) = at(a)
+
 
 subs_unit: LEMMA
     subs(sigma)(unit) = unit 
@@ -181,11 +199,14 @@ subs_app: LEMMA
 subs_ac: LEMMA
     subs(sigma)(ac_app(f, arg)) = ac_app(f, subs(sigma)(arg))
 
+subs_abs: LEMMA 
+    subs(sigma)(abs(a, bd)) = abs(a, subs(sigma)(bd))
+
 subs_var: LEMMA
     var?(subs(sigma)(t)) IMPLIES var?(t) 
-    
+
 subs_const2: LEMMA 
-    const?(subs(sigma)(t)) IMPLIES (const?(t) OR var?(t))
+    atom?(subs(sigma)(t)) IMPLIES (atom?(t) OR var?(t))
 
 subs_pair2: LEMMA
     pair?(subs(sigma)(t)) IMPLIES (pair?(t) OR var?(t))
@@ -193,11 +214,24 @@ subs_pair2: LEMMA
 subs_ac2: LEMMA
     ac_app?(subs(sigma)(t)) IMPLIES (same_func?(subs(sigma)(t), t) OR var?(t))
 
-subs_ac3: LEMMA 
+subs_ac3: LEMMA
     is_ac_sym?(subs(sigma)(t), f) IMPLIES (is_ac_sym?(t, f) OR var?(t))
 
 subs_func: LEMMA
     func?(subs(sigma)(t)) IMPLIES (same_func?(subs(sigma)(t), t) OR var?(t))
+
+subs_basic_ext: LEMMA
+    subs(sigma_basic, ext(pi)(t)) = ext(pi)(subs(sigma_basic, t))
+
+subs_ext_pi: LEMMA
+    subs(sigma)(pi * X) = ext(pi)(subs(sigma)(X))
+
+subs_ext_pi2: LEMMA 
+   subs(sigma)(pi*X) = pi * X IMPLIES
+   subs(sigma)(pi1*X) = pi1*X
+
+subs_ext: LEMMA 
+    subs(sigma)(ext(pi)(t)) = ext(pi)(subs(sigma)(t))
 
 subs_ord: LEMMA
     t = subs(sigma)(s) IMPLIES (ord(t) = ord(s) OR (var?(s) AND member(V(s), dom(sigma))))
@@ -206,11 +240,19 @@ subs_num_arg_ge1: LEMMA
     num_arg(f, t) > 1 IMPLIES num_arg(f, subs(sigma)(t)) > 1
 
 % substitution in list of arguments
-subs_select: LEMMA
-   (EXISTS i: 
-      nice_ind?(i, num_arg(f, t)) AND
-      select(f, subs(sigma)(t))(n) = subs(sigma)(select(f, t)(i)))
-   OR member(select(f, subs(sigma)(t))(n), subterms(img(sigma)))
+% TODO: can't be adapted so satisfatorialy, I tried using subs_select_img
+%subs_select: CONJECTURE
+%   (EXISTS i: 
+%      nice_ind?(i, num_arg(f, t)) AND
+%      select(f, subs(sigma)(t))(n) = subs(sigma)(select(f, t)(i)))
+%   OR member(select(f, subs(sigma)(t))(n), subterms(img(sigma)))
+
+subs_select_img: LEMMA 
+   EXISTS i:
+      nice_ind?(i, num_arg(f, t)) AND LET ti = select(f, t)(i) IN  
+      (select(f, subs(sigma)(t))(n) = subs(sigma)(ti) OR 
+       (var?(ti) AND
+        member(select(f, subs(sigma)(t))(n), ext(p(ti))(subterms(img(sigma))))))
 
 subs_mem: LEMMA  
     member(t, subs(sigma)(args)) IFF
@@ -229,15 +271,14 @@ subs_append2: LEMMA
 subs_map: LEMMA
     map(subs(sigma))(args) = subs(sigma)(args)
 
-subs_append_args: LEMMA 
+subs_append_args: LEMMA
     subs(append(sigma, delta))(args) = subs(sigma)((subs(delta))(args))
 
-subs_map_append_lst_args: LEMMA 
+subs_map_append_lst_args: LEMMA
     map(subs(append(sigma, delta)))(lst_args) = map(subs(sigma))(map(subs(delta))(lst_args))
 
-subs_cons: LEMMA 
+subs_cons: LEMMA
     subs(cons((X, t), delta))(args1) = subs(cons((X, t), null))(subs(delta)(args1))
-
 
 % more lemmas about subs 
 subs_get_term_from_args: LEMMA
@@ -256,11 +297,17 @@ subs_remove: LEMMA
 args_subs_ac: LEMMA 
     get_args(f)(subs(sigma)(t)) = flatten(map(get_args(f))(map(subs(sigma))(get_args(f)(t))))
 
-mem_get_args_subs: LEMMA
+% TO DO: could not adapt this very well. 
+%mem_get_args_subs: CONJECTURE
+%    member(s, get_args(f)(subs(sigma)(t))) IMPLIES
+%    (EXISTS ti: 
+%        member(ti, get_args(f)(t)) AND s = subs(sigma)(ti))
+%    OR member(s, subterms(img(sigma))) 
+mem_get_args_subs: LEMMA 
     member(s, get_args(f)(subs(sigma)(t))) IMPLIES
-    (EXISTS ti: 
-        member(ti, get_args(f)(t)) AND s = subs(sigma)(ti))
-    OR member(s, subterms(img(sigma))) 
+    EXISTS ti: 
+        (member(ti, get_args(f)(t)) AND
+	 (s = subs(sigma)(ti) OR var?(ti) AND member(s, ext(p(ti))(subterms(img(sigma))))))
 
 subs_get_args1: LEMMA 
     num_arg(f, t) = 1 IMPLIES
@@ -268,28 +315,36 @@ subs_get_args1: LEMMA
 
 subs_perm_get_args_ge1: LEMMA
     num_arg(f, t) > 1 IMPLIES 
-    perm?(get_args(f)(subs(sigma)(t)),
+    perm?(G)(get_args(f)(subs(sigma)(t)),
           append(get_args(f)(subs(sigma)(select(f, t)(i))),
 	  	 get_args(f)(subs(sigma)(delete(f, t)(i)))))
 
-mem_get_args_subs4: LEMMA 
+mem_get_args_subs4: LEMMA
     member(ti, get_args(f)(t)) AND member(s, get_args(f)(subs(sigma)(ti)))
     IMPLIES member(s, get_args(f)(subs(sigma)(t)))
 
+keep_fresh_empty: LEMMA
+    keep_fresh?(null, sigma) 
+
+keep_fresh_fresh: LEMMA 
+    keep_fresh?(G, sigma) AND fresh(G)(a, t)
+    IMPLIES fresh(G)(a, subs(sigma)(t))
+
 subs_equal?: LEMMA
-    equal?(t, s) IMPLIES
-    equal?(subs(sigma)(t), subs(sigma)(s))
+    equal?(G)(t, s) AND keep_fresh?(G, sigma) 
+    IMPLIES
+    equal?(G)(subs(sigma)(t), subs(sigma)(s))
 
 subs_perm?: LEMMA
-    perm?(args1, args2) => perm?(subs(sigma)(args1), subs(sigma)(args2))
+    perm?(G)(args1, args2) AND keep_fresh?(G, sigma) => perm?(G)(subs(sigma)(args1), subs(sigma)(args2))
 
 subs_perm?_get_args: LEMMA 
-    perm?(args1, args2) IMPLIES
-    perm?(flatten(map(get_args(f))(map(subs(delta))(args1))), flatten(map(get_args(f))(map(subs(delta))(args2))))
+    perm?(G)(args1, args2) AND keep_fresh?(G, delta) IMPLIES
+    perm?(G)(flatten(map(get_args(f))(map(subs(delta))(args1))), flatten(map(get_args(f))(map(subs(delta))(args2))))
 
 subs_same_count: LEMMA
-    same_count?(args1, args2, equal?) =>
-    same_count?(subs(sigma)(args1), subs(sigma)(args2), equal?)
+    same_count?(args1, args2, equal?(G)) AND keep_fresh?(G, sigma) IMPLIES
+    same_count?(subs(sigma)(args1), subs(sigma)(args2), equal?(G))
     
 subs_get_repeat_lst: LEMMA
     subs(sigma)(get_repeat_lst(t, i)) = get_repeat_lst(subs(sigma)(t), i)
@@ -304,14 +359,14 @@ subs_get_lst_mult2: LEMMA
     map(subs(sigma))(get_lst_mult(lst_args, coef)) = get_lst_mult(map(subs(sigma))(lst_args), coef)
 
 perm?_get_args_subs: LEMMA
-    perm?(subs(sigma)(get_args(f)(t)), subs(sigma)(get_args(f)(s))) IMPLIES
-    perm?(get_args(f)(subs(sigma)(t)), get_args(f)(subs(sigma)(s)))
+    perm?(G)(subs(sigma)(get_args(f)(t)), subs(sigma)(get_args(f)(s))) IMPLIES
+    perm?(G)(get_args(f)(subs(sigma)(t)), get_args(f)(subs(sigma)(s)))
 
 subs_flatten: LEMMA
     subs(sigma)(flatten(lst_args)) = flatten(map(subs(sigma))(lst_args))
 
 % domain and img of a substitution lemma
-vars_subs_t: LEMMA
+vars_subs_t: LEMMA 
     subset?(vars(subs(sigma)(t)), union(vars(img(sigma)), vars(t)))
 
 basic_sub_no_effect: LEMMA
@@ -326,7 +381,7 @@ basic_sub_not_elim_var: LEMMA
 dom_basic_sub: LEMMA
     dom(cons((X, t), null)) = singleton(X) OR member(X, vars(t))
 
-dom_basic_sub2: LEMMA  
+dom_basic_sub2: LEMMA
     dom(cons((X, t), null)) = singleton(X) OR dom(cons((X, t), null)) = emptyset
 
 dom_null: LEMMA
@@ -348,7 +403,7 @@ dom_append2: LEMMA
     disjoint?(vars(img(sigma)), dom(delta)) AND disjoint?(dom(delta), dom(sigma)) IMPLIES 
     dom(append(delta, sigma)) = union(dom(delta), dom(sigma))
 
-subs_no_effect_args: LEMMA  
+subs_no_effect_args: LEMMA
     disjoint?(dom(sigma), vars(args)) IMPLIES subs(sigma)(args) = args
 
 apply_sub_elim_var_t: LEMMA
@@ -358,9 +413,8 @@ apply_sub_elim_var_t: LEMMA
 vars_img_append: LEMMA
     subset?(vars(img(append(delta, sigma))), union(vars(img(delta)), vars(img(sigma))))
 
-
 % idempotent and properties of substitutios
-idempotent_null: LEMMA 
+idempotent_null: LEMMA
     idempotent?(null[basic_sub]) 
 
 var_dom_sub_dif_term: LEMMA
@@ -392,9 +446,9 @@ idempotent_subs_subs_t: LEMMA
     
 subs_divide_not_var: LEMMA
     NOT var?(subs(sigma)(X)) IMPLIES
-    EXISTS delta, delta2, sigma_basic, Y: 
+    EXISTS delta, delta2, sigma_basic, pi, Y: 
         sigma = append(delta, cons(sigma_basic, delta2)) AND
-	subs(delta2)(X) = variable(Y) AND sigma_basic`1 = Y AND NOT var?(sigma_basic`2)
+	subs(delta2)(X) = pi * Y AND sigma_basic`1 = Y AND NOT var?(sigma_basic`2)
 
 basic_sub_info: LEMMA
    LET sigma = cons((X, t), null) IN 
@@ -405,21 +459,33 @@ basic_sub_well_formed: LEMMA
    LET sigma = cons((X, t), null) IN well_formed?(t) IMPLIES well_formed?(sigma)
 
 % subterms, same_func, im_under
-subterms_subs: LEMMA
-    subset?(subterms(subs(sigma)(t)),
-            union(image(subs(sigma))(subterms(t)), subterms(img(sigma))))
-    
+
+% TO DO: leaving that as a conjecture since I'm not sure what is the best way to adapt it 
+%subterms_subs: CONJECTURE
+%    subset?(subterms(subs(sigma)(t)),
+%            union(image(subs(sigma))(subterms(t)), subterms(img(sigma))))
+
+subterms_subs2: LEMMA 
+    member(t, subterms(subs(sigma)(s))) IMPLIES 
+    EXISTS t1: 
+        member(t1, subterms(s)) AND
+	(t = subs(sigma)(t1) OR
+	(var?(t1) AND member(t, ext(p(t1))(subterms(img(sigma))))))
+
 subs_no_effect_subterm: LEMMA
     subs(sigma)(t) = t AND member(s, subterms(t)) IMPLIES subs(sigma)(s) = s
 
-subterms_img_append: LEMMA
+% TODO: this is not correct, but I don't think it will be necessary to adapt. 
+subterms_img_append: CONJECTURE
     subset?(subterms(img(append(sigma, delta))),
     	    union(image(subs(sigma))(subterms(img(delta))), subterms(img(sigma))))
 
 same_func_subs: LEMMA
     func?(t) IMPLIES same_func?(t, subs(sigma)(t))
 
-func_subterms_subs: LEMMA
+% TO DO: I believe this one is only used in the proof of termination, so I don't
+% think it will be necessary to adapt
+func_subterms_subs: CONJECTURE
     func?(s) AND member(s, subterms(subs(sigma)(t))) IMPLIES
     ((EXISTS ti: 
          same_func?(ti, s) AND subs(sigma)(ti) = s AND member(ti, subterms(t)))
@@ -447,21 +513,23 @@ mem_get_args_subs3: LEMMA
 	((s = ti_sigma AND ord(s) = ord(ti)) OR
 	(var?(ti) AND member(V(ti), dom(sigma)) AND member(s, get_args(f)(ti_sigma)))))
 
-im_under_subs: LEMMA
+% TO DO: I skipped the next 3 lemmas because they won't be used if I am able to simplify the proof
+% of termination
+im_under_subs: CONJECTURE
     im_under?(Y, subs(sigma)(t)) AND func?(t) AND no_pair?(img(sigma))
     IMPLIES
-      ((EXISTS X: im_under?(X, t) AND subs(sigma)(X) = variable(Y)) OR
-      im_under?(Y, img(sigma)))
+      ((EXISTS X, pi: im_under?(X, t) AND subs(sigma)(X) = pi * Y)) OR
+      im_under?(Y, img(sigma))
         
-im_under_subs2: LEMMA
+im_under_subs2: CONJECTURE
     im_under?(Y, subs(sigma)(t)) AND func?(t) AND no_pair?(img(sigma)) AND idempotent?(sigma) IMPLIES
-    (EXISTS X: subs(sigma)(X) = variable(Y) AND
+    (EXISTS X, pi: subs(sigma)(X) = pi * Y AND
       	      (im_under?(X, t) OR
 	      EXISTS s: member(s, img(sigma)) AND im_under?(X, s) AND same_func?(t, s)))
 
-im_under_subs3: LEMMA
+im_under_subs3: CONJECTURE
     im_under?(Y, subs(sigma)(t)) AND no_pair?(img(sigma)) AND idempotent?(sigma) IMPLIES
-    (EXISTS X: subs(sigma)(X) = variable(Y) AND
+    (EXISTS X: subs(sigma)(X) = pi * Y AND
       	      (im_under?(X, t) OR
 	      EXISTS s: member(s, img(sigma)) AND im_under?(X, s) AND same_func?(subs(sigma)(t), s)))
 
@@ -497,7 +565,7 @@ IMPORTING list_theory2[variable, term]
 vars_img_sec_proj: LEMMA
    subset?(vars(img(sigma)), vars(sec_proj(sigma)))
 
-well_formed_null: LEMMA 
+well_formed_null: LEMMA
    well_formed?(null)
 
 well_formed_append: LEMMA 
@@ -515,39 +583,39 @@ alm_well_formed_subs: LEMMA
 
 % equality between substitutions, modulo AC
 equal_sub_equiv: LEMMA
-   equal?(delta, sigma) IMPLIES equal?(subs(delta)(t), subs(sigma)(t))
+   equal?(G)(delta, sigma) IMPLIES equal?(G)(subs(delta)(t), subs(sigma)(t))
 
 equal_sub_equiv_alt: LEMMA 
-   equal?(delta, sigma, set_vars) AND subset?(vars(t), set_vars) IMPLIES 
-   equal?(subs(delta)(t), subs(sigma)(t))
+   equal?(G)(delta, sigma, set_vars) AND subset?(vars(t), set_vars) IMPLIES 
+   equal?(G)(subs(delta)(t), subs(sigma)(t))
 
 equal_sub_change_eq_terms: LEMMA
-   equal?(delta, sigma) IMPLIES  
-   (equal?(subs(delta)(t), subs(delta)(s)) IFF equal?(subs(sigma)(t), subs(sigma)(s)))
+   equal?(G)(delta, sigma) IMPLIES  
+   (equal?(G)(subs(delta)(t), subs(delta)(s)) IFF equal?(G)(subs(sigma)(t), subs(sigma)(s)))
 
-equal_sub_ref: LEMMA equal?(sigma, sigma) 
+equal_sub_ref: LEMMA equal?(G)(sigma, sigma) 
 
 equal_sub_sym: LEMMA 
-   equal?(delta, gamma) = equal?(gamma, delta)
+   equal?(G)(delta, gamma) = equal?(G)(gamma, delta)
 
-equal_sub_trans: LEMMA 
-   equal?(delta, gamma) AND equal?(gamma, sigma) IMPLIES equal?(delta, sigma) 
+equal_sub_trans: LEMMA
+   equal?(G)(delta, gamma) AND equal?(G)(gamma, sigma) IMPLIES equal?(G)(delta, sigma) 
 
-equal_sub_append: LEMMA 
-   equal?(sigma, sigma1) IMPLIES equal?(append(sigma, delta), append(sigma1, delta))
+equal_sub_append: LEMMA
+   equal?(G)(sigma, sigma1) IMPLIES equal?(G)(append(sigma, delta), append(sigma1, delta))
 
 % equality between substitutions modulo AC, restricted to a set:
-equal_sub_subset: LEMMA 
-   equal?(sigma, sigma1, set_vars) AND subset?(set_vars1, set_vars) IMPLIES
-   equal?(sigma, sigma1, set_vars1) 
+equal_sub_subset: LEMMA
+   equal?(G)(sigma, sigma1, set_vars) AND subset?(set_vars1, set_vars) IMPLIES
+   equal?(G)(sigma, sigma1, set_vars1) 
 
-equal_sub_res_trans: LEMMA 
-   equal?(delta, gamma, set_vars) AND equal?(gamma, sigma, set_vars) IMPLIES
-   equal?(delta, sigma, set_vars) 
+equal_sub_res_trans: LEMMA
+   equal?(G)(delta, gamma, set_vars) AND equal?(G)(gamma, sigma, set_vars) IMPLIES
+   equal?(G)(delta, sigma, set_vars) 
 
 equal_sub_res_append: LEMMA 
-   equal?(sigma, sigma1, set_vars) IMPLIES
-   equal?(append(delta, sigma), append(delta, sigma1), set_vars)
+   equal?(G)(sigma, sigma1, set_vars) AND keep_fresh?(G, delta) IMPLIES
+   equal?(G)(append(delta, sigma), append(delta, sigma1), set_vars)
 
 % syntactic equality between substitutions
 equal_syn_t: LEMMA 
@@ -563,98 +631,132 @@ subs_size2_map_get_args: LEMMA
    member(t, args) AND length(args) > 1 IMPLIES 
    size2(subs(delta)(t)) < sum(map(size2)(flatten(map(get_args(f))(map(subs(delta))(args)))))
 
+% TODO: this changed slightly
 subs_not_same_size2: LEMMA
-   member(X, vars(s)) AND NOT s = variable(X) AND
+   member(X, vars(s)) AND NOT var?(s) AND
    (FORALL t: member(t, subterms(s)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
    IMPLIES size2(subs(delta)(X)) < size2(subs(delta)(s))
 
+% TODO: this changed slightly
 subs_equal_impossible: LEMMA
-   member(X, vars(s)) AND NOT s = variable(X) AND
+   member(X, vars(s)) AND NOT var?(s) AND
    (FORALL t: member(t, subterms(s)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
    IMPLIES
-   NOT equal?(subs(delta)(s), subs(delta)(variable(X)))
+   NOT equal?(G)(subs(delta)(s), subs(delta)(X))
 
 % count
 subs_count_ge: LEMMA
-   (FORALL t1: count(t1, get_args(f)(s), equal?) >= count(t1, get_args(f)(t), equal?))
+   (FORALL t1: count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))
+   AND keep_fresh?(G, sigma) 
    IMPLIES 
-   (FORALL t2: count(t2, get_args(f)(subs(sigma)(s)), equal?) >= count(t2, get_args(f)(subs(sigma)(t)), equal?))
+   (FORALL t2: count(t2, get_args(f)(subs(sigma)(s)), equal?(G)) >= count(t2, get_args(f)(subs(sigma)(t)), equal?(G)))
     
 count_subs_get_args: LEMMA 
-    count(s, subs(sigma)(t), f) = sum(count_vec(subs(sigma)(get_args(f)(t)), f)(s))
+    count(s, subs(sigma)(t), f, G) = sum(count_vec(subs(sigma)(get_args(f)(t)), f, G)(s))
 
 count_subs_count_elem: LEMMA 
-    LET (no_rep_args, coef) = count_elem(null, null, get_args(f)(t), equal?) IN 
-    count(s, subs(sigma)(t), f) = dot_product(count_vec(subs(sigma)(no_rep_args), f)(s) , coef)
+    LET (no_rep_args, coef) = count_elem(null, null, get_args(f)(t), equal?(G)) IN 
+    keep_fresh?(G, sigma) IMPLIES 
+    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s) , coef)
 
 count_subs_subset_aux: LEMMA   
-   LET (no_rep_args, coef) = count_elem(null, null, args1, equal?), 
-       (no_rep_args1, coef1) = count_coef(args2, args1, equal?) IN 
-   subset_lst?(args1, args2) AND dif_elem?(args2, equal?) IMPLIES 
-   dot_product(count_vec(subs(sigma)(no_rep_args), f)(s), coef) =
-   dot_product(count_vec(subs(sigma)(no_rep_args1), f)(s), coef1)
+   LET (no_rep_args, coef) = count_elem(null, null, args1, equal?(G)), 
+       (no_rep_args1, coef1) = count_coef(args2, args1, equal?(G)) IN 
+   subset_lst?(args1, args2) AND dif_elem?(args2, equal?(G)) AND keep_fresh?(G, sigma)
+   IMPLIES 
+   dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef) =
+   dot_product(count_vec(subs(sigma)(no_rep_args1), f, G)(s), coef1)
 
 count_subs_subset: LEMMA   
-    LET (no_rep_args, coef) = count_coef(args1, get_args(f)(t), equal?) IN 
-    subset_lst?(get_args(f)(t), args1) AND dif_elem?(args1, equal?) IMPLIES
-    count(s, subs(sigma)(t), f) = dot_product(count_vec(subs(sigma)(no_rep_args), f)(s), coef)
+    LET (no_rep_args, coef) = count_coef(args1, get_args(f)(t), equal?(G)) IN 
+    subset_lst?(get_args(f)(t), args1) AND dif_elem?(args1, equal?(G)) AND
+    keep_fresh?(G, sigma) IMPLIES
+    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef)
 
 %% contained, more_general
 subs_inst: LEMMA 
     LET delta = cons((X, t), null) IN 
-    equal?(subs(sigma)(variable(X)), subs(sigma)(t)) IMPLIES 
-    equal?(sigma, append(sigma, delta))
+    equal?(G)(subs(sigma)(X), subs(sigma)(t)) IMPLIES 
+    equal?(G)(sigma, append(sigma, delta))
 
-contained_append: LEMMA 
+contained_append: LEMMA
     contained?(delta, set_vars) AND contained?(sigma, set_vars)
     IMPLIES contained?(append(delta, sigma), set_vars)
 
-contained_supset: LEMMA  
+contained_supset: LEMMA
     contained?(delta, set_vars) AND subset?(set_vars, set_vars1)
     IMPLIES contained?(delta, set_vars1)
 
 more_general_equal: LEMMA 
-    equal?(sigma, sigma1) IMPLIES 
-    more_general?(delta, sigma) = more_general?(delta, sigma1)
+    equal?(G)(sigma, sigma1) IMPLIES 
+    more_general?(G)(delta, sigma) = more_general?(G)(delta, sigma1)
    
 more_general_append: LEMMA 
-     more_general?(sigma, sigma1) IMPLIES more_general?(append(sigma, delta), append(sigma1, delta))
+     more_general?(G)(sigma, sigma1) IMPLIES more_general?(G)(append(sigma, delta), append(sigma1, delta))
 
 more_general_supset: LEMMA 
-    more_general?(sigma, append(delta1, delta), set_vars1) AND subset?(set_vars, set_vars1)
+    more_general?(G)(sigma, append(delta1, delta), set_vars1) AND subset?(set_vars, set_vars1)
     AND disjoint?(dom(delta1), set_vars) AND contained?(delta, set_vars)
-    IMPLIES more_general?(sigma, delta, set_vars)
+    IMPLIES more_general?(G)(sigma, delta, set_vars)
 
 % renamings
 renaming_ord: LEMMA 
     ord(subs(rho)(t)) = ord(t)
 
-renaming_is_ac_sym: LEMMA 
+renaming_is_ac_sym: LEMMA
     is_ac_sym?(subs(rho)(t), f) = is_ac_sym?(t, f)
 
-renaming_ord2: LEMMA  
-    (const?(t) IFF const?(subs(rho)(t))) AND (var?(t) IFF var?(subs(rho)(t))) AND 
+renaming_ord2: LEMMA
+    (atom?(t) IFF atom?(subs(rho)(t))) AND (var?(t) IFF var?(subs(rho)(t))) AND 
     (t = unit IFF subs(rho)(t) = unit) AND (pair?(t) IFF pair?(subs(rho)(t))) AND
-    (app?(t) IFF app?(subs(rho)(t))) AND (ac_app?(t) IFF ac_app?(subs(rho)(t)))
+    (app?(t) IFF app?(subs(rho)(t))) AND (ac_app?(t) IFF ac_app?(subs(rho)(t))) AND
+    (abs?(t) IFF abs?(subs(rho)(t)))
 
-renaming_var: LEMMA 
+renaming_var: LEMMA
     var?(subs(rho)(X))
 
-renaming_num_arg: LEMMA 
+renaming_susp_var: LEMMA 
+    var?(subs(rho)(X)) AND subs(rho)(pi * X) = pi * V(subs(rho)(X))
+
+renaming_var3: LEMMA 
+    var?(t) IMPLIES V(subs(rho)(t)) = V(subs(rho)(V(t)))
+
+renaming_num_arg: LEMMA
     num_arg(f, subs(rho)(t)) = num_arg(f, t)
 
-renaming_select: LEMMA  
+renaming_select: LEMMA
     select(f, subs(rho)(t))(i) = subs(rho)(select(f, t)(i))
 
 renaming_delete: LEMMA 
     delete(f, subs(rho)(t))(i) = subs(rho)(delete(f, t)(i))
     
+subs_context_mem: LEMMA 
+   (FORALL X:
+      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
+    subset?(vars(G), V1) AND member(X, V1) AND member((a, V(subs(rho)(X))), subs(rho, G)) IMPLIES 
+    member((a, X), G)  
+
+subs_context_mem2: LEMMA 
+    member((a, X), G) IMPLIES member((a, V(subs(rho)(X))), subs(rho, G)) 
+
+renaming_fresh: LEMMA 
+   (FORALL X:
+      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
+    subset?(vars(t), V1) AND subset?(vars(G), V1) AND fresh(subs(rho, G))(a, subs(rho)(t))
+    IMPLIES fresh(G)(a, t)
+
+renaming_fresh2: LEMMA 
+    fresh(G)(a, t) IMPLIES fresh(subs(rho, G))(a, subs(rho)(t))
+
 renaming_equal: LEMMA    
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
-    subset?(vars(t), V1) AND subset?(vars(s), V1) AND equal?(subs(rho)(t), subs(rho)(s))
-    IMPLIES equal?(t, s)
+    subset?(vars(t), V1) AND subset?(vars(s), V1) AND equal?(subs(rho, G))(subs(rho)(t), subs(rho)(s))
+    AND subset?(vars(G), V1) IMPLIES equal?(G)(t, s)
     
+renaming_equal2: LEMMA 
+    equal?(G)(t, s) IMPLIES equal?(subs(rho, G))(subs(rho)(t), subs(rho)(s))
+
 renaming_get_args: LEMMA  
     get_args(f)(subs(rho)(t)) = subs(rho)(get_args(f)(t))
 
@@ -664,74 +766,74 @@ renaming_var2: LEMMA
    var?(s) AND member(V(s), V1) AND subset?(vars(t), V1) IMPLIES
    (member(V(subs(rho)(s)), vars(subs(rho)(t))) IFF member(V(s), vars(t)))
 
-renaming_pos: LEMMA 
+renaming_pos: CONJECTURE 
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
     subset?(vars(t), V1) AND subset?(vars(args), V1) IMPLIES 
-    pos?(t, args, equal?) = pos?(subs(rho)(t), subs(rho)(args), equal?)
+    pos?(t, args, equal?(G)) = pos?(subs(rho)(t), subs(rho)(args), equal?(subs(rho, G)))
 
-renaming_count: LEMMA  
+renaming_count: CONJECTURE  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
     subset?(vars(t), V1) AND subset?(vars(args), V1) IMPLIES 
-    count(subs(rho)(t), subs(rho)(args), equal?) = count(t, args, equal?)
+    count(subs(rho)(t), subs(rho)(args), equal?(G)) = count(t, args, equal?(G))
  
-renaming_remove: LEMMA  
+renaming_remove: CONJECTURE  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
     subset?(vars(t), V1) AND subset?(vars(args), V1) IMPLIES 
-   subs(rho)(remove(args, t, equal?)) = remove(subs(rho)(args), subs(rho)(t), equal?)
+   subs(rho)(remove(args, t, equal?(G))) = remove(subs(rho)(args), subs(rho)(t), equal?(G))
 
-renaming_remove_common: LEMMA  
+renaming_remove_common: CONJECTURE  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
     subset?(vars(args1), V1) AND subset?(vars(args2), V1) IMPLIES 
-    remove_common(subs(rho)(args1), subs(rho)(args2), equal?) =
-    subs(rho)(remove_common(args1, args2, equal?))
+    remove_common(subs(rho)(args1), subs(rho)(args2), equal?(G)) =
+    subs(rho)(remove_common(args1, args2, equal?(G)))
 
-renaming_count_elem2: LEMMA  
+renaming_count_elem2: CONJECTURE  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
     subset?(vars(args), V1) IMPLIES 
-    count_elem2(subs(rho)(args), equal?)`1 = subs(rho)(count_elem2(args, equal?)`1)  AND 
-    count_elem2(subs(rho)(args), equal?)`2 = count_elem2(args, equal?)`2 
+    count_elem2(subs(rho)(args), equal?(G))`1 = subs(rho)(count_elem2(args, equal?(G))`1)  AND 
+    count_elem2(subs(rho)(args), equal?(G))`2 = count_elem2(args, equal?(G))`2 
 
-renaming_equal_syn: LEMMA 
+renaming_equal_syn: CONJECTURE 
    LET sig1 = cons((Y, t), null), sig1_ = cons((V(subs(rho)(Y)), subs(rho)(t)), null) IN
    (FORALL X: 
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1))
    AND member(Y, V1) IMPLIES equal_syn?(append(sig1_, rho), append(rho, sig1), V1)
 
 % shifts lemma
-shift_cor: LEMMA  
+shift_cor: CONJECTURE  
     IF start <= k AND k <= start + n THEN
-       subs(shift(start, n, inc))(variable(k)) = variable(k + inc)
-    ELSE subs(shift(start, n, inc))(variable(k)) = variable(k) 
+       subs(shift(start, n, inc))(pi * k) = pi * (k + inc)
+    ELSE subs(shift(start, n, inc))(pi * k) = pi * (k) 
     ENDIF
 
-shift_append_equal_syn: LEMMA  
+shift_append_equal_syn: CONJECTURE  
     LET rho1 = shift(V1, V1_, n) IN 
     (subset?(dom(rho), V1) AND subset?(vars(img(rho)), V1_)) IMPLIES 
     equal_syn?(rho, append(rho, rho1), V1)
 
-shift_dom: LEMMA  
+shift_dom: CONJECTURE  
     subset?(dom(shift(start, n, inc)), from_min2max[nat](start, start + n)) 
 
-shift_dom2: LEMMA  
+shift_dom2: CONJECTURE  
     (inc > 0 IMPLIES dom(shift(start, n, inc)) = from_min2max[nat](start, start + n)) AND
     (inc = 0 IMPLIES dom(shift(start, n, inc)) = emptyset)
 
-shift_img: LEMMA  
+shift_img: CONJECTURE  
     subset?(vars(img(shift(start, n, inc))), from_min2max[nat](start + inc, start + inc + n))
 
-shift_img2: LEMMA  
+shift_img2: CONJECTURE  
     (inc > 0 IMPLIES vars(img(shift(start, n, inc))) = from_min2max[nat](start+inc, start + n + inc)) AND
     (inc = 0 IMPLIES img(shift(start, n, inc)) = emptyset)
 
-shift_renaming: LEMMA  
+shift_renaming: CONJECTURE  
      renaming?(shift(start, n, inc))
 
-shift_append_renaming: LEMMA 
+shift_append_renaming: CONJECTURE 
   LET rho1 = shift(V1, V1_, n) IN 
     (subset?(dom(rho), V1) AND subset?(vars(img(rho)), V1_)) IMPLIES 
     renaming?(append(rho, rho1))

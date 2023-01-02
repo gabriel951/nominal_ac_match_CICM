@@ -795,6 +795,8 @@ construct_sub_mem_dom_cor: LEMMA
        V1 = select_greater[nat](vars2avoid) IN 
    member(X, dom(delta)) IMPLIES NOT member(X, vars2avoid)
    
+% TO DO: this lemma relies on 
+% subterms_subs and hence must be adapted 
 construct_sub_well_formed: LEMMA  
    LET delta = construct_sub(dio_matrix, coef_matrix, args, vars2avoid, f) IN
    well_formed?(args) AND length(coef_matrix) = length(args) AND no_zero_col?(coef_matrix, length(dio_matrix))
@@ -1246,6 +1248,7 @@ instantiate_step_no_var_pair: LEMMA
 instantiate_step_no_pair_img: LEMMA
      no_pair?(unif_prb) IMPLIES no_pair?(img(instantiate_step(unif_prb, null, null)`2))
 
+% TO DO: I don't think this will need to be adapted 
 instantiate_step_sub_im_under: LEMMA
     LET delta = instantiate_step(unif_prb, null, null)`2 IN
     member(t, subterms(img(delta))) AND im_under?(X, t) AND no_pair?(unif_prb) IMPLIES

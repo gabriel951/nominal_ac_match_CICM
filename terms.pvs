@@ -675,6 +675,9 @@ ext(pi)(t): RECURSIVE term =
   ENDCASES
 MEASURE t BY <<
 
+% action of a permutation in a finite set 
+ext(pi)(fin_set_t): finite_set[term] = {s | EXISTS t: member(t, fin_set_t) AND ext(pi)(t) = s} 
+
 % lemmas
 % vars 
 vars_append: LEMMA
@@ -942,6 +945,9 @@ ext_append: LEMMA
 ext_preserves_type: LEMMA
    ord(ext(pi)(t)) = ord(t)
 
+ext_ac: LEMMA
+   is_ac_sym?(t, f) = is_ac_sym?(ext(pi)(t), f)
+   
 ext_num_arg: LEMMA
    num_arg(f, ext(pi)(t)) = num_arg(f, t)
 
@@ -960,5 +966,8 @@ ext_vars: LEMMA
 ext_size2: LEMMA
    size2(ext(pi)(t)) = size2(t)
 
+ext_subterms: LEMMA 
+   ext(pi)(subterms(t)) = subterms(ext(pi)(t))
+   
 END term_properties
 

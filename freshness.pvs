@@ -128,4 +128,11 @@ fresh_delete_select: LEMMA
     (fresh(Delta)(a, select(f, t)(i)) AND fresh(Delta)(a, delete(f, t)(i)))
     IFF fresh(Delta)(a, t)
 
+% definition of variables that appear in a context
+vars(Delta): RECURSIVE finite_set[variable] = 
+   IF null?(Delta) THEN emptyset 
+   ELSE LET (a, X) = car(Delta) IN add(X, vars(cdr(Delta)))
+   ENDIF
+MEASURE Delta by << 
+
 END freshness
