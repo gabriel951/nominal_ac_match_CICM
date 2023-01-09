@@ -12,6 +12,7 @@ unification: THEORY
 BEGIN
 	IMPORTING substitution, list_theory2[term, term]
 
+Delta, G: VAR fresh_context 
 sigma, sigma1, delta: VAR sub
 rho: VAR renaming
 lst_sub: VAR list[sub]
@@ -105,17 +106,17 @@ subterms(lst_unif_prb): RECURSIVE finite_set[term] =
 MEASURE lst_unif_prb BY << 
 
 % check if sigma unifies a unification pair
-unifies?(sigma, unif_pair): bool = 
-    LET (t, s) = unif_pair IN equal?(subs(sigma)(t), subs(sigma)(s))
+unifies?(G, sigma, unif_pair): bool = 
+    LET (t, s) = unif_pair IN equal?(G)(subs(sigma)(t), subs(sigma)(s))
 
 unifiable?(t, s): bool =
-    EXISTS sigma: unifies?(sigma, (t, s))
+    EXISTS sigma, G: unifies?(G, sigma, (t, s))
 
 % check if sigma unifies a unification problem
-unifies?(sigma, unif_prb): RECURSIVE bool =
+unifies?(G, sigma, unif_prb): RECURSIVE bool =
     IF null?(unif_prb) THEN TRUE 
     ELSE LET unif_pair = car(unif_prb) IN
-         unifies?(sigma, unif_pair) AND unifies?(sigma, cdr(unif_prb))
+         unifies?(G, sigma, unif_pair) AND unifies?(G, sigma, cdr(unif_prb))
     ENDIF
 MEASURE unif_prb BY << 
 
@@ -165,11 +166,12 @@ all_ac_prb?(unif_prb): bool =
    FORALL unif_pair: 
    member(unif_pair, unif_prb) IMPLIES ac_prb?(unif_pair)
 
-% temporary unification pair:
-temp?(unif_pair, unif_prb): bool =
-   member(unif_pair, unif_prb) AND
-   EXISTS X: 
-     member(variable(X), unif_pair) AND count(variable(X), append(lhs(unif_prb), rhs(unif_prb)), =) = 1
+% temporary unification pair
+% TO DO: this is being simplified 
+%temp?(unif_pair, unif_prb): bool =
+%   member(unif_pair, unif_prb) AND
+%   EXISTS X: 
+%     member(variable(X), unif_pair) AND count(variable(X), append(lhs(unif_prb), rhs(unif_prb)), =) = 1
    
 % select greater
 select_greater(t, s): term =
@@ -321,42 +323,43 @@ subset_unif_prb_append: LEMMA
 
 % unifies?
 unifies?_append: LEMMA
-    unifies?(sigma, append(unif_prb1, unif_prb2)) =
-    (unifies?(sigma, unif_prb1) AND unifies?(sigma, unif_prb2))
+    unifies?(G, sigma, append(unif_prb1, unif_prb2)) =
+    (unifies?(G, sigma, unif_prb1) AND unifies?(G, sigma, unif_prb2))
 
 unifies?_pareate: LEMMA
-    length(args1) = length(args2) AND unifies?(sigma, pareate(args1, args2))
-    IMPLIES equal?(subs(sigma)(args1), subs(sigma)(args2))
+    length(args1) = length(args2) AND unifies?(G, sigma, pareate(args1, args2))
+    IMPLIES equal?(G)(subs(sigma)(args1), subs(sigma)(args2))
 
 unifies?_equiv: LEMMA
-    unifies?(sigma, unif_prb) IFF
-    FORALL unif_pair: member(unif_pair, unif_prb) IMPLIES unifies?(sigma, unif_pair)
+    unifies?(G, sigma, unif_prb) IFF
+    FORALL unif_pair: member(unif_pair, unif_prb) IMPLIES unifies?(G, sigma, unif_pair)
 
 unifies?_equal: LEMMA
-    equal?(sigma, sigma1) AND unifies?(sigma, unif_prb) IMPLIES
-    unifies?(sigma1, unif_prb)
+    equal?(G)(sigma, sigma1) AND unifies?(G, sigma, unif_prb) IMPLIES
+    unifies?(G, sigma1, unif_prb)
 
 unifies?_equal_alt: LEMMA 
-    equal?(sigma, sigma1, set_vars) AND unifies?(sigma, unif_prb) AND subset?(vars(unif_prb), set_vars)
-    IMPLIES unifies?(sigma1, unif_prb)
+    equal?(G)(sigma, sigma1, set_vars) AND unifies?(G, sigma, unif_prb) AND subset?(vars(unif_prb), set_vars)
+    IMPLIES unifies?(G, sigma1, unif_prb)
 
 unifies?_subset: LEMMA
-   subset?(unif_prb, unif_prb1) AND unifies?(sigma, unif_prb1) IMPLIES unifies?(sigma, unif_prb) 
+   subset?(unif_prb, unif_prb1) AND unifies?(G, sigma, unif_prb1) IMPLIES unifies?(G, sigma, unif_prb) 
 
 unifies?_append_disjoint: LEMMA
-    unifies?(append(sigma1, sigma), unif_prb) AND disjoint?(dom(sigma), vars(unif_prb))
-    IMPLIES unifies?(sigma1, unif_prb)
+    unifies?(G, append(sigma1, sigma), unif_prb) AND disjoint?(dom(sigma), vars(unif_prb))
+    IMPLIES unifies?(G, sigma1, unif_prb)
 
 unifies?_append_disjoint2: LEMMA
-    unifies?(sigma1, unif_prb) AND disjoint?(dom(sigma), vars(unif_prb))
-    IMPLIES unifies?(append(sigma1, sigma), unif_prb)
+    unifies?(G, sigma1, unif_prb) AND disjoint?(dom(sigma), vars(unif_prb))
+    IMPLIES unifies?(G, append(sigma1, sigma), unif_prb)
 
 unifies?_append_disjoint3: LEMMA 
     disjoint?(dom(sigma), vars(unif_prb)) IMPLIES 
-    unifies?(append(sigma1, sigma), unif_prb) = unifies?(sigma1, unif_prb) 
+    unifies?(G, append(sigma1, sigma), unif_prb) = unifies?(G, sigma1, unif_prb) 
 
 unifies?_append_disjoint4: LEMMA 
-    unifies?(sigma, unif_prb) IMPLIES unifies?(append(sigma1, sigma), unif_prb)
+    unifies?(G, sigma, unif_prb) AND keep_fresh?(G, sigma1)
+    IMPLIES unifies?(G, append(sigma1, sigma), unif_prb)
     
 % apply_sub
 apply_sub_mem: LEMMA
@@ -371,9 +374,9 @@ apply_sub_unif_pair: LEMMA
 
 apply_sub_subterms: LEMMA
     member(t, subterms(apply_sub(sigma, unif_prb))) IMPLIES
-    ((EXISTS s: 
-       member(s, subterms(unif_prb)) AND t = subs(sigma)(s)) OR
-       member(t, subterms(img(sigma))))
+    EXISTS s: 
+       (member(s, subterms(unif_prb)) AND
+       (t = subs(sigma)(s) OR (var?(s) AND member(t, ext(p(s))(subterms(img(sigma)))))))
 
 apply_sub_null: LEMMA
     apply_sub(null, unif_prb) = unif_prb
@@ -424,27 +427,29 @@ ac_prb_renaming: LEMMA
 all_ac_prb_renaming: LEMMA 
     all_ac_prb?(unif_prb) IFF all_ac_prb?(apply_sub(rho, unif_prb))
 
-apply_sub_var_not_dom_mem: LEMMA
-    member(variable(X), unif_pair) AND NOT member(X, dom(sigma))
-    IMPLIES member(variable(X), apply_sub(sigma, unif_pair))
+% TO DO: the next 4 lemmas would need to be modified, but I think they were used only in
+% the proof of termination... 
+%apply_sub_var_not_dom_mem: LEMMA
+%    member(variable(X), unif_pair) AND NOT member(X, dom(sigma))
+%    IMPLIES member(variable(X), apply_sub(sigma, unif_pair))
 
-apply_sub_var_not_dom_lhs: LEMMA
-   NOT member(X, dom(sigma)) AND NOT member(variable(X), img(sigma)) IMPLIES
-   count(variable(X), lhs(unif_prb), =) =
-   count(variable(X), lhs(apply_sub(sigma, unif_prb)), =)
+%apply_sub_var_not_dom_lhs: LEMMA
+%   NOT member(X, dom(sigma)) AND NOT member(variable(X), img(sigma)) IMPLIES
+%   count(variable(X), lhs(unif_prb), =) =
+%   count(variable(X), lhs(apply_sub(sigma, unif_prb)), =)
 
-apply_sub_var_not_dom_rhs: LEMMA
-   NOT member(X, dom(sigma)) AND NOT member(variable(X), img(sigma)) IMPLIES
-   count(variable(X), rhs(unif_prb), =) =
-   count(variable(X), rhs(apply_sub(sigma, unif_prb)), =)
+%apply_sub_var_not_dom_rhs: LEMMA
+%   NOT member(X, dom(sigma)) AND NOT member(variable(X), img(sigma)) IMPLIES
+%   count(variable(X), rhs(unif_prb), =) =
+%   count(variable(X), rhs(apply_sub(sigma, unif_prb)), =)
 
-apply_sub_var_not_dom_count: LEMMA
-   NOT member(X, dom(sigma)) AND NOT member(variable(X), img(sigma)) IMPLIES 
-   count(variable(X), append(lhs(unif_prb), rhs(unif_prb)), =) =
-   count(variable(X), append(lhs(apply_sub(sigma, unif_prb)), rhs(apply_sub(sigma, unif_prb))), =)
+%apply_sub_var_not_dom_count: LEMMA
+%   NOT member(X, dom(sigma)) AND NOT member(variable(X), img(sigma)) IMPLIES 
+%   count(variable(X), append(lhs(unif_prb), rhs(unif_prb)), =) =
+%   count(variable(X), append(lhs(apply_sub(sigma, unif_prb)), rhs(apply_sub(sigma, unif_prb))), =)
 
 apply_sub_unifies: LEMMA 
-   unifies?(sigma, apply_sub(sigma1, unif_prb)) IFF unifies?(append(sigma, sigma1), unif_prb)
+   unifies?(G, sigma, apply_sub(sigma1, unif_prb)) IFF unifies?(G, append(sigma, sigma1), unif_prb)
 
 apply_sub_eq: LEMMA 
    equal_syn?(sigma, sigma1, vars(unif_prb)) IMPLIES 
@@ -470,55 +475,59 @@ well_formed_apply_sub: LEMMA
 well_formed_subset: LEMMA 
    subset?(unif_prb, unif_prb1) AND well_formed?(unif_prb1) IMPLIES well_formed?(unif_prb) 
 
-unifies?_impossible: LEMMA
+% TO DO: I am not sure how to adapt this lemmas, I am not sure whether it will be only one context
+% or it will be necessary to work with more than one context
+unifies?_impossible: CONJECTURE
    (FORALL t1:
-    count(t1, get_args(f)(s), equal?) >= count(t1, get_args(f)(t), equal?))
+    count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))
    AND are_ac?(t, s, f)
-   AND NOT same_count?(get_args(f)(t), get_args(f)(s), equal?)
-   IMPLIES NOT unifies?(delta, (t, s))
+   AND NOT same_count?(get_args(f)(t), get_args(f)(s), equal?(G)) AND keep_fresh?(G, delta) 
+   IMPLIES NOT unifies?(G, delta, (t, s))
 
 unifies?_impossible2: LEMMA  
-   unifies?(sigma, (t, s)) AND NOT var?(t) AND well_formed?(t) IMPLIES  
+   unifies?(G, sigma, (t, s)) AND NOT var?(t) AND well_formed?(t) IMPLIES  
    ord(t) = ord(s) OR (var?(s) AND NOT (member(V(s), vars(t))))
 
 remove_common_not_null_count: LEMMA
    (EXISTS t1:
-       count(t1, args1, equal?) > count(t1, args2, equal?))
-   IMPLIES NOT null?(remove_common(args1, args2, equal?))
+       count(t1, args1, equal?(G)) > count(t1, args2, equal?(G)))
+   IMPLIES NOT null?(remove_common(args1, args2, equal?(G)))
 
-remove_common_not_null_unifies: LEMMA 
-   unifies?(delta, (t, s)) AND NOT equal?(t, s) AND are_ac?(t, s, f) IMPLIES  
-   (NOT null?(remove_common(get_args(f)(t), get_args(f)(s), equal?)) AND
-    NOT null?(remove_common(get_args(f)(s), get_args(f)(t), equal?)))
+% TO DO: again, not sure if I will need more than one context
+remove_common_not_null_unifies: CONJECTURE 
+   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   (NOT null?(remove_common(get_args(f)(t), get_args(f)(s), equal?(G))) AND
+    NOT null?(remove_common(get_args(f)(s), get_args(f)(t), equal?(G))))
 
-remove_common_args_cor: LEMMA
-   LET (t1, s1) = remove_common(t, s, f) IN
-   unifies?(delta, (t, s)) AND NOT equal?(t, s) AND are_ac?(t, s, f) IMPLIES  
-   remove_common(get_args(f)(t), get_args(f)(s), equal?) =
-   remove_common(get_args(f)(t1), get_args(f)(s1), equal?)
+remove_common_args_cor: CONJECTURE
+   LET (t1, s1) = remove_common(t, s, f, G) IN
+   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   remove_common(get_args(f)(t), get_args(f)(s), equal?(G)) =
+   remove_common(get_args(f)(t1), get_args(f)(s1), equal?(G))
 
-get_args_remove_common: LEMMA
-   LET (t1, s1) = remove_common(t, s, f) IN
-   unifies?(delta, (t, s)) AND NOT equal?(t, s) AND are_ac?(t, s, f) IMPLIES  
-   get_args(f)(t1) = remove_common(get_args(f)(t), get_args(f)(s), equal?)
+get_args_remove_common: CONJECTURE
+   LET (t1, s1) = remove_common(t, s, f, G) IN
+   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   get_args(f)(t1) = remove_common(get_args(f)(t), get_args(f)(s), equal?(G))
 
-remove_common_eq: LEMMA 
-    LET (t1, s1) = remove_common(t, s, f) IN 
-    NOT equal?(t, s) AND are_ac?(t, s, f) AND unifies?(delta, (t, s)) IMPLIES 
-    equal?(subs(delta)(t1), subs(delta)(s1))
+remove_common_eq: CONJECTURE 
+    LET (t1, s1) = remove_common(t, s, f, G) IN 
+    NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND unifies?(G, delta, (t, s)) IMPLIES 
+    equal?(G)(subs(delta)(t1), subs(delta)(s1))
 
-remove_common_no_common_args: LEMMA 
-   LET (t1, s1) = remove_common(t, s, f) IN 
-   unifies?(delta, (t, s)) AND NOT equal?(t, s) AND are_ac?(t, s, f) IMPLIES  
-   no_common_args?(get_args(f)(t1), get_args(f)(s1))
+remove_common_no_common_args: CONJECTURE 
+   LET (t1, s1) = remove_common(t, s, f, G) IN 
+   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   no_common_args?(get_args(f)(t1), get_args(f)(s1), G)
 
 remove_common_vars: LEMMA 
-   LET (t1, s1) = remove_common(t, s, f) IN
+   LET (t1, s1) = remove_common(t, s, f, G) IN
    subset?(vars(t1, s1), vars(t, s))
    
-remove_common_alm_well_formed?: LEMMA  
-   LET (t1, s1) = remove_common(t, s, f) IN
-   unifies?(delta, (t, s)) AND NOT equal?(t, s) AND are_ac?(t, s, f) IMPLIES  
+% TO DO: again, not sure if we will need more than one context
+remove_common_alm_well_formed?: CONJECTURE  
+   LET (t1, s1) = remove_common(t, s, f, G) IN
+   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
    well_formed?(cons((t, s), null)) IMPLIES alm_well_formed?(cons((t1, s1), null)) 
 
 % decompose
@@ -536,24 +545,24 @@ decompose_subterm2: LEMMA
 
 decompose_correct: LEMMA    
    LET (unif_prb, bool1) = decompose(t, s) IN bool1 IMPLIES 
-   unifies?(sigma, (t, s)) = unifies?(sigma, unif_prb)
+   unifies?(G, sigma, (t, s)) = unifies?(G, sigma, unif_prb)
 
 decompose_correct_app: LEMMA    
    LET (unif_prb, bool1) = decompose(t, s) IN
    bool1 AND well_formed?(sigma) IMPLIES 
-   unifies?(sigma, (app(f, t), app(f, s))) = unifies?(sigma, unif_prb)
+   unifies?(G, sigma, (app(f, t), app(f, s))) = unifies?(G, sigma, unif_prb)
 
 decompose_no_pair: LEMMA 
    no_pair?(decompose(t, s)`1)
 
 decompose_not_fail: LEMMA   
    LET (unif_prb, bool1) = decompose(t, s) IN
-   well_formed?(sigma) AND unifies?(sigma, (t, s))
+   well_formed?(sigma) AND unifies?(G, sigma, (t, s))
    IMPLIES bool1 
 
 decompose_not_fail2: LEMMA 
    LET (unif_prb, bool1) = decompose(t, s) IN
-   well_formed?(sigma) AND unifies?(sigma, (app(f, t), app(f, s)))
+   well_formed?(sigma) AND unifies?(G, sigma, (app(f, t), app(f, s)))
    IMPLIES bool1 
 
 decompose_app_well_formed: LEMMA 

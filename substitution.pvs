@@ -220,6 +220,9 @@ subs_ac3: LEMMA
 subs_func: LEMMA
     func?(subs(sigma)(t)) IMPLIES (same_func?(subs(sigma)(t), t) OR var?(t))
 
+subs_abs2: LEMMA 
+    abs?(subs(sigma)(t)) IMPLIES (abs?(t) OR var?(t))
+
 subs_basic_ext: LEMMA
     subs(sigma_basic, ext(pi)(t)) = ext(pi)(subs(sigma_basic, t))
 
@@ -406,7 +409,7 @@ dom_append2: LEMMA
 subs_no_effect_args: LEMMA
     disjoint?(dom(sigma), vars(args)) IMPLIES subs(sigma)(args) = args
 
-apply_sub_elim_var_t: LEMMA
+apply_sub_elim_var_t: LEMMA 
     member(X, dom(sigma)) AND NOT member(X, vars(img(sigma))) 
     IMPLIES NOT member(X, vars(subs(sigma)(t)))
 
@@ -476,21 +479,21 @@ subs_no_effect_subterm: LEMMA
     subs(sigma)(t) = t AND member(s, subterms(t)) IMPLIES subs(sigma)(s) = s
 
 % TODO: this is not correct, but I don't think it will be necessary to adapt. 
-subterms_img_append: CONJECTURE
-    subset?(subterms(img(append(sigma, delta))),
-    	    union(image(subs(sigma))(subterms(img(delta))), subterms(img(sigma))))
+%subterms_img_append: CONJECTURE
+%    subset?(subterms(img(append(sigma, delta))),
+%    	    union(image(subs(sigma))(subterms(img(delta))), subterms(img(sigma))))
 
 same_func_subs: LEMMA
     func?(t) IMPLIES same_func?(t, subs(sigma)(t))
 
 % TO DO: I believe this one is only used in the proof of termination, so I don't
 % think it will be necessary to adapt
-func_subterms_subs: CONJECTURE
-    func?(s) AND member(s, subterms(subs(sigma)(t))) IMPLIES
-    ((EXISTS ti: 
-         same_func?(ti, s) AND subs(sigma)(ti) = s AND member(ti, subterms(t)))
-     OR
-     member(s, subterms(img(sigma))))
+%func_subterms_subs: CONJECTURE
+%    func?(s) AND member(s, subterms(subs(sigma)(t))) IMPLIES
+%    ((EXISTS ti: 
+%         same_func?(ti, s) AND subs(sigma)(ti) = s AND member(ti, subterms(t)))
+%     OR
+%     member(s, subterms(img(sigma))))
 
 flatten_pair_subs: LEMMA
     member(s, flatten_pair(subs(sigma)(t))) AND no_pair?(img(sigma))
@@ -515,23 +518,23 @@ mem_get_args_subs3: LEMMA
 
 % TO DO: I skipped the next 3 lemmas because they won't be used if I am able to simplify the proof
 % of termination
-im_under_subs: CONJECTURE
-    im_under?(Y, subs(sigma)(t)) AND func?(t) AND no_pair?(img(sigma))
-    IMPLIES
-      ((EXISTS X, pi: im_under?(X, t) AND subs(sigma)(X) = pi * Y)) OR
-      im_under?(Y, img(sigma))
+%im_under_subs: CONJECTURE
+%    im_under?(Y, subs(sigma)(t)) AND func?(t) AND no_pair?(img(sigma))
+%    IMPLIES
+%      ((EXISTS X, pi: im_under?(X, t) AND subs(sigma)(X) = pi * Y)) OR
+%      im_under?(Y, img(sigma))
         
-im_under_subs2: CONJECTURE
-    im_under?(Y, subs(sigma)(t)) AND func?(t) AND no_pair?(img(sigma)) AND idempotent?(sigma) IMPLIES
-    (EXISTS X, pi: subs(sigma)(X) = pi * Y AND
-      	      (im_under?(X, t) OR
-	      EXISTS s: member(s, img(sigma)) AND im_under?(X, s) AND same_func?(t, s)))
+%im_under_subs2: CONJECTURE
+%    im_under?(Y, subs(sigma)(t)) AND func?(t) AND no_pair?(img(sigma)) AND idempotent?(sigma) IMPLIES
+%    (EXISTS X, pi: subs(sigma)(X) = pi * Y AND
+%      	      (im_under?(X, t) OR
+%	      EXISTS s: member(s, img(sigma)) AND im_under?(X, s) AND same_func?(t, s)))
 
-im_under_subs3: CONJECTURE
-    im_under?(Y, subs(sigma)(t)) AND no_pair?(img(sigma)) AND idempotent?(sigma) IMPLIES
-    (EXISTS X: subs(sigma)(X) = pi * Y AND
-      	      (im_under?(X, t) OR
-	      EXISTS s: member(s, img(sigma)) AND im_under?(X, s) AND same_func?(subs(sigma)(t), s)))
+%im_under_subs3: CONJECTURE
+%    im_under?(Y, subs(sigma)(t)) AND no_pair?(img(sigma)) AND idempotent?(sigma) IMPLIES
+%    (EXISTS X: subs(sigma)(X) = pi * Y AND
+%      	      (im_under?(X, t) OR
+%	      EXISTS s: member(s, img(sigma)) AND im_under?(X, s) AND same_func?(subs(sigma)(t), s)))
 
 % nice, supset_dom, well_formed
 supset_dom_equiv: LEMMA
@@ -643,6 +646,12 @@ subs_equal_impossible: LEMMA
    (FORALL t: member(t, subterms(s)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
    IMPLIES
    NOT equal?(G)(subs(delta)(s), subs(delta)(X))
+
+subs_equal_impossible2: LEMMA 
+   member(X, vars(s)) AND NOT var?(s) AND
+   (FORALL t: member(t, subterms(s)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
+   IMPLIES
+   NOT equal?(G)(subs(delta)(s), subs(delta)(pi * X))
 
 % count
 subs_count_ge: LEMMA
@@ -766,74 +775,74 @@ renaming_var2: LEMMA
    var?(s) AND member(V(s), V1) AND subset?(vars(t), V1) IMPLIES
    (member(V(subs(rho)(s)), vars(subs(rho)(t))) IFF member(V(s), vars(t)))
 
-renaming_pos: CONJECTURE 
+renaming_pos: LEMMA 
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
-    subset?(vars(t), V1) AND subset?(vars(args), V1) IMPLIES 
+    subset?(vars(t), V1) AND subset?(vars(args), V1) AND subset?(vars(G), V1) IMPLIES 
     pos?(t, args, equal?(G)) = pos?(subs(rho)(t), subs(rho)(args), equal?(subs(rho, G)))
 
-renaming_count: CONJECTURE  
+renaming_count: LEMMA  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
-    subset?(vars(t), V1) AND subset?(vars(args), V1) IMPLIES 
-    count(subs(rho)(t), subs(rho)(args), equal?(G)) = count(t, args, equal?(G))
+    subset?(vars(t), V1) AND subset?(vars(args), V1) AND subset?(vars(G), V1) IMPLIES 
+    count(subs(rho)(t), subs(rho)(args), equal?(subs(rho, G))) = count(t, args, equal?(G))
  
-renaming_remove: CONJECTURE  
+renaming_remove: LEMMA  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
-    subset?(vars(t), V1) AND subset?(vars(args), V1) IMPLIES 
-   subs(rho)(remove(args, t, equal?(G))) = remove(subs(rho)(args), subs(rho)(t), equal?(G))
+    subset?(vars(t), V1) AND subset?(vars(args), V1) AND subset?(vars(G), V1) IMPLIES 
+   subs(rho)(remove(args, t, equal?(G))) = remove(subs(rho)(args), subs(rho)(t), equal?(subs(rho, G)))
 
-renaming_remove_common: CONJECTURE  
+renaming_remove_common: LEMMA  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
-    subset?(vars(args1), V1) AND subset?(vars(args2), V1) IMPLIES 
-    remove_common(subs(rho)(args1), subs(rho)(args2), equal?(G)) =
+    subset?(vars(args1), V1) AND subset?(vars(args2), V1) AND subset?(vars(G), V1) IMPLIES 
+    remove_common(subs(rho)(args1), subs(rho)(args2), equal?(subs(rho, G))) =
     subs(rho)(remove_common(args1, args2, equal?(G)))
 
-renaming_count_elem2: CONJECTURE  
+renaming_count_elem2: LEMMA  
    (FORALL X:
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1)) AND
-    subset?(vars(args), V1) IMPLIES 
-    count_elem2(subs(rho)(args), equal?(G))`1 = subs(rho)(count_elem2(args, equal?(G))`1)  AND 
-    count_elem2(subs(rho)(args), equal?(G))`2 = count_elem2(args, equal?(G))`2 
+    subset?(vars(args), V1) AND subset?(vars(G), V1) IMPLIES 
+    count_elem2(subs(rho)(args), equal?(subs(rho, G)))`1 = subs(rho)(count_elem2(args, equal?(G))`1)  AND 
+    count_elem2(subs(rho)(args), equal?(subs(rho, G)))`2 = count_elem2(args, equal?(G))`2 
 
-renaming_equal_syn: CONJECTURE 
+renaming_equal_syn: LEMMA
    LET sig1 = cons((Y, t), null), sig1_ = cons((V(subs(rho)(Y)), subs(rho)(t)), null) IN
    (FORALL X: 
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1))
    AND member(Y, V1) IMPLIES equal_syn?(append(sig1_, rho), append(rho, sig1), V1)
 
 % shifts lemma
-shift_cor: CONJECTURE  
+shift_cor: LEMMA  
     IF start <= k AND k <= start + n THEN
        subs(shift(start, n, inc))(pi * k) = pi * (k + inc)
     ELSE subs(shift(start, n, inc))(pi * k) = pi * (k) 
     ENDIF
 
-shift_append_equal_syn: CONJECTURE  
+shift_append_equal_syn: LEMMA  
     LET rho1 = shift(V1, V1_, n) IN 
     (subset?(dom(rho), V1) AND subset?(vars(img(rho)), V1_)) IMPLIES 
     equal_syn?(rho, append(rho, rho1), V1)
 
-shift_dom: CONJECTURE  
+shift_dom: LEMMA
     subset?(dom(shift(start, n, inc)), from_min2max[nat](start, start + n)) 
 
-shift_dom2: CONJECTURE  
+shift_dom2: LEMMA  
     (inc > 0 IMPLIES dom(shift(start, n, inc)) = from_min2max[nat](start, start + n)) AND
     (inc = 0 IMPLIES dom(shift(start, n, inc)) = emptyset)
 
-shift_img: CONJECTURE  
+shift_img: LEMMA  
     subset?(vars(img(shift(start, n, inc))), from_min2max[nat](start + inc, start + inc + n))
 
-shift_img2: CONJECTURE  
+shift_img2: LEMMA  
     (inc > 0 IMPLIES vars(img(shift(start, n, inc))) = from_min2max[nat](start+inc, start + n + inc)) AND
     (inc = 0 IMPLIES img(shift(start, n, inc)) = emptyset)
 
-shift_renaming: CONJECTURE  
+shift_renaming: LEMMA  
      renaming?(shift(start, n, inc))
 
-shift_append_renaming: CONJECTURE 
+shift_append_renaming: LEMMA 
   LET rho1 = shift(V1, V1_, n) IN 
     (subset?(dom(rho), V1) AND subset?(vars(img(rho)), V1_)) IMPLIES 
     renaming?(append(rho, rho1))

@@ -1,0 +1,359 @@
+% Authors:
+%		Gabriel Ferreira Silva (*)
+% 		Mauricio Ayala-Rincón (*)
+% 		Daniele Nantes Sobrinho (*)
+% 		Maribel Fernandez (**)
+%		(*) - University of Brasília			(**) - King's College London
+%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+fresh_subs: THEORY
+BEGIN
+
+	IMPORTING substitution
+
+	t,s,u,w: VAR term
+	X,Y: VAR variable
+	pi, pi1: VAR perm
+	a, b: VAR atom
+	f: VAR string
+	
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	Delta, Nabla, Nabla1, Nabla2: VAR fresh_context
+	sigma, gamma, lambda1, sigma1: VAR sub
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The function fresh_subs applies a substituion sigma to every variable in a 
+% context Nabla and verifies if freshness holds in the context Delta.
+% For example, if Nabla = ((a1,X1), (a2,X2), ..., (an,Xn)), then what should be
+% verified is whether Delta |- ai # Xi.sigma , for all i: 1 <= i <= n.
+% This is done recursively.
+
+fresh_subs(Delta)(sigma, Nabla): RECURSIVE bool =
+   CASES Nabla OF
+   	 null: TRUE,
+	 cons(head, tail): fresh(Delta)(head`1, subs(sigma)((::)*head`2))
+	 	    	   AND fresh_subs(Delta)(sigma, tail)
+   ENDCASES
+   MEASURE Nabla BY <<
+
+% Characterisation of fresh_subs.
+fresh_subs_character: CONJECTURE
+   fresh_subs(Delta)(sigma, Nabla) = 
+   (FORALL (ax:[atom, variable]): member(ax,Nabla) IMPLIES fresh(Delta)(ax`1, subs(sigma)((::)*ax`2)))
+
+% Verifying fresh_subs for an append of two contexts is equal
+% to verify them separately.
+fresh_subs_append_context: CONJECTURE
+   fresh_subs(Delta)(sigma, append(Nabla1, Nabla2)) =
+   (fresh_subs(Delta)(sigma, Nabla1) AND fresh_subs(Delta)(sigma, Nabla2))
+
+% Generalisation of weakening of freshness contexts to fresh_subs.
+fresh_subs_weakening: CONJECTURE 
+   fresh_subs(Nabla1)(sigma, Delta) AND
+   (FORALL (a, X): member((a, X), Nabla1) => member((a, X), Nabla2)) IMPLIES
+   fresh_subs(Nabla2)(sigma, Delta)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The next function is used in the unification algorithm.
+% fresh_subs? does something very similar to fresh_subs. It applies a substitution
+% sigma to a context Nabla (to variables) and builds a context where freshness
+% holds, if possible.
+fresh_subs?(sigma, Nabla): RECURSIVE [fresh_context, bool] =
+   CASES Nabla OF
+   	 null: ((::), TRUE),
+	 cons(head, tail): x(fresh?(head`1, subs(sigma)((::)*head`2)),
+	 	    	     fresh_subs?(sigma, tail))
+   ENDCASES
+   MEASURE Nabla BY <<
+
+% Applying Identity subs to a freshness context does not affect it.
+fresh_subs?_null: CONJECTURE
+   fresh_subs?((::), Delta) = (Delta, TRUE)
+
+% Characterization of the function fresh_subs?
+fresh_subs?_character: CONJECTURE   
+   fresh_subs?(sigma, Delta)`2 =
+   (FORALL(a,X): member((a,X),Delta) IMPLIES fresh?(a, subs(sigma)((::)*X))`2)
+
+% (Delta o Nabla).sigma = (Delta.sigma and Nabla.sigma)
+fresh_subs?_append_context: CONJECTURE
+   fresh_subs?(sigma, append(Delta,Nabla)) =
+       x(fresh_subs?(sigma, Delta), fresh_subs?(sigma, Nabla))
+
+% If Delta.sigma is consistent, then forall (a,X) in Delta
+% Delta.sigma|-- a # X.sigma  .
+fresh_subs?_is_fresh: CONJECTURE
+   LET (Nabla, b) = fresh_subs?(sigma, Delta) IN
+   b IMPLIES FORALL(a,X): member((a,X),Delta) IMPLIES
+                    fresh(Nabla)(a, subs(sigma)((::)*X))
+
+% If Delta.sigma is consistent, then
+% Delta|--a # t  implies  Delta.sigma|--a # t.sigma
+fresh_subs?_is_fresh2: CONJECTURE
+   LET (Nabla, b) = fresh_subs?(sigma, Delta) IN
+   b AND fresh(Delta)(a, t) IMPLIES
+            fresh(Nabla)(a, subs(sigma)(t))
+
+% If <a#t> is consistent (via function fresh?), then 
+% <a#t.sigma> = <a#t>.sigma.
+fresh_subs?_is_fresh3: CONJECTURE
+   fresh?(a, subs(sigma)(t)) = x(fresh_subs?(sigma, fresh?(a,t)`1), 
+   	     		       	 ((::),fresh?(a,t)`2))
+
+% This is a very technical lemma. It says that if Delta.gamma is consistent,
+% then Delta.(gamma o sigma) = (Delta.gamma).sigma .
+% On the other hand, if Delta.gamma is inconsistent then so is 
+% (Delta.gamma).sigma .
+fresh_subs?_append: CONJECTURE
+   fresh_subs?(append(sigma, gamma),Delta) =
+        x(fresh_subs?(sigma,fresh_subs?(gamma,Delta)`1),
+	  ((::),fresh_subs?(gamma,Delta)`2))
+
+% The next two lemmas claim that if Delta.sigma is consistent and 
+% Delta |- t~s then sigma also preserves alpha-equivalence.
+% TO DO: adapt this
+%fresh_subs?_alpha_aux: CONJECTURE
+%   LET SOL = fresh_subs?((:(X,u):), Delta) IN
+%   SOL`2 AND equal?(Delta)(t, s)
+%   IMPLIES equal?(SOL`1)(subs(X,u)(t), subs(X,u)(s))
+
+% If Delta.sigma is consistent, then (~ is the alpha-equivalent relation)
+% Delta|--t~s   implies   Delta.sigma|--t.sigma~s.sigma   . 
+fresh_subs?_alpha: CONJECTURE
+   LET (Nabla, b) = fresh_subs?(sigma, Delta) IN
+   b AND equal?(Delta)(t, s)
+   IMPLIES equal?(Nabla)(subs(sigma)(t), subs(sigma)(s))
+
+% Completeness of 'fresh_subs?' with respect to 'fresh_subs'.
+fresh_subs?_complete: CONJECTURE
+   LET (NABLA, b) = fresh_subs?(sigma, Nabla) IN
+   fresh_subs(Delta)(sigma, Nabla) IMPLIES b AND 
+   (FORALL (a, X): member((a, X), NABLA) => member((a, X), Delta))
+
+% Soundness of 'fresh_subs?' with respect to 'fresh_subs'.
+fresh_subs?_is_fresh_subs: CONJECTURE
+   LET (Delta, b) = fresh_subs?(sigma, Nabla) IN
+   b IMPLIES fresh_subs(Delta)(sigma, Nabla)
+
+% If Nabla.gamma is consistent,
+% Delta|--Nabla.(gamma o sigma) = Delta|-- (Nabla.gamma).sigma
+fresh_subs_o_fresh_subs?: CONJECTURE
+   fresh_subs(Delta)(append(sigma, gamma), Nabla) =
+      (fresh_subs(Delta)(sigma, fresh_subs?(gamma, Nabla)`1) AND fresh_subs?(gamma, Nabla)`2)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The next lemmas were especially developed in order to prove termination
+% of the unification algorithm.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Variables of a pair.
+%Vars(t,s): finite_set[variable] = union(Vars(t), Vars(s))
+
+% If X occurs in s and it does not occur in t, then
+% Vars(s[X->t])= Vars(t,s)\{X}
+%Vars_union: CONJECTURE
+%   occurs(X, s) AND NOT occurs(X, t) 
+%   IMPLIES Vars(subs(X, t)(s)) = remove(X, Vars(t,s))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Vars_in(u,s)(X,t): bool = subset?(Vars(t), Vars(s,u)) AND 
+%		   	  (occurs(X,s) OR occurs(X,u))
+
+% A special type of substitution to guarantee termination of the
+% unification algorithm. The variables of Domain and Image are limited
+% and each nuclear substitution is idempotent.
+%Subs_unif(u,s): TYPE = list[{sigma:[variable,term]| Vars_in(u,s)(sigma) AND  
+			     		      %NOT occurs(sigma`1, sigma`2)}]
+
+% If a substitution has the special type above, then the result of
+% applying it to terms has the set of variables limited.
+%Subs_unif_Vars_subset: CONJECTURE
+%   FORALL(gamma: Subs_unif(u,s)):
+%   subset?(Vars(subs(gamma)(w), subs(gamma)(t)), union(Vars(u,s), Vars(w,t)))
+
+% A substitution with the special type above makes the number of variables
+% decreases.
+%Subs_unif_Vars_decrease: CONJECTURE 
+%   FORALL(gamma: Subs_unif(u,s)): gamma /= Id IMPLIES
+%   card(Vars(subs(gamma)(w), subs(gamma)(t))) < card(union(Vars(u,s), Vars(w,t)))
+
+% Concatenating two substitutions of the type Subs_unif, preserves the
+% type Subs_unif in a special manner.
+%Subs_unif_append: CONJECTURE
+%   FORALL(sigma: Subs_unif(u,s), gamma: Subs_unif(subs(sigma)(w), subs(sigma)(t))):
+%   every(LAMBDA(sigma: [variable,term]): Vars_in(pair(u,w),pair(s,t))(sigma) 
+%   		       & NOT occurs(sigma`1, sigma`2))(append(gamma, sigma))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The next lemma are proved in order to obtain completeness of 
+% the unification algorithm.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Delta|--t.sigma~p.X.sigma implies X does not occur in t if 
+% t is not a suspended variable.
+alpha_Subs_Vars: CONJECTURE
+   equal?(Delta)(subs(sigma)(t), subs(sigma)(pi*X)) AND NOT var?(t)
+   IMPLIES NOT member(X, vars(t))
+
+% Delta|--t.sigma~s.sigma and t is not a suspended variable implies
+% that s=p.X and X is not in t or t and s have the same structure.
+alpha_Subs_ord: CONJECTURE
+   equal?(Delta)(subs(sigma)(t), subs(sigma)(s)) AND NOT var?(t)
+   IMPLIES (var?(s) AND NOT member(V(s), vars(t))) OR ord(t) = ord(s)
+
+% If two substitutions are alpha-equivalent, then the action of them
+% over a term produces alpha-equivalent terms.
+% If Delta|--sigma~gamma , then Delta|-- t.sigma~t.gamma   .
+alpha_Subs_invariance: CONJECTURE 
+   (FORALL X: equal?(Delta)(subs(sigma)((::)*X), subs(gamma)((::)*X)) )
+   IMPLIES equal?(Delta)(subs(sigma)(t), subs(gamma)(t))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% return the set of variables on the range of a substitution  
+vars_range_sub(sigma): RECURSIVE finite_set[variable] =
+IF null?(sigma) THEN emptyset
+ELSE LET t = car(sigma)`2 IN
+     	 union(vars_range_sub(cdr(sigma)), vars(t))
+ENDIF
+MEASURE sigma BY << 
+
+% return the set of variables on the domain of a substitution
+vars_dom_sub(sigma): RECURSIVE finite_set[variable] =
+IF null?(sigma) THEN emptyset
+ELSE LET X = car(sigma)`1 IN
+     	 union(singleton(X), vars_dom_sub(cdr(sigma)))
+ENDIF
+MEASURE sigma BY << 
+
+% return a boolean indicating if sigma is more general than gamma under context Delta. 
+more_gen_sub?(Delta)(sigma, gamma): bool =
+    EXISTS lambda1:
+        FORALL X: equal?(Delta)(subs(append(lambda1, sigma))((::)*X), subs(gamma)((::)*X))
+
+% indicates if a substitution is well-behaved.
+well_behaved?(sigma): bool =
+IF FORALL X: member(X, vars_dom_sub(sigma))
+   => (FORALL Y: member(Y, vars(subs(sigma)((::) * X))) => NOT member(Y, vars_dom_sub(sigma)))
+   THEN TRUE
+ELSE FALSE
+ENDIF
+
+% boolean that indicates if a substitution is idempotent
+%idempotent?(sigma): bool =
+%IF (FORALL t: subs(sigma)(subs(sigma)(t)) = subs(sigma)(t))
+%   THEN TRUE
+%ELSE FALSE
+%ENDIF
+
+%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% give a sufficient condition to simplify (sigma gamma sigma) to (sigma gamma)  
+suf_cond_simp_sub_append: CONJECTURE
+   idempotent?(sigma) AND 
+   disjoint?(union(vars_dom_sub(sigma), vars_range_sub(sigma)),
+             vars_dom_sub(gamma)) =>
+   subs(sigma)(subs(gamma)(subs(sigma)(t))) = subs(sigma)(subs(gamma)(t))
+
+% a sufficient condition to conclude that:  sigma gamma < lambda1 => sigma < lambda1
+suf_cond_more_gen_sub?_append: CONJECTURE
+   idempotent?(sigma) AND 
+   disjoint?(union(vars_dom_sub(sigma), vars_range_sub(sigma)),
+             vars_dom_sub(gamma)) AND 
+   more_gen_sub?(Nabla)(append(sigma, gamma), lambda1) => more_gen_sub?(Nabla)(sigma, lambda1)
+
+% a rather obvious lemma. The above one is more sophisticate. 
+suf_cond_more_gen_sub?_append2: CONJECTURE
+   more_gen_sub?(Nabla)(append(sigma, gamma), lambda1) => more_gen_sub?(Nabla)(gamma, lambda1)
+   
+% a sufficient condition to conclude that:
+% well_behaved?(sigma) AND well_behaved?(gamma) => well_behaved?(sigma + gamma)
+%suf_cond_idempotent?_append: CONJECTURE
+%   well_behaved?(sigma) AND well_behaved?(gamma) AND
+%   disjoint?(union(vars_dom_sub(sigma), vars_range_sub(sigma)), vars_dom_sub(gamma))
+%   => well_behaved?(append(sigma, gamma))
+
+% a rather technical lemma for the kind of substitution that appears in the algorithm
+% the kind of this substitution is well_behaved 
+subs_add_alg_well_behaved?: CONJECTURE
+   NOT member(X, vars(t)) => well_behaved?((:(X, t):))
+
+% a technical lemma to be used in the proof of completeness
+% a sufficient condition that a nuclear substitution is more general than other
+suf_cond_more_gen_nuc_sub: CONJECTURE  
+   sigma = (: (X, ext(reverse(pi))(t)) :) AND NOT member(X, vars(t)) AND
+   equal?(Delta)(subs(gamma)(pi * X), subs(gamma)(t))
+   => more_gen_sub?(Delta)(sigma, gamma)
+
+% close to the lemma above, this one
+suf_cond_more_gen_append: CONJECTURE
+   sigma1 = (: (X, ext(reverse(pi))(t)) :) AND NOT member(X, vars(t)) AND
+   equal?(Delta)(subs(gamma)(pi * X), subs(gamma)(t)) AND 
+   disjoint?(vars_dom_sub(sigma), union(vars((::)* X), vars(t))) AND
+   more_gen_sub?(Delta)(sigma, gamma)
+   => more_gen_sub?(Delta)(append(sigma1, sigma), gamma) 
+
+%%%%%%%%%%%%%%%%%%%%% necessary lemmas related to the ord of a term
+% auxiliar lemma for the one below
+% the size of a term "t" (that is not a suspension AND such that "t" contains a variable X)
+% is greater than pi * X, even after a substitution
+size_term_gt_var_after_sub: CONJECTURE
+   member(X, vars(t)) AND NOT var?(t) => size(subs(sigma)(t)) > size(subs(sigma)(pi * X))
+   
+% a suficient condition for a term to be a suspended variable 
+% needed in the completeness theorem
+suf_cond_term_is_sub: CONJECTURE
+   member(X, vars(t)) AND equal?(Delta)(subs(sigma)(pi * X), subs(sigma)(t))
+   => var?(t) 
+
+%%%%%%%%%%%%%%%%%%%%% lemmas that i had to add as I am working with matching
+other_cond_skip_term: CONJECTURE
+   (disjoint?(vars(t), vars_dom_sub(gamma)) AND 
+   (FORALL X: equal?(Delta)(subs(append(lambda1, sigma))((::)*X), subs(gamma)((::)*X))) AND
+   subs(sigma)(t) = t)
+   => equal?(Delta)(subs(lambda1)(t), t)
+
+% another sufficient condition for a term to be a suspended variable, needed in the completeness theorem
+suf_cond_term_is_sub2: CONJECTURE
+   equal?(Delta)(t, subs(sigma)(s)) AND var?(t) => var?(s) 
+    
+%%%%%%%%%%%%%%%%%%%%% necessary lemmas related to functions fresh_subs and similar ones
+% useful lemmas that appeared in the the proof of completeness
+aux_lemma_fresh_sub1: LEMMA
+   fresh(Nabla)(a, subs(sigma)(t))
+   => fresh_subs(Nabla)(sigma, fresh?(a, t)`1)
+
+% auxiliar lemma for aux_lemma_fresh_sub
+fresh_alpha_equivalent: CONJECTURE
+   fresh(Nabla)(a, t) AND equal?(Nabla)(t, s) => fresh(Nabla)(a, s)
+
+% useful lemma that appear in the proof of correctness
+aux_lemma_fresh_sub_reverse1: CONJECTURE
+   fresh_subs(Nabla)(sigma, fresh?(a, t)`1) AND fresh?(a, t)`2 
+   => fresh(Nabla)(a, subs(sigma)(t))
+
+% lemma to be used in the theorem of completeness  
+aux_lemma_fresh_sub: CONJECTURE
+   fresh_subs(Nabla)(sigma, Delta) AND more_gen_sub?(Nabla)(gamma, sigma) AND idempotent?(gamma) =>
+   fresh_subs(Nabla)(sigma, fresh_subs?(gamma, Delta)`1)
+
+% aux lemma for the one below
+aux_lemma_fresh_sub_aux: CONJECTURE
+   fresh(Nabla)(a, subs(sigma)(t)) => fresh?(a, t)`2
+
+% lemma to be used in the proof of completeness 
+aux_lemma_fresh_sub2: CONJECTURE 
+   fresh_subs(Nabla)(sigma, Delta) AND more_gen_sub?(Nabla)(gamma, sigma) AND idempotent?(gamma) 
+   => fresh_subs?(gamma, Delta)`2
+
+% Substitutions do not eliminate freshness inconsistencies.
+Subs_fresh: CONJECTURE
+   fresh?(a, subs(sigma)(t))`2 IMPLIES fresh?(a, t)`2
+
+END fresh_subs
