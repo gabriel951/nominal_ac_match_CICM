@@ -171,7 +171,7 @@ rho: VAR renaming
 keep_fresh?(G, sigma): bool = 
     FORALL (a, X): member((a, X), G) IMPLIES fresh(G)(a, subs(sigma)(X))
 
-% action of a substitution in a context Gamma
+% action of a renaming in a context Gamma
 subs(rho, G): RECURSIVE fresh_context = 
    IF null?(G) THEN null 
    ELSE LET (a, X) = car(G) IN cons((a, V(subs(rho)(X))), subs(rho, cdr(G)))
@@ -185,7 +185,6 @@ keep_fresh_ren?(G, rho): bool =
 % substitution and their effects on the terms
 subs_const: LEMMA
     subs(sigma)(at(a)) = at(a)
-
 
 subs_unit: LEMMA
     subs(sigma)(unit) = unit 
@@ -396,6 +395,12 @@ dom_append: LEMMA
 img_basic_sub: LEMMA
     img(cons((X, t), null)) = singleton(t) OR member(X, vars(t)) 
 
+img_basic_sub2: LEMMA 
+    img(cons((X, t), null)) = singleton(t) OR img(cons((X, t), null)) = emptyset
+
+img_basic_sub_var: LEMMA
+     subset?(vars(img(cons((X, t), null))), vars(t))
+
 img_null: LEMMA
     img(null) = emptyset
 
@@ -429,6 +434,9 @@ idempotent_disjoint_dom_img: LEMMA
 
 idempotent_disjoint_dom_img2: LEMMA
     disjoint?(dom(sigma), vars(img(sigma))) IMPLIES idempotent?(sigma)
+
+idempotent_cons: LEMMA 
+    NOT member(X, vars(t)) IMPLIES idempotent?(cons((X, ext(pi)(t)), null))
 
 apply_sub_elim_var_t2: LEMMA
     member(X, dom(sigma)) AND idempotent?(sigma) IMPLIES NOT member(X, vars(subs(sigma)(t)))

@@ -1932,8 +1932,7 @@
         nil))
       nil))
     nil)
-   ((subs def-decl "term" substitution nil)
-    (subs_var formula-decl nil substitution nil)
+   ((subs_var formula-decl nil substitution nil)
     (NOT const-decl "[bool -> bool]" booleans nil)
     (list_induction formula-decl nil list_adt nil)
     (number nonempty-type-decl nil numbers nil)
@@ -1962,13 +1961,11 @@
     (ac_symbol type-eq-decl nil term_properties nil)
     (term type-decl nil term_adt nil)
     (PRED type-eq-decl nil defined_types nil)
-    (every adt-def-decl "boolean" term_adt nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (TRUE const-decl "bool" booleans nil)
     (basic_sub type-eq-decl nil substitution nil)
     (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
     (OR const-decl "[bool, bool -> bool]" booleans nil)
-    (subs def-decl "term" substitution nil)
     (abs? adt-recognizer-decl "[term -> boolean]" term_adt nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
     (sub type-eq-decl nil substitution nil))
@@ -9874,6 +9871,221 @@
     (ext_identity formula-decl nil term_properties nil)
     (subset? const-decl "bool" sets nil))
    shostak))
+ (img_basic_sub2 0
+  (img_basic_sub2-1 nil 3882549656
+   ("" (skeep)
+    (("" (lemma "dom_basic_sub2")
+      (("" (inst -1 "X" "t")
+        (("" (prop)
+          (("1" (rewrite "subset_antisymmetric" 1)
+            (("1" (expand "subset?" 1)
+              (("1" (skolem 1 "t1")
+                (("1" (prop)
+                  (("1" (expand ("member" "img") -1)
+                    (("1" (skolem -1 "X1")
+                      (("1" (prop)
+                        (("1" (replace -3)
+                          (("1" (expand ("member" "singleton") -1)
+                            (("1" (replace -1)
+                              (("1"
+                                (expand "subs" -2)
+                                (("1"
+                                  (expand "subs" -2)
+                                  (("1"
+                                    (expand "subs" -2 2)
+                                    (("1"
+                                      (expand "subs" -2)
+                                      (("1"
+                                        (rewrite "ext_identity")
+                                        (("1"
+                                          (replace -2)
+                                          (("1" (grind) nil nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (expand "subset?" 1)
+              (("2" (skolem 1 "t1")
+                (("2" (prop)
+                  (("2" (expand ("member" "singleton") -1)
+                    (("2" (replace -1)
+                      (("2" (expand ("member" "img") 1)
+                        (("2" (inst 1 "X")
+                          (("2" (prop)
+                            (("1" (replace -2) (("1" (grind) nil nil))
+                              nil)
+                             ("2" (expand "subs" 1)
+                              (("2"
+                                (expand "subs" 1)
+                                (("2"
+                                  (expand "subs" 1 2)
+                                  (("2"
+                                    (expand "subs" 1)
+                                    (("2"
+                                      (rewrite "ext_identity")
+                                      nil
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil)
+           ("2" (rewrite "subset_antisymmetric" 2)
+            (("1" (expand "subset?" 1)
+              (("1" (skolem 1 "t1")
+                (("1" (prop)
+                  (("1" (expand ("member" "img") -1)
+                    (("1" (skolem -1 "X1")
+                      (("1" (prop)
+                        (("1" (replace -3) (("1" (grind) nil nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (expand "subset?") (("2" (grind) nil nil)) nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((dom_basic_sub2 formula-decl nil substitution nil)
+    (subset? const-decl "bool" sets nil) nil nil
+    (ext_identity formula-decl nil term_properties nil)
+    (subs const-decl "term" substitution nil)
+    (member const-decl "bool" sets nil)
+    (subset_is_partial_order name-judgement "(partial_order?[set[T]])"
+     sets_lemmas nil)
+    (nonempty_singleton_finite application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (finite_emptyset name-judgement "finite_set" finite_sets nil)
+    (singleton const-decl "(singleton?)" sets nil)
+    (singleton? const-decl "bool" sets nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (img const-decl
+     "finite_set[term[atom, perm, variable, f_symbol, ac_symbol]]"
+     substitution nil)
+    (finite_set type-eq-decl nil finite_sets nil)
+    (is_finite const-decl "bool" finite_sets nil)
+    (sub type-eq-decl nil substitution nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (set type-eq-decl nil sets nil)
+    (subset_antisymmetric formula-decl nil sets_lemmas nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (emptyset const-decl "set" sets nil)
+    (TRUE const-decl "bool" booleans nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil) nil
+    (PRED type-eq-decl nil defined_types nil)
+    (term type-decl nil term_adt nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (char type-eq-decl nil strings nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (character type-decl nil character_adt nil)
+    (below type-eq-decl nil nat_types nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (perm type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (atom type-eq-decl nil atoms nil)
+    (variable type-eq-decl nil term_properties nil)
+    (>= const-decl "bool" reals nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil))
+   shostak))
+ (img_basic_sub_var 0
+  (img_basic_sub_var-1 nil 3882553582
+   ("" (skeep)
+    (("" (use "img_basic_sub2")
+      (("" (expand "subset?" 1)
+        (("" (skeep)
+          (("" (prop)
+            (("1" (replace -1)
+              (("1" (rewrite "vars_singleton") nil nil)) nil)
+             ("2" (grind) nil nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((img_basic_sub2 formula-decl nil substitution nil)
+    (TRUE const-decl "bool" booleans nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (every adt-def-decl "boolean" term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (term type-decl nil term_adt nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (char type-eq-decl nil strings nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (character type-decl nil character_adt nil)
+    (below type-eq-decl nil nat_types nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (perm type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (atom type-eq-decl nil atoms nil)
+    (variable type-eq-decl nil term_properties nil)
+    (>= const-decl "bool" reals nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (finite_emptyset name-judgement "finite_set" finite_sets nil)
+    (subs def-decl "term" substitution nil)
+    (subs def-decl "term" substitution nil)
+    (subs const-decl "term" substitution nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (member const-decl "bool" sets nil)
+    (img const-decl
+     "finite_set[term[atom, perm, variable, f_symbol, ac_symbol]]"
+     substitution nil)
+    (empty? const-decl "bool" sets nil)
+    (emptyset const-decl "set" sets nil)
+    (vars def-decl "finite_set[variable]" term_properties nil)
+    (vars_singleton formula-decl nil term_properties nil)
+    (subset? const-decl "bool" sets nil))
+   shostak))
  (img_null 0
   (img_null-1 nil 3825713276
    ("" (lemma "subset_antisymmetric[term]")
@@ -11967,6 +12179,275 @@
     (finite_intersection1 application-judgement "finite_set"
      finite_sets nil)
     (subs_no_effect_t formula-decl nil substitution nil))
+   shostak))
+ (idempotent_cons 0
+  (idempotent_cons-1 nil 3882543312
+   ("" (skeep)
+    (("" (lemma "idempotent_disjoint_dom_img2")
+      (("" (inst?)
+        (("" (assert)
+          (("" (expand "disjoint?" 1)
+            (("" (expand "empty?" 1)
+              (("" (skeep)
+                (("" (hide 2)
+                  (("" (expand ("member" "intersection") -1)
+                    (("" (prop)
+                      ((""
+                        (case "dom(cons((X, ext(pi)(t)), null)) = singleton(X)")
+                        (("1" (replace -1)
+                          (("1" (expand ("member" "singleton") -2)
+                            (("1" (replace -2)
+                              (("1"
+                                (rewrite "vars_finset")
+                                (("1"
+                                  (skolem -3 "t1")
+                                  (("1"
+                                    (prop)
+                                    (("1"
+                                      (expand "img" -3)
+                                      (("1"
+                                        (expand "member" -3 1)
+                                        (("1"
+                                          (skolem -3 "X1")
+                                          (("1"
+                                            (flatten)
+                                            (("1"
+                                              (replace -1)
+                                              (("1"
+                                                (expand
+                                                 ("member" "singleton")
+                                                 -3)
+                                                (("1"
+                                                  (replace -3)
+                                                  (("1"
+                                                    (expand "subs" -4)
+                                                    (("1"
+                                                      (expand
+                                                       "subs"
+                                                       -4)
+                                                      (("1"
+                                                        (expand
+                                                         "subs"
+                                                         -4
+                                                         2)
+                                                        (("1"
+                                                          (expand
+                                                           "subs"
+                                                           -4)
+                                                          (("1"
+                                                            (rewrite
+                                                             "ext_identity")
+                                                            (("1"
+                                                              (replace
+                                                               -4)
+                                                              (("1"
+                                                                (replace
+                                                                 -4
+                                                                 :dir
+                                                                 rl)
+                                                                (("1"
+                                                                  (rewrite
+                                                                   "ext_vars")
+                                                                  nil
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil)
+                         ("2" (hide -1 -2 2)
+                          (("2" (rewrite "subset_antisymmetric")
+                            (("1" (expand "subset?")
+                              (("1"
+                                (skolem 1 "x1")
+                                (("1"
+                                  (prop)
+                                  (("1"
+                                    (expand ("member" "singleton") 1)
+                                    (("1"
+                                      (expand ("member" "dom") -1)
+                                      (("1"
+                                        (flatten)
+                                        (("1"
+                                          (expand "subs" 1 1)
+                                          (("1"
+                                            (expand "subs" 1)
+                                            (("1"
+                                              (expand "subs" 1 2)
+                                              (("1"
+                                                (expand "subs" 1)
+                                                (("1"
+                                                  (lift-if)
+                                                  (("1"
+                                                    (assert)
+                                                    nil
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (reveal 1)
+                              (("2"
+                                (expand "subset?" 2)
+                                (("2"
+                                  (skolem 2 "x1")
+                                  (("2"
+                                    (prop)
+                                    (("2"
+                                      (expand
+                                       ("member" "singleton")
+                                       -1)
+                                      (("2"
+                                        (replace -1)
+                                        (("2"
+                                          (expand ("member" "dom") 2)
+                                          (("2"
+                                            (flatten)
+                                            (("2"
+                                              (expand "subs" -2)
+                                              (("2"
+                                                (expand "subs" -2)
+                                                (("2"
+                                                  (expand "subs" -2 2)
+                                                  (("2"
+                                                    (expand "subs" -2)
+                                                    (("2"
+                                                      (rewrite
+                                                       "ext_identity")
+                                                      (("2"
+                                                        (lemma
+                                                         "ext_vars")
+                                                        (("2"
+                                                          (inst
+                                                           -1
+                                                           "pi"
+                                                           "t")
+                                                          (("2"
+                                                            (replace
+                                                             -1
+                                                             :dir
+                                                             rl)
+                                                            (("2"
+                                                              (replace
+                                                               -3)
+                                                              (("2"
+                                                                (grind)
+                                                                nil
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((idempotent_disjoint_dom_img2 formula-decl nil substitution nil)
+    (empty? const-decl "bool" sets nil)
+    (subset? const-decl "bool" sets nil)
+    (subset_is_partial_order name-judgement "(partial_order?[set[T]])"
+     sets_lemmas nil)
+    (subset_antisymmetric formula-decl nil sets_lemmas nil)
+    (ext_vars formula-decl nil term_properties nil)
+    (ext_identity formula-decl nil term_properties nil)
+    (subs const-decl "term" substitution nil)
+    (vars_finset formula-decl nil term_properties nil)
+    (img const-decl
+     "finite_set[term[atom, perm, variable, f_symbol, ac_symbol]]"
+     substitution nil)
+    (nonempty_singleton_finite application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (set type-eq-decl nil sets nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (is_finite const-decl "bool" finite_sets nil)
+    (finite_set type-eq-decl nil finite_sets nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (singleton? const-decl "bool" sets nil)
+    (singleton const-decl "(singleton?)" sets nil)
+    (member const-decl "bool" sets nil)
+    (intersection const-decl "set" sets nil)
+    (disjoint? const-decl "bool" sets nil)
+    (finite_intersection1 application-judgement "finite_set"
+     finite_sets nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (ext def-decl "term" term_properties nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (sub type-eq-decl nil substitution nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (TRUE const-decl "bool" booleans nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (term type-decl nil term_adt nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (char type-eq-decl nil strings nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (character type-decl nil character_adt nil)
+    (below type-eq-decl nil nat_types nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (perm type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (atom type-eq-decl nil atoms nil)
+    (variable type-eq-decl nil term_properties nil)
+    (>= const-decl "bool" reals nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil))
    shostak))
  (apply_sub_elim_var_t2 0
   (apply_sub_elim_var_t2-1 nil 3832791023
@@ -26034,11 +26515,11 @@
     (subs_not_same_size2 formula-decl nil substitution nil)
     (* adt-constructor-decl "[[perm, variable] -> (var?)]" term_adt
        nil)
-    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil) nil
+    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
     (sub type-eq-decl nil substitution nil)
     (basic_sub type-eq-decl nil substitution nil)
     (TRUE const-decl "bool" booleans nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil) nil
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
     (PRED type-eq-decl nil defined_types nil)
     (term type-decl nil term_adt nil)
     (ac_symbol type-eq-decl nil term_properties nil)

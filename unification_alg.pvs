@@ -9,18 +9,21 @@
 
 unification_alg: THEORY
 BEGIN
-	IMPORTING rename_input, list_theory[sub], termination_alg 
+	IMPORTING rename_input, list_theory[sub] 
 
-nice_input: TYPE = {input: [unif_prb, sub, finite_set[variable]] | nice_input?(input)}
 
-	IMPORTING map_theory[nice_input, sub]
+IMPORTING map_theory[nice_input, sub]
+
+Nabla, Nabla_, G: VAR fresh_context
+pi: VAR perm
 
 X: VAR variable
 t, s: VAR term
 sigma, sigma1, delta, gamma, gamma_: VAR sub
-vars2avoid, fixed_vars: VAR finite_set[variable]
-unif_pair: VAR unif_pair
-unif_prb: VAR unif_prb
+vars2avoid, fixed_vars, V, PV: VAR finite_set[variable]
+
+up, unif_pair: VAR unif_pair
+unif_prb, P, P1: VAR unif_prb
 unif_prb1: VAR unif_prb
 id: VAR sub
 input, input_: VAR nice_input
@@ -28,134 +31,144 @@ rho: VAR renaming
 
 % the AC-unification algorithm. In our paper we refer to it as ACUnif.
 % input is a triple of the form (P, σ, V). 
-unify(input): RECURSIVE list[sub] =
-  LET (unif_prb, sigma, vars2avoid) = input IN 
-  IF null?(unif_prb) THEN cons(sigma, null)
+unify(input): RECURSIVE list[[fresh_context, sub]] =
+  LET (G, P, sigma, V, PV) = input IN 
+  IF null?(P) THEN cons((G, sigma), null)
   ELSE LET
-     (unif_pair, unif_prb1) = choose_unif_pair(unif_prb), 
-     (t, s) = unif_pair IN 
-     IF var?(s) AND (NOT member(V(s), vars(t))) THEN LET
-     	sigma1 = cons((V(s), t), null), 
-	new_sigma = append(sigma1, sigma), 
-	new_unif_prb = apply_sub(sigma1, unif_prb1) IN
-	unify(new_unif_prb, new_sigma, vars2avoid) 
+     (up, P1) = choose_unif_pair(P), 
+     (t, s) = up IN 
 
-     ELSE CASES t OF
-        const(a):
-	  IF s = const(a) THEN unify(unif_prb1, sigma, vars2avoid)
+     % TO DO: this is omitted since the variable s is always protected in a matching problem
+     %IF var?(s) AND (NOT member(V(s), vars(t))) AND (NOT member(V(s), PV)) THEN LET
+        %sigma1 = cons((V(s), ext(reverse(p(s)))(t)), null),
+	%(G1, bool1) = fresh_subs?(sigma, G), 
+	%new_G = append(G1, G), 
+	%new_sigma = append(sigma1, sigma), 
+	%new_P = apply_sub(sigma1, P1)
+	%IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
+	%ELSE null 
+	%ENDIF
+
+     CASES t OF
+        at(a):
+	  IF s = at(a) THEN unify(G, P1, sigma, V, PV)
 	  ELSE null
 	  ENDIF,
 
-	variable(X):
-	  IF (NOT member(X, vars(s))) THEN LET
-	    sigma1 = cons((X, s), null), 
+	*(pi, X):
+	  IF (NOT member(X, vars(s))) AND (NOT member(X, PV))  THEN LET
+	    sigma1 = cons((X, ext(reverse(pi))(s)), null),
+	    (G1, bool1) = fresh_subs?(sigma, G), 
+	    new_G = append(G1, G), 
 	    new_sigma = append(sigma1, sigma), 
-	    new_unif_prb = apply_sub(sigma1, unif_prb1) IN
-	    unify(new_unif_prb, new_sigma, vars2avoid)
-	  ELSIF s = variable(X) THEN unify(unif_prb1, sigma, vars2avoid) 
+	    new_P = apply_sub(sigma1, P1) IN 
+	    IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
+	    ELSE null 
+	    ENDIF
+
+	  ELSIF var?(s) AND X = V(s) THEN LET
+	    new_G = append(fc(DS(pi, p(s)), X), G) IN
+	    unify(new_G, P1, sigma, V, PV)
 	  ELSE null
 	  ENDIF,
 
 	unit:
-	  IF s = unit THEN unify(unif_prb1, sigma, vars2avoid)  
+	  IF s = unit THEN unify(G, P1, sigma, V, PV)  
 	  ELSE null 
 	  ENDIF,
 
 	app(f, arg):
 	  IF NOT app?(s) OR f /= f_sym(s) OR NOT decompose(arg, arg(s))`2 THEN null 
-	  ELSE LET dec_unif_prb = decompose(arg, arg(s))`1,
-	       	   new_unif_prb = append(dec_unif_prb, unif_prb1) IN
-		   unify(new_unif_prb, sigma, vars2avoid)
+	  ELSE LET dec_P = decompose(arg, arg(s))`1,
+	       	   new_P = append(dec_P, P1) IN
+		   unify(G, new_P, sigma, V, PV)
 	  ENDIF,
 
 	ac_app(f, ac_arg):
 	  IF NOT ac_app?(s) OR f /= ac_sym(s) THEN null
 	  ELSE LET
-	     input_lst = apply_ac_step(unif_prb, null, sigma, vars2avoid), 
+	     input_lst = apply_ac(G, P1, null, sigma, V, PV), 
 	     lst_results = map(unify)(input_lst) IN 
 	     flatten(lst_results) 
 	  ENDIF
         ENDCASES
     ENDIF
-  ENDIF
-MEASURE lex4(card(vars_not_ac(input`1)), card(vars_under2more(input`1)),
-	card(admissible_subterms(input`1)), size(input`1))
-
+MEASURE lex3(card(vars(input`2)), max_size(input`2), size(input`2))
 
 %%%%%%%%%%%% LEMMAS
 % some properties of the substitutions computed, needed for the lemmas of soundness and completeness
-unify_subs: LEMMA 
-   LET (unif_prb, sigma, vars2avoid) = input IN 
-   member(delta, unify(unif_prb, sigma, vars2avoid)) IMPLIES
+unify_subs: CONJECTURE 
+   LET (G, P, sigma, V, PV) = input IN 
+   member((Nabla, delta), unify(G, P, sigma, V, PV)) IMPLIES
    EXISTS sigma1:
       delta = append(sigma1, sigma)
 
-unify_well_formed: LEMMA  
-   LET (unif_prb, sigma, vars2avoid) = input IN 
-   member(delta, unify(unif_prb, sigma, vars2avoid)) IMPLIES
+unify_well_formed: CONJECTURE  
+   LET (G, P, sigma, V, PV) = input IN 
+   member((Nabla, delta), unify(G, P, sigma, V, PV)) IMPLIES
    well_formed?(delta) 
 
-renamed_inputs_unify_alg: LEMMA  
-   renamed_inputs?(input, input_, fixed_vars) AND member(gamma_, unify(input_)) IMPLIES
-   EXISTS rho, gamma: 
-       member(gamma, unify(input)) AND equal_syn?(gamma_, append(rho, gamma), fixed_vars)
+renamed_inputs_unify_alg: CONJECTURE  
+   renamed_inputs?(input, input_, fixed_vars) AND member((Nabla_, gamma_), unify(input_)) IMPLIES
+   EXISTS rho, Nabla, gamma: 
+       member((Nabla, gamma), unify(input)) AND equal_syn?(gamma_, append(rho, gamma), fixed_vars)
 
 % correctness of instantiation
-unify_alg_correct_sub: LEMMA  
+% TO DO: this will need to be adapted
+unify_alg_correct_sub: CONJECTURE  
     LET sigma1 = cons((X, t), null), new_sigma = append(sigma1, sigma),
-        new_unif_prb = apply_sub(sigma1, unif_prb1) IN
-    (NOT member(X, vars(t))) AND member(variable(X), unif_prb) AND member(t, unif_prb)
-    AND nice_input?(unif_prb, sigma, vars2avoid) AND subset?(unif_prb1, unif_prb) AND 
-    unifies?(delta, new_unif_prb) AND member(delta, unify(new_unif_prb, new_sigma, vars2avoid))
+        new_P = apply_sub(sigma1, P) IN
+    (NOT member(X, vars(t))) AND member(pi * X, P) AND member(t, unif_prb)
+    AND nice_input?(G, P, sigma, V, PV) AND subset?(P, P) AND 
+    unifies?(G, delta, new_P) AND member((Nabla, delta), unify(G, P, sigma, V, PV))
     IMPLIES
-    unifies?(delta, (variable(X), t)) AND unifies?(delta, unif_prb1)
+    unifies?(G, delta, (pi * X, t)) AND unifies?(G, delta, P)
   
 % Main theorem to prove the corollary of Soundness. Here, "input" is of type nice input (see line 14, 26). 
-unify_alg_correct: THEOREM  
-    LET (unif_prb, sigma, vars2avoid) = input IN 
-    member(delta, unify(unif_prb, sigma, vars2avoid))
-    IMPLIES unifies?(delta, unif_prb)
+unify_alg_correct: CONJECTURE  
+    LET (G, P, sigma, V, PV) = input IN 
+    member((Nabla, delta), unify(G, P, sigma, V, PV))
+    IMPLIES unifies?(Nabla, delta, P)
 
 % theorem of correctness, corollary from the previous lemma
-unify_alg_correct_cor: COROLLARY
-    well_formed?((t, s)) AND member(delta, unify(cons((t, s), null), null, vars(t, s))) 
-    IMPLIES unifies?(delta, cons((t, s), null))
+unify_alg_correct_cor: CONJECTURE
+    well_formed?((t, s)) AND member((Nabla, delta), unify(null, cons((t, s), null), null, vars(t, s), vars(s))) 
+    IMPLIES unifies?(Nabla, delta, cons((t, s), null))
 
 % used in the proof of completeness for the instantiation case
-unify_alg_complete_sub: LEMMA    
+unify_alg_complete_sub: CONJECTURE    
     LET sigma1 = cons((X, t), null), new_sigma = append(sigma1, sigma),
-        new_unif_prb = apply_sub(sigma1, unif_prb1) IN
-    (NOT member(X, vars(t))) AND member(variable(X), unif_pair) AND member(t, unif_pair)
-    AND member(unif_pair, unif_prb) AND nice_input?(unif_prb, sigma, vars2avoid) AND
-    subset?(unif_prb1, unif_prb) AND 
-    unifies?(delta, unif_prb) AND more_general?(sigma, delta) IMPLIES
-    more_general?(new_sigma, delta) AND unifies?(delta, apply_sub(sigma1, unif_prb1))
+        new_P = apply_sub(sigma1, P) IN
+    (NOT member(X, vars(t))) AND member(pi * X, unif_pair) AND member(t, unif_pair)
+    AND member(unif_pair, P) AND nice_input?(G, P, sigma, V, PV) AND
+    subset?(P1, P) AND 
+    unifies?(Nabla, delta, P) AND more_general?(G)(sigma, delta) IMPLIES
+    more_general?(G)(new_sigma, delta) AND unifies?(Nabla, delta, apply_sub(sigma1, unif_prb1))
 
 % main theorem to prove the corollary of completeness. As was the case for soudness, here input is of type "nice_input". 
-unify_alg_complete: THEOREM 
-    LET (unif_prb, sigma, vars2avoid) = input IN 
-    unifies?(delta, unif_prb) AND more_general?(sigma, delta) AND contained?(delta, vars2avoid)
+unify_alg_complete: CONJECTURE 
+    LET (G, P, sigma, V, PV) = input IN 
+    unifies?(Nabla, delta, P) AND more_general?(G)(sigma, delta) AND contained?(delta, V)
     AND well_formed?(delta) IMPLIES 
     EXISTS gamma:
-       member(gamma, unify(unif_prb, sigma, vars2avoid)) AND 
-       more_general?(gamma, delta, vars2avoid)
+       member((Nabla, gamma), unify(G, P, sigma, V, PV)) AND 
+       more_general?(G)(gamma, delta, V)
 
 % theorem of completeness for the algorithm 
-unify_alg_complete_cor: COROLLARY 
-    well_formed?((t, s)) AND unifies?(delta, (t, s))  
-    AND contained?(delta, vars2avoid) AND subset?(vars(t, s), vars2avoid) AND well_formed?(delta)
+unify_alg_complete_cor: CONJECTURE 
+    well_formed?((t, s)) AND unifies?(Nabla, delta, (t, s))  
+    AND contained?(delta, V) AND subset?(vars(t, s), V) AND well_formed?(delta)
     IMPLIES 
-    EXISTS gamma: 
-       member(gamma, unify(cons((t, s), null), null, vars2avoid)) AND
-       more_general?(gamma, delta, vars2avoid)
+    EXISTS Nabla, gamma: 
+       member((Nabla, gamma), unify(null, cons((t, s), null), null, V, PV)) AND
+       more_general?(G)(gamma, delta, V)
 
 % completeness after we remove the hypthesis
-unify_alg_complete_cor2: LEMMA   
-    well_formed?((t, s)) AND unifies?(delta, (t, s)) AND well_formed?(delta)
+unify_alg_complete_cor2: CONJECTURE   
+    well_formed?((t, s)) AND unifies?(G, delta, (t, s)) AND well_formed?(delta)
     IMPLIES
-    EXISTS gamma:
-       member(gamma, unify(cons((t, s), null), null, vars(t, s))) AND
-       more_general?(gamma, delta, vars(t, s))
-       
+    EXISTS gamma, Nabla:
+       member((Nabla, gamma), unify(G, cons((t, s), null), null, vars(t, s), PV)) AND
+       more_general?(G)(gamma, delta, vars(t, s))
     
 END unification_alg 

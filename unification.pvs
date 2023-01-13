@@ -16,7 +16,7 @@ Delta, G: VAR fresh_context
 sigma, sigma1, delta: VAR sub
 rho: VAR renaming
 lst_sub: VAR list[sub]
-vars2avoid, set_vars: VAR finite_set[variable]
+vars2avoid, set_vars, PV: VAR finite_set[variable]
 args1, args2: VAR args
 X: VAR variable
 t, s, t1: VAR term
@@ -145,6 +145,14 @@ size(unif_prb): RECURSIVE nat =
     ENDIF
 MEASURE unif_prb BY << 
      
+% maximum size of a unification problem
+max_size(unif_prb): RECURSIVE nat =
+    IF null?(unif_prb) THEN 0
+    ELSE LET unif_pair = car(unif_prb) in
+    	 max(size(unif_pair), max_size(cdr(unif_prb)))
+    ENDIF
+MEASURE unif_prb BY << 
+     
 % lst of vars in an unif_pair
 lst_vars(unif_pair): list[variable] =
     LET (t, s) = unif_pair IN append(lst_vars(t), lst_vars(s))
@@ -219,6 +227,10 @@ decompose(t, s): RECURSIVE [unif_prb, bool] =
    ENDIF
 MEASURE t BY << 
 
+% returns true if all the variables in the right-hand side are protected 
+match_problem?(unif_prb, PV): bool =
+   FORALL X: member(X, vars(rhs(unif_prb))) IMPLIES member(X, PV)
+
 %%%%%%%%%%%%%%%%%% Theorems and Lemmas
 % first_proj
 first_proj_unif_prb: LEMMA
@@ -252,6 +264,14 @@ member_lhs_pareate: LEMMA
 
 member_rhs_pareate: LEMMA
    member(t, rhs(pareate(args1, args2))) IMPLIES member(t, args2)
+
+member_rhs_append: LEMMA
+   member(t, rhs(append(unif_prb1, unif_prb2))) IFF
+   (member(t, rhs(unif_prb1)) OR member(t, rhs(unif_prb2)))
+
+member_lhs_append: LEMMA
+   member(t, lhs(append(unif_prb1, unif_prb2))) IFF
+   (member(t, lhs(unif_prb1)) OR member(t, lhs(unif_prb2)))
 
 % vars no_var_pair
 vars_unif_prb: LEMMA
@@ -411,6 +431,12 @@ apply_sub_elim_var_unif_pair: LEMMA
 apply_sub_elim_var: LEMMA
     member(X, dom(sigma)) AND NOT member(X, vars(img(sigma))) 
     IMPLIES NOT member(X, vars(apply_sub(sigma, unif_prb)))
+
+apply_sub_elim_var2: LEMMA 
+    idempotent?(sigma) IMPLIES disjoint?(dom(sigma), vars(apply_sub(sigma, unif_prb)))
+
+apply_sub_vars: LEMMA 
+    subset?(vars(apply_sub(sigma, unif_prb)), union(vars(img(sigma)), vars(unif_prb)))
 
 apply_sub_no_pair: LEMMA
     no_pair?(unif_prb) AND no_pair?(img(sigma)) IMPLIES no_pair?(apply_sub(sigma, unif_prb))

@@ -1,3 +1,25 @@
-# TO DO
+# name-replace
+## apply_ac
+(name-replace "G" "input`1")
+(name-replace "Pu" "input1_`2")
+(name-replace "Ps" "input1_`3")
+(name-replace "sig" "input1_`4")
+(name-replace "V" "input1_`5")
+(name-replace "PV" "input1_`6")
+(name-replace "t" "car(Pu)`1")
+(name-replace "s" "car(Pu)`2")
+(name-replace "lst_V" "finset2list[variable](V)")
+(name-replace "ac_results"  "first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))")
+(name-replace "new_V"  "vars(sec_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)))")
+(name-replace "ac_results_subs" "inst_step(PV, G, ac_results)")
+
+# inst_step 
+(name-replace "t" "car(P)`1") 
+(name-replace "s" "car(P)`2") 
+(name-replace "G1" "inst_step(PV, G, t, s)`1")
+(name-replace "del" "inst_step(PV, G, t, s)`2")
+(name-replace "skp" "inst_step(PV, G, t, s)`3")
+(name-replace "fai" "inst_step(PV, G, t, s)`4")
+
 ## substitution.pvs
 -> some lemmas that depend on "equal?(t, s) => equal?(sigma t, sigma s)" were not proved. 
