@@ -45,6 +45,7 @@ t, s, t1: VAR term
 X: var variable
 
 fin_set_t: VAR finite_set[term]
+PV: VAR finite_set[variable]
 
 args: TYPE = list[term]
 args, args1, args2: VAR args
@@ -236,6 +237,7 @@ no_pair_ac?(f, args): bool =
 no_pair?(args): bool =
    FORALL t: member(t, args) IMPLIES NOT pair?(t) 
 
+unptc_var?(t, PV): bool = var?(t) AND NOT member(V(t), PV)
 
 %%%%%%%%%%%%%%%
 % options of a term:

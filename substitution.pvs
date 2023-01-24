@@ -20,7 +20,7 @@ lst_args: VAR list[args]
 G: VAR fresh_context
 pi, pi1, pi2: VAR perm
 
-set_vars, set_vars1, V1, V1_: VAR finite_set[variable]
+set_vars, set_vars1, V1, V1_, PV: VAR finite_set[variable]
 fin_set_t: VAR finite_set[term]
 lst_V, lst_V_: VAR list[variable]
 
@@ -371,6 +371,10 @@ subs_flatten: LEMMA
 vars_subs_t: LEMMA 
     subset?(vars(subs(sigma)(t)), union(vars(img(sigma)), vars(t)))
 
+vars_subs_t2: LEMMA
+    member(X, vars(subs(sigma)(t))) IMPLIES
+    (EXISTS Y: member(Y, vars(t)) AND member(X, vars(subs(sigma)(Y))))
+
 basic_sub_no_effect: LEMMA
     NOT member(X, vars(t)) IMPLIES subs((X, s), t) = t
      
@@ -404,6 +408,12 @@ img_basic_sub_var: LEMMA
 img_null: LEMMA
     img(null) = emptyset
 
+img_dom_emptyset: LEMMA 
+    dom(sigma) = emptyset IMPLIES img(sigma) = emptyset
+
+img_dom_singleton: LEMMA 
+    dom(sigma) = singleton(X) IMPLIES img(sigma) = singleton(subs(sigma)(X))
+
 subs_no_effect_t: LEMMA
     disjoint?(dom(sigma), vars(t)) IMPLIES subs(sigma)(t) = t
 
@@ -417,6 +427,9 @@ subs_no_effect_args: LEMMA
 apply_sub_elim_var_t: LEMMA 
     member(X, dom(sigma)) AND NOT member(X, vars(img(sigma))) 
     IMPLIES NOT member(X, vars(subs(sigma)(t)))
+
+apply_sub_not_elim_var_t: LEMMA
+    member(X, vars(t)) AND NOT member(X, dom(sigma)) IMPLIES member(X, vars(subs(sigma)(t)))
 
 vars_img_append: LEMMA
     subset?(vars(img(append(delta, sigma))), union(vars(img(delta)), vars(img(sigma))))
@@ -591,6 +604,8 @@ well_formed_num_arg: LEMMA
 alm_well_formed_subs: LEMMA 
    well_formed?(sigma) AND alm_well_formed?(t) IMPLIES alm_well_formed?(subs(sigma)(t))
 
+well_formed_basic_sub: LEMMA
+   well_formed?(t) IMPLIES well_formed?(cons((X, ext(pi)(t)), null))
 
 % equality between substitutions, modulo AC
 equal_sub_equiv: LEMMA
@@ -820,6 +835,10 @@ renaming_equal_syn: LEMMA
    (FORALL X: 
       member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V1))
    AND member(Y, V1) IMPLIES equal_syn?(append(sig1_, rho), append(rho, sig1), V1)
+
+renaming_prot_vars: LEMMA 
+   (var?(t) AND disjoint?(union(dom(rho), vars(img(rho))), PV)) IMPLIES 
+   (member(V(subs(rho)(t)), PV) IFF member(V(t), PV))
 
 % shifts lemma
 shift_cor: LEMMA  

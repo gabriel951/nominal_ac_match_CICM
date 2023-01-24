@@ -17,14 +17,14 @@ BEGIN
 % a diophantine matrix is a list of list of naturals
 dio_matrix: TYPE = list[list[nat]]
 lst_sol: VAR dio_matrix 
-dio, dio1, dio2, small_dio, dio_matrix, dio_matrix1, dio_matrix2, coef_matrix : VAR dio_matrix
+dio, dio1, dio2, small_dio, dio_matrix, dio_matrix1, dio_matrix2, coef_matrix, D: VAR dio_matrix
 lst_dio_matrix: VAR list[dio_matrix]
 
      	IMPORTING list_theory[dio_matrix]
 
 % the variables mult_t are used to indicate the multiplicity of the term t. They are a vector [a1, ..., an]
 % t = f(x1, ..., xn)
-mult_t, mult_t1, mult_t2: VAR list[posnat]
+mult_t, mult_t1, mult_t2, m1, m2: VAR list[posnat]
 
 value_lst, row, coef, coef1, coef2, sol, sol1, sol2, sol3, sol4, vect: VAR list[nat]
 
@@ -240,7 +240,7 @@ no_zero_col?(coef_matrix, n): bool =
      
 
 %%%%%%%%%%%%%%%%%%%%%%
-% lcm
+% lcm and sum
 lcm_integer_pred: LEMMA
    integer_pred(lcm(a1, a2)/a1) 
 
@@ -250,6 +250,9 @@ lcm_sym: LEMMA
 max_lcm_cor: LEMMA 
    member(a1, mult_t1) AND member(a2, mult_t2) IMPLIES
    lcm(a1, a2) <= max_lcm(mult_t1, mult_t2) 
+
+sum_gt0_mem: LEMMA 
+   sum(row) > 0 IFF (EXISTS i: i < length(row) AND nth(row, i) > 0)
 
 % prod and dot_product
 prod_get_repeat_lst0: LEMMA
@@ -275,6 +278,14 @@ dot_product_gt: LEMMA
     dot_product(value_lst, mult_t) > bound AND length(value_lst) = length(mult_t) IMPLIES   
     (EXISTS i:
        i < length(mult_t) AND nth(value_lst, i) * nth(mult_t, i) >= bound/length(mult_t)) 
+
+dot_product_gt0: LEMMA
+    length(row) = length(m1) IMPLIES 
+     (dot_product(row, m1) > 0 IFF
+     (EXISTS i: i < length(row) AND nth(row, i) > 0))
+
+dot_product_sym: LEMMA 
+    dot_product(row, m1) = dot_product(m1, row)
 
 % vec_ith
 vec_ith_len: LEMMA
@@ -446,6 +457,12 @@ dio_solver_n_cor: LEMMA
 
 dio_solver_cor: LEMMA
     dio_matrix_correct?(dio_solver(mult_t1, mult_t2, bound), mult_t1, mult_t2)  
+
+dio_matrix_cor_row_gt0: LEMMA
+    dio_matrix_correct?(D, m1, m2) AND matrix?(D, length(m1) + length(m2)) AND
+    member(row, D) AND sum(row) > 0 IMPLIES
+    EXISTS j: 
+       j < length(m1) AND j < length(row) AND nth(row, j) > 0 
 
 dio_solver_matrix: LEMMA 
     matrix?(dio_solver(mult_t1, mult_t2, bound), length(mult_t1) + length(mult_t2)) 

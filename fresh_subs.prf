@@ -1,0 +1,203 @@
+(fresh_subs
+ (fresh_subs_TCC1 0
+  (fresh_subs_TCC1-1 nil 3882713102 ("" (termination-tcc) nil nil) nil
+   nil
+   (fresh_subs termination
+    "fresh_subs.fresh_subs(fresh_subs.Delta)(fresh_subs.sigma, fresh_subs.tail)"
+    "nil")))
+ (fresh_subs?_TCC1 0
+  (fresh_subs?_TCC1-1 nil 3882713102 ("" (termination-tcc) nil nil) nil
+   nil
+   (fresh_subs? termination
+    "fresh_subs.fresh_subs?(fresh_subs.sigma, fresh_subs.tail)"
+    "nil")))
+ (fresh_subs?_var 0
+  (fresh_subs?_var-1 nil 3882713120
+   ("" (induct "Nabla")
+    (("1" (grind) nil nil)
+     ("2" (skolem 1 ("hd" "tail"))
+      (("2" (prop)
+        (("2" (skeep)
+          (("2" (name-replace "a" "hd`1")
+            (("2" (name-replace "X" "hd`2")
+              (("2" (expand "fresh_subs?" 1)
+                (("2" (expand "x" 1)
+                  (("2" (lift-if)
+                    (("2" (prop)
+                      (("1" (expand "subset?" 1)
+                        (("1" (skeep)
+                          (("1" (rewrite "vars_append_context" -3)
+                            (("1" (expand ("member" "union") -3)
+                              (("1"
+                                (prop)
+                                (("1"
+                                  (use "vars_fresh?")
+                                  (("1"
+                                    (expand "subset?" -1)
+                                    (("1"
+                                      (inst -1 "x")
+                                      (("1"
+                                        (assert)
+                                        (("1"
+                                          (use "vars_subs_t")
+                                          (("1"
+                                            (expand "subset?" -1)
+                                            (("1"
+                                              (inst -1 "x")
+                                              (("1"
+                                                (assert)
+                                                (("1"
+                                                  (expand
+                                                   ("member" "union")
+                                                   -1)
+                                                  (("1"
+                                                    (expand
+                                                     ("member" "union")
+                                                     1)
+                                                    (("1"
+                                                      (prop)
+                                                      (("1"
+                                                        (grind)
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil)
+                                 ("2"
+                                  (inst -6 "sigma")
+                                  (("2"
+                                    (expand "subset?" -6)
+                                    (("2"
+                                      (inst -6 "x")
+                                      (("2"
+                                        (assert)
+                                        (("2" (grind) nil nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil)
+                       ("2" (hide-all-but 2) (("2" (grind) nil nil))
+                        nil)
+                       ("3" (hide-all-but 2) (("3" (grind) nil nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((list type-decl nil list_adt nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (perm type-eq-decl nil atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (every adt-def-decl "boolean" term_adt nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (set type-eq-decl nil sets nil)
+    (subset? const-decl "bool" sets nil)
+    (is_finite const-decl "bool" finite_sets nil)
+    (finite_set type-eq-decl nil finite_sets nil)
+    (vars def-decl "finite_set[variable]" freshness nil)
+    (fresh_subs? def-decl "[fresh_context, bool]" fresh_subs nil)
+    (union const-decl "set" sets nil)
+    (vars def-decl "finite_set[variable]" term_properties nil)
+    (img const-decl
+     "finite_set[term[atom, perm, variable, f_symbol, ac_symbol]]"
+     substitution nil)
+    (variable type-eq-decl nil term_properties nil)
+    (atom type-eq-decl nil atoms nil) (>= const-decl "bool" reals nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (list_induction formula-decl nil list_adt nil)
+    (emptyset const-decl "set" sets nil)
+    (empty? const-decl "bool" sets nil)
+    (member const-decl "bool" sets nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (subs const-decl "term" substitution nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (subset_is_partial_order name-judgement "(partial_order?[set[T]])"
+     sets_lemmas nil)
+    (finite_emptyset name-judgement "finite_set" finite_sets nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (* adt-constructor-decl "[[perm, variable] -> (var?)]" term_adt
+       nil)
+    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (subs def-decl "term" substitution nil)
+    (fresh? def-decl "[fresh_context, bool]" freshness nil)
+    (vars_append_context formula-decl nil freshness nil)
+    (finite_union application-judgement "finite_set" finite_sets nil)
+    (vars def-decl "finite_set[variable]" term_properties nil)
+    (singleton const-decl "(singleton?)" sets nil)
+    (add const-decl "(nonempty?)" sets nil)
+    (nonempty_add_finite application-judgement "non_empty_finite_set"
+     finite_sets nil)
+    (nonempty_singleton_finite application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (vars_subs_t formula-decl nil substitution nil)
+    (vars_fresh? formula-decl nil freshness nil)
+    (nonempty_finite_union2 application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (x const-decl "[fresh_context, bool]" freshness nil))
+   shostak))
+ (vars_range_sub_TCC1 0
+  (vars_range_sub_TCC1-1 nil 3882713102 ("" (subtype-tcc) nil nil) nil
+   nil
+   (vars_range_sub subtype "fresh_subs.sigma"
+    "(list_adt[basic_sub].cons?)")))
+ (vars_range_sub_TCC2 0
+  (vars_range_sub_TCC2-1 nil 3882713102 ("" (termination-tcc) nil nil)
+   nil nil
+   (vars_range_sub termination
+    "fresh_subs.vars_range_sub(list_adt[basic_sub].cdr(fresh_subs.sigma))"
+    "nil")))
+ (vars_range_sub_TCC3 0
+  (vars_range_sub_TCC3-1 nil 3882713102 ("" (subtype-tcc) nil nil) nil
+   nil
+   (vars_range_sub subtype "fresh_subs.sigma"
+    "(list_adt[basic_sub].cons?)")))
+ (vars_dom_sub_TCC1 0
+  (vars_dom_sub_TCC1-1 nil 3882713102 ("" (termination-tcc) nil nil)
+   nil nil
+   (vars_dom_sub termination
+    "fresh_subs.vars_dom_sub(list_adt[basic_sub].cdr(fresh_subs.sigma))"
+    "nil"))))
+

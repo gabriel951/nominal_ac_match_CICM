@@ -1,4 +1,26 @@
 # name-replace
+# Lista Mágica
+inst_step2_mem_rhs
+inst_step_match_var
+
+## solve_ac
+(name-replace "args" "elim_com_arg(G, s, t, f)`1")
+(name-replace "ms" "elim_com_arg(G, s, t, f)`2")
+(name-replace "mt" "elim_com_arg(G, s, t, f)`3")
+(name-replace "b" "calculate_upper_bound(ms, mt)")
+(name-replace "D" "dio_solver(ms, mt, b)")
+(name-replace "D_lst" "extract_submatrices(D, args, PV)")
+
+## elim_com_arg
+(name-replace "p_args_s" "remove_common(get_args(f)(s), get_args(f)(t), equal?(G))")
+(name-replace "args_s" "count_elem(null, null, p_args_s, equal?(G))`1")
+(name-replace "p_args_t" "remove_common(get_args(f)(t), get_args(f)(s), equal?(G))")
+(name-replace "args_t" "count_elem(null, null, p_args_t, equal?(G))`1")
+
+## get_pre_new_args
+(name-replace "Z1" "get_new_var(lst_V)")
+(name-replace "lst_args1" "add_new_arg(lst_args, car(D), null * Z1)")
+
 ## apply_ac
 (name-replace "G" "input`1")
 (name-replace "Pu" "input1_`2")

@@ -22,13 +22,15 @@ X: VAR variable
 t, s, t1: VAR term
 f: VAR string
 
+i, j: VAR nat 
+
 % a unification pair (t, s) is composed of terms t and s that must be unified
 unif_pair: TYPE = [term, term]
 unif_pair, unif_pair1: VAR unif_pair
 
 % in our PVS formalisation, we represent a unification problem as a list of unification pairs
 unif_prb: TYPE = list[unif_pair]
-unif_prb, unif_prb1, unif_prb2: VAR unif_prb
+unif_prb, unif_prb1, unif_prb2, P: VAR unif_prb
 lst_unif_prb: VAR list[unif_prb]
 
     IMPORTING list_theory[unif_pair]
@@ -231,6 +233,7 @@ MEASURE t BY <<
 match_problem?(unif_prb, PV): bool =
    FORALL X: member(X, vars(rhs(unif_prb))) IMPLIES member(X, PV)
 
+
 %%%%%%%%%%%%%%%%%% Theorems and Lemmas
 % first_proj
 first_proj_unif_prb: LEMMA
@@ -278,6 +281,10 @@ vars_unif_prb: LEMMA
    member(X, vars(unif_prb)) IFF
    EXISTS t:
       member(t, unif_prb) AND member(X, vars(t))
+
+vars_unif_prb_append: LEMMA 
+   member(X, vars(append(unif_prb1, unif_prb2))) IFF
+   (member(X, vars(unif_prb1)) OR member(X, vars(unif_prb2)))
 
 vars_lst_unif_prb: LEMMA
    member(X, vars(lst_unif_prb)) IFF
@@ -375,7 +382,7 @@ unifies?_append_disjoint2: LEMMA
 
 unifies?_append_disjoint3: LEMMA 
     disjoint?(dom(sigma), vars(unif_prb)) IMPLIES 
-    unifies?(G, append(sigma1, sigma), unif_prb) = unifies?(G, sigma1, unif_prb) 
+    unifies?(G, append(sigma1, sigma), unif_prb) = unifies?(G, sigma1, unif_prb)
 
 unifies?_append_disjoint4: LEMMA 
     unifies?(G, sigma, unif_prb) AND keep_fresh?(G, sigma1)
@@ -398,6 +405,11 @@ apply_sub_subterms: LEMMA
        (member(s, subterms(unif_prb)) AND
        (t = subs(sigma)(s) OR (var?(s) AND member(t, ext(p(s))(subterms(img(sigma)))))))
 
+apply_sub_rhs: LEMMA
+    member(t, rhs(apply_sub(sigma, unif_prb))) IFF 
+    EXISTS s:
+        (member(s, rhs(unif_prb)) AND t = subs(sigma)(s))
+
 apply_sub_null: LEMMA
     apply_sub(null, unif_prb) = unif_prb
 
@@ -409,6 +421,10 @@ apply_sub_sub_append: LEMMA
 
 apply_sub_len: LEMMA
     length(apply_sub(sigma, unif_prb)) = length(unif_prb)
+
+apply_sub_nth: LEMMA 
+    i < length(unif_prb) IMPLIES
+    nth(apply_sub(sigma, unif_prb), i) = apply_sub(sigma, nth(unif_prb, i))
 
 apply_sub_first_proj: LEMMA
     subs(sigma)(first_proj(unif_prb)) = first_proj(apply_sub(sigma, unif_prb))
@@ -500,6 +516,9 @@ well_formed_apply_sub: LEMMA
 
 well_formed_subset: LEMMA 
    subset?(unif_prb, unif_prb1) AND well_formed?(unif_prb1) IMPLIES well_formed?(unif_prb) 
+
+well_formed_unif_prb_append: LEMMA 
+   well_formed?(append(unif_prb, unif_prb1)) IFF (well_formed?(unif_prb) AND well_formed?(unif_prb1))
 
 % TO DO: I am not sure how to adapt this lemmas, I am not sure whether it will be only one context
 % or it will be necessary to work with more than one context
@@ -605,5 +624,18 @@ decompose_ren: LEMMA
 
 decompose_ren1: LEMMA 
    decompose(subs(rho)(t), subs(rho)(s))`1 = apply_sub(rho, decompose(t, s)`1)
+
+% match_problem 
+%match_prb_append: CONJECTURE 
+%   match_problem?(append(P1, P2), PV) = (match_problem?(P1, PV) AND match_problem?(P2, PV))
+%
+
+%match_prb_apply_sub: CONJECTURE 
+%   subset?(vars(s), PV) AND 
+%   (FORALL X:
+%      member(X, intersection(dom(sigma), vars(s))) IMPLIES       
+%      subset?(vars(subs(sigma)(X)), PV))
+%   IMPLIES
+%   match_problem?(apply_sub(sigma, (t, s))) 
 
 END unification 

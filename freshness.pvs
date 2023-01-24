@@ -135,4 +135,13 @@ vars(Delta): RECURSIVE finite_set[variable] =
    ENDIF
 MEASURE Delta by << 
 
+vars_append_context: LEMMA 
+    vars(append(Delta, Nabla)) = union(vars(Delta), vars(Nabla))
+
+vars_mem_context: LEMMA
+    member(X, vars(Delta)) IFF (EXISTS a, Y: member((a, Y), Delta) AND X = Y)
+
+vars_fresh?: LEMMA 
+    subset?(vars(fresh?(a, t)`1), vars(t))
+
 END freshness

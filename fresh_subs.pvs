@@ -70,6 +70,9 @@ fresh_subs?(sigma, Nabla): RECURSIVE [fresh_context, bool] =
    ENDCASES
    MEASURE Nabla BY <<
 
+fresh_subs?_var: LEMMA 
+   subset?(vars(fresh_subs?(sigma, Nabla)`1), union(vars(img(sigma)), vars(Nabla)))
+
 % Applying Identity subs to a freshness context does not affect it.
 fresh_subs?_null: CONJECTURE
    fresh_subs?((::), Delta) = (Delta, TRUE)

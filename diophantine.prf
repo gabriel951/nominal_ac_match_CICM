@@ -886,6 +886,108 @@
     (well_founded? const-decl "bool" orders nil)
     (pred type-eq-decl nil defined_types nil))
    shostak))
+ (sum_gt0_mem 0
+  (sum_gt0_mem-1 nil 3882970825
+   ("" (measure-induct "length(row)" "row")
+    (("" (skolem 1 "row")
+      (("" (prop)
+        (("1" (expand "sum" -1)
+          (("1" (lift-if)
+            (("1" (prop)
+              (("1" (assert) nil nil)
+               ("2" (case "car(row) = 0")
+                (("1" (replace -1)
+                  (("1" (assert)
+                    (("1" (inst -3 "cdr(row)")
+                      (("1" (expand "length" -3 2)
+                        (("1" (assert)
+                          (("1" (skeep)
+                            (("1" (inst 2 "i+1")
+                              (("1" (grind) nil nil)) nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil)
+                 ("2" (hide -2)
+                  (("2" (inst 3 "0") (("2" (grind) nil nil)) nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil)
+         ("2" (skeep)
+          (("2" (expand "length" -1)
+            (("2" (lift-if)
+              (("2" (prop)
+                (("1" (grind) nil nil)
+                 ("2" (expand "nth" -2)
+                  (("2" (lift-if)
+                    (("2" (prop)
+                      (("1" (grind) nil nil)
+                       ("2" (inst -3 "cdr(row)")
+                        (("2" (grind) nil nil)) nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (real_gt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (cdr adt-accessor-decl "[(cons?) -> list]" list_adt nil)
+    (nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (nnint_plus_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (car adt-accessor-decl "[(cons?) -> T]" list_adt nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (nth def-decl "T" list_props nil)
+    (below type-eq-decl nil nat_types nil)
+    (sum def-decl "nat" list_nat_theory nil)
+    (> const-decl "bool" reals nil)
+    (IFF const-decl "[bool, bool -> bool]" booleans nil)
+    (wf_nat formula-decl nil naturalnumbers nil)
+    (< const-decl "bool" reals nil)
+    (length def-decl "nat" list_props nil)
+    (naturalnumber type-eq-decl nil naturalnumbers nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (>= const-decl "bool" reals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (list type-decl nil list_adt nil)
+    (number nonempty-type-decl nil numbers nil)
+    (measure_induction formula-decl nil measure_induction nil)
+    (well_founded? const-decl "bool" orders nil)
+    (pred type-eq-decl nil defined_types nil))
+   shostak))
  (prod_get_repeat_lst0 0
   (prod_get_repeat_lst0-1 nil 3807738288
    ("" (induct "mult_t")
@@ -1959,6 +2061,265 @@
     (well_founded? const-decl "bool" orders nil)
     (pred type-eq-decl nil defined_types nil))
    shostak))
+ (dot_product_gt0 0
+  (dot_product_gt0-1 nil 3882985659
+   ("" (measure-induct "length(row)" "row")
+    (("" (skolem 1 "row")
+      (("" (prop)
+        (("" (skeep)
+          (("" (prop)
+            (("1" (expand "dot_product" -1 1)
+              (("1" (lift-if)
+                (("1" (split -1)
+                  (("1" (grind) nil nil)
+                   ("2" (flatten)
+                    (("2" (case "car(row) = 0")
+                      (("1" (replace -1 -2)
+                        (("1" (assert)
+                          (("1" (inst -3 "cdr(row)")
+                            (("1" (expand "length" -3 2)
+                              (("1"
+                                (assert)
+                                (("1"
+                                  (inst -3 "cdr(m1)")
+                                  (("1"
+                                    (expand "length" -4)
+                                    (("1"
+                                      (assert)
+                                      (("1"
+                                        (skeep)
+                                        (("1"
+                                          (inst 3 "i+1")
+                                          (("1" (grind) nil nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil)
+                       ("2" (inst 4 "0")
+                        (("2" (expand "length" 4 1)
+                          (("2" (lift-if)
+                            (("2" (assert)
+                              (("2"
+                                (prop)
+                                (("1" (assert) nil nil)
+                                 ("2" (grind) nil nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (skeep)
+              (("2" (case "null?(row)")
+                (("1" (grind) nil nil)
+                 ("2" (expand "nth" -2)
+                  (("2" (lift-if)
+                    (("2" (prop)
+                      (("1" (expand "dot_product" 2)
+                        (("1" (lift-if)
+                          (("1" (assert)
+                            (("1" (prop)
+                              (("1" (grind) nil nil)
+                               ("2"
+                                (case "car(row) * car(m1) > 0")
+                                (("1" (assert) nil nil)
+                                 ("2"
+                                  (hide 3 -4)
+                                  (("2"
+                                    (assert)
+                                    (("2"
+                                      (case "car(m1) > 0")
+                                      (("1"
+                                        (use "posreal_mult_closed")
+                                        (("1" (assert) nil nil))
+                                        nil)
+                                       ("2" (assert) nil nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil)
+                       ("2" (inst -3 "cdr(row)")
+                        (("2" (expand "length" -3 2)
+                          (("2" (assert)
+                            (("2" (inst -3 "cdr(m1)")
+                              (("1"
+                                (split -3)
+                                (("1"
+                                  (flatten)
+                                  (("1"
+                                    (hide -1)
+                                    (("1"
+                                      (prop)
+                                      (("1"
+                                        (expand "dot_product" 3)
+                                        (("1"
+                                          (lift-if)
+                                          (("1"
+                                            (prop)
+                                            (("1" (grind) nil nil)
+                                             ("2" (grind) nil nil))
+                                            nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (inst 1 "i-1")
+                                        (("2" (grind) nil nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil)
+                                 ("2"
+                                  (expand "length" -3)
+                                  (("2" (grind) nil nil))
+                                  nil))
+                                nil)
+                               ("2" (grind) nil nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((posreal_mult_closed formula-decl nil real_axioms nil)
+    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (real_gt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (car adt-accessor-decl "[(cons?) -> T]" list_adt nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (even_times_int_is_even application-judgement "even_int" integers
+     nil)
+    (nnint_plus_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (cdr adt-accessor-decl "[(cons?) -> list]" list_adt nil)
+    (nnint_times_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (nth def-decl "T" list_props nil)
+    (below type-eq-decl nil nat_types nil)
+    (dot_product def-decl "nat" list_nat_theory nil)
+    (IFF const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (posnat nonempty-type-eq-decl nil integers nil)
+    (nonneg_int nonempty-type-eq-decl nil integers nil)
+    (> const-decl "bool" reals nil)
+    (wf_nat formula-decl nil naturalnumbers nil)
+    (< const-decl "bool" reals nil)
+    (length def-decl "nat" list_props nil)
+    (naturalnumber type-eq-decl nil naturalnumbers nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (>= const-decl "bool" reals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (list type-decl nil list_adt nil)
+    (number nonempty-type-decl nil numbers nil)
+    (measure_induction formula-decl nil measure_induction nil)
+    (well_founded? const-decl "bool" orders nil)
+    (pred type-eq-decl nil defined_types nil))
+   shostak))
+ (dot_product_sym 0
+  (dot_product_sym-1 nil 3882988001
+   ("" (induct "row")
+    (("1" (grind) nil nil)
+     ("2" (skolem 1 ("hd" "tail"))
+      (("2" (prop)
+        (("2" (skeep)
+          (("2" (expand "dot_product" 1 1)
+            (("2" (lift-if)
+              (("2" (prop)
+                (("1" (grind) nil nil)
+                 ("2" (expand "dot_product" 2 2)
+                  (("2" (lift-if)
+                    (("2" (prop)
+                      (("2" (inst -1 "cdr(m1)")
+                        (("2" (replace -1) (("2" (assert) nil nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((nnint_times_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (nnint_plus_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (cdr adt-accessor-decl "[(cons?) -> list]" list_adt nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (list_induction formula-decl nil list_adt nil)
+    (number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (dot_product def-decl "nat" list_nat_theory nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (posnat nonempty-type-eq-decl nil integers nil)
+    (nonneg_int nonempty-type-eq-decl nil integers nil)
+    (> const-decl "bool" reals nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil) nil
+    (PRED type-eq-decl nil defined_types nil)
+    (list type-decl nil list_adt nil))
+   shostak))
  (vec_ith_len 0
   (vec_ith_len-1 nil 3845322725
    ("" (induct "n")
@@ -2532,7 +2893,6 @@
     (= const-decl "[T, T -> boolean]" equalities nil)
     (IFF const-decl "[bool, bool -> bool]" booleans nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (every adt-def-decl "boolean" list_adt nil)
     (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil))
    shostak))
@@ -7585,6 +7945,335 @@
     (boolean nonempty-type-decl nil booleans nil)
     (number nonempty-type-decl nil numbers nil))
    SHOSTAK))
+ (dio_matrix_cor_row_gt0 0
+  (dio_matrix_cor_row_gt0-1 nil 3882970217
+   ("" (measure-induct "length(D)" "D")
+    (("" (skolem 1 "D")
+      (("" (prop)
+        (("" (skeep)
+          (("" (expand "member" -4)
+            (("" (lift-if)
+              (("" (prop)
+                (("1" (hide -2)
+                  (("1" (expand "dio_matrix_correct?" -2)
+                    (("1" (assert)
+                      (("1" (flatten)
+                        (("1" (hide -3)
+                          (("1" (expand "row_cor?" -2)
+                            (("1" (expand "matrix?" -3)
+                              (("1"
+                                (prop)
+                                (("1"
+                                  (replace -3 :dir rl)
+                                  (("1"
+                                    (rewrite "prod_equiv_dot_product")
+                                    (("1"
+                                      (rewrite
+                                       "prod_equiv_dot_product")
+                                      (("1"
+                                        (use "split_cor[nat]")
+                                        (("1"
+                                          (assert)
+                                          (("1"
+                                            (use "sum_gt0_mem")
+                                            (("1"
+                                              (assert)
+                                              (("1"
+                                                (skeep)
+                                                (("1"
+                                                  (case
+                                                   "i < length(m1)")
+                                                  (("1"
+                                                    (inst 2 "i")
+                                                    (("1"
+                                                      (grind)
+                                                      nil
+                                                      nil))
+                                                    nil)
+                                                   ("2"
+                                                    (replace
+                                                     -3
+                                                     -2
+                                                     :dir
+                                                     rl)
+                                                    (("2"
+                                                      (rewrite
+                                                       "nth_append"
+                                                       -2)
+                                                      (("1"
+                                                        (case
+                                                         "length(split[nat](row, length(m1))`1) = length(m1)")
+                                                        (("1"
+                                                          (replace -1)
+                                                          (("1"
+                                                            (assert)
+                                                            (("1"
+                                                              (use
+                                                               "split_len2[nat]")
+                                                              (("1"
+                                                                (expand
+                                                                 "max"
+                                                                 -1)
+                                                                (("1"
+                                                                  (replace
+                                                                   -6
+                                                                   -1)
+                                                                  (("1"
+                                                                    (assert)
+                                                                    (("1"
+                                                                      (lemma
+                                                                       "dot_product_gt0")
+                                                                      (("1"
+                                                                        (inst
+                                                                         -1
+                                                                         "m2"
+                                                                         "split[nat](row, length(m1))`2")
+                                                                        (("1"
+                                                                          (split
+                                                                           -1)
+                                                                          (("1"
+                                                                            (flatten)
+                                                                            (("1"
+                                                                              (hide
+                                                                               -1)
+                                                                              (("1"
+                                                                                (prop)
+                                                                                (("1"
+                                                                                  (rewrite
+                                                                                   "dot_product_sym"
+                                                                                   -1)
+                                                                                  (("1"
+                                                                                    (replace
+                                                                                     -10
+                                                                                     :dir
+                                                                                     rl)
+                                                                                    (("1"
+                                                                                      (lemma
+                                                                                       "dot_product_gt0")
+                                                                                      (("1"
+                                                                                        (inst
+                                                                                         -1
+                                                                                         "m1"
+                                                                                         "split[nat](row, length(m1))`1")
+                                                                                        (("1"
+                                                                                          (assert)
+                                                                                          (("1"
+                                                                                            (rewrite
+                                                                                             "dot_product_sym"
+                                                                                             -1)
+                                                                                            (("1"
+                                                                                              (assert)
+                                                                                              (("1"
+                                                                                                (replace
+                                                                                                 -4)
+                                                                                                (("1"
+                                                                                                  (skolem
+                                                                                                   -1
+                                                                                                   "j")
+                                                                                                  (("1"
+                                                                                                    (flatten)
+                                                                                                    (("1"
+                                                                                                      (inst
+                                                                                                       3
+                                                                                                       "j")
+                                                                                                      (("1"
+                                                                                                        (assert)
+                                                                                                        (("1"
+                                                                                                          (replace
+                                                                                                           -8
+                                                                                                           3
+                                                                                                           :dir
+                                                                                                           rl)
+                                                                                                          (("1"
+                                                                                                            (rewrite
+                                                                                                             "nth_append")
+                                                                                                            nil
+                                                                                                            nil))
+                                                                                                          nil))
+                                                                                                        nil))
+                                                                                                      nil))
+                                                                                                    nil))
+                                                                                                  nil))
+                                                                                                nil))
+                                                                                              nil))
+                                                                                            nil))
+                                                                                          nil))
+                                                                                        nil))
+                                                                                      nil))
+                                                                                    nil))
+                                                                                  nil)
+                                                                                 ("2"
+                                                                                  (inst
+                                                                                   1
+                                                                                   "i - length(m1)")
+                                                                                  (("2"
+                                                                                    (assert)
+                                                                                    nil
+                                                                                    nil))
+                                                                                  nil))
+                                                                                nil))
+                                                                              nil))
+                                                                            nil)
+                                                                           ("2"
+                                                                            (propax)
+                                                                            nil
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil)
+                                                         ("2"
+                                                          (hide -2)
+                                                          (("2"
+                                                            (use
+                                                             "split_len1[nat]")
+                                                            (("2"
+                                                              (replace
+                                                               -1)
+                                                              (("2"
+                                                                (expand
+                                                                 "min"
+                                                                 1)
+                                                                (("2"
+                                                                  (hide-all-but
+                                                                   (-4
+                                                                    1))
+                                                                  (("2"
+                                                                    (grind)
+                                                                    nil
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil)
+                                                       ("2"
+                                                        (replace
+                                                         -3
+                                                         -1
+                                                         :dir
+                                                         rl)
+                                                        (("2"
+                                                          (rewrite
+                                                           "length_append")
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil)
+                 ("2" (inst -2 "cdr(D)")
+                  (("2" (expand "length" -2 2)
+                    (("2" (assert)
+                      (("2" (inst?)
+                        (("2" (inst -2 "m2")
+                          (("2" (prop)
+                            (("1" (expand "dio_matrix_correct?" -2)
+                              (("1" (flatten) nil nil)) nil)
+                             ("2" (expand "matrix?" -3)
+                              (("2" (assert) nil nil)) nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((pred type-eq-decl nil defined_types nil)
+    (well_founded? const-decl "bool" orders nil)
+    (measure_induction formula-decl nil measure_induction nil)
+    (number nonempty-type-decl nil numbers nil)
+    (list type-decl nil list_adt nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (every adt-def-decl "boolean" list_adt nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (>= const-decl "bool" reals nil)
+    (dio_matrix type-eq-decl nil diophantine nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (naturalnumber type-eq-decl nil naturalnumbers nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (length def-decl "nat" list_props nil)
+    (< const-decl "bool" reals nil)
+    (wf_nat formula-decl nil naturalnumbers nil)
+    (nnint_plus_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (> const-decl "bool" reals nil)
+    (nonneg_int nonempty-type-eq-decl nil integers nil)
+    (posnat nonempty-type-eq-decl nil integers nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (dio_matrix_correct? def-decl "bool" diophantine nil)
+    (matrix? def-decl "bool" list_theory nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (member def-decl "bool" list_props nil)
+    (sum def-decl "nat" list_nat_theory nil)
+    (below type-eq-decl nil nat_types nil)
+    (nth def-decl "T" list_props nil)
+    (row_cor? const-decl "bool" diophantine nil)
+    (split const-decl "[list[T], list[T]]" list_theory nil)
+    (prod_equiv_dot_product formula-decl nil diophantine nil)
+    (split_cor formula-decl nil list_theory nil)
+    (sum_gt0_mem formula-decl nil diophantine nil)
+    (length_append formula-decl nil list_props nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (max const-decl "{p: real | p >= m AND p >= n}" real_defs nil)
+    (dot_product_sym formula-decl nil diophantine nil)
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (dot_product_gt0 formula-decl nil diophantine nil)
+    (split_len2 formula-decl nil list_theory nil)
+    (split_len1 formula-decl nil list_theory nil)
+    (min const-decl "{p: real | p <= m AND p <= n}" real_defs nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (nth_append formula-decl nil list_theory nil)
+    (real_gt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cdr adt-accessor-decl "[(cons?) -> list]" list_adt nil))
+   shostak))
  (dio_solver_matrix 0
   (dio_solver_matrix-1 nil 3845154362
    ("" (induct "bound")
@@ -15705,7 +16394,7 @@ member((lstnat`1, lstnat`2), cartesian_product(find_vectors(mult_t1)(1 + j), fin
     (list type-decl nil list_adt nil)
     (boolean nonempty-type-decl nil booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)
-    (PRED type-eq-decl nil defined_types nil) nil
+    (PRED type-eq-decl nil defined_types nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
@@ -15729,7 +16418,7 @@ member((lstnat`1, lstnat`2), cartesian_product(find_vectors(mult_t1)(1 + j), fin
     (get_all_sublists def-decl "list[list[T]]" list_theory nil)
     (member_append formula-decl nil list_theory nil)
     (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
-    (cdr adt-accessor-decl "[(cons?) -> list]" list_adt nil) nil
+    (cdr adt-accessor-decl "[(cons?) -> list]" list_adt nil)
     (car adt-accessor-decl "[(cons?) -> T]" list_adt nil)
     (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
     (elim_col1 def-decl "list[list[T]]" list_theory nil)

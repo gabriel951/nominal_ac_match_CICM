@@ -49,9 +49,9 @@ t, s, t1, t2, tsigma: VAR term
 args, args1: VAR args
 lst_args, lst_args1, lst_args2: VAR list[args]
 
-mult_t1, mult_t2: VAR list[posnat]
+mult_t1, mult_t2, mult_t, mult_s, mt, ms: VAR list[posnat]
 row, col, coef, coef_matrix_col: VAR list[nat]
-bound, i, n, num_col: VAR nat
+bound, i, n, j, num_col: VAR nat
 
 dio_sol_matrix, dio_matrix, dio_matrix1, coef_matrix, dio, D: VAR dio_matrix
 submatrix_sol_lst, dio_matrix_lst: VAR list[dio_matrix]
@@ -83,10 +83,10 @@ elim_com_arg(G, t1, t2, sym): [args, list[nat], list[nat]] =
      (new_args_t2, new_coef_t2) = count_elem(null, null, no_rep_args2, equal?(G))
      IN (append(new_args_t1, new_args_t2), new_coef_t1, new_coef_t2)
 
-elim_com_arg_pos: CONJECTURE
+elim_com_arg_pos: LEMMA
    member(n, elim_com_arg(G, t1, t2, sym)`2) IMPLIES n > 0 
    
-elim_com_arg_pos2: CONJECTURE
+elim_com_arg_pos2: LEMMA
    member(n, elim_com_arg(G, t1, t2, sym)`3) IMPLIES n > 0 
 
 % check if column i is empty (all coeficients equal to 0)
@@ -237,6 +237,13 @@ construct_sub(dio, coef_matrix, args, vars2avoid, f): RECURSIVE sub =
    ENDIF
 MEASURE dio BY << 
 
+% selects the correct index for the proof of "solve_ac_match_condition" lemma
+min_ind(X, P): RECURSIVE nat =
+    IF null?(P) THEN 0 
+    ELSIF member(X, vars(car(P))) THEN 0
+    ELSE 1 + min_ind(X, cdr(P))
+    ENDIF
+MEASURE P by << 
 
 % choose the first non-ac unification problem it encounters
 choose_not_ac(seen_unif_prb, unseen_unif_prb): RECURSIVE [unif_pair, unif_prb] =
@@ -259,43 +266,74 @@ choose_unif_pair(unif_prb): [unif_pair, unif_prb] =
    ELSE choose_not_ac(null, unif_prb) 
    ENDIF
 
+% this is needed to define match_condition 
+inst_ptc?(unif_pair, PV): bool = LET (t, s) = unif_pair IN subset?(vars(t), PV) AND var?(s)
+
+% the Matching condition is defined so that:
+% 1. When we apply "SolveAC" the resulting unification problem (let's call it P) satisfies the matching condition
+% 2. When we apply "instStep" to P we get a matching problem  
+match_condition?(P, PV): bool =
+   FORALL X:
+     (member(X, vars(rhs(P))) AND NOT member(X, PV)) IMPLIES 
+     EXISTS unif_pair, i:     
+        i < length(P) AND unif_pair = nth(P, i) AND member(null * X, unif_pair) AND
+        inst_ptc?(unif_pair, PV) AND 
+        (FORALL j: j < i AND member(null * X, nth(P, j)) IMPLIES inst_ptc?(nth(P, j), PV))
+
+% TO DO: You need the hypothesis of member(null*X, nth(P, j))
+% Example:
+% t = X
+% s = X
+% u = Z
+% TO DO: You must guarantee that null
+
+match_condition2?(P, PV): bool = 
+   FORALL X:
+     (member(X, vars(rhs(P))) AND NOT member(X, PV)) IMPLIES 
+     EXISTS unif_pair, i:     
+        i < length(P) AND unif_pair = nth(P, i) AND member(null * X, unif_pair) AND
+        inst_ptc?(unif_pair, PV) AND 
+        (FORALL j: j < i IMPLIES NOT member(X, vars(nth(P, j))))
+
+% extends matching condition to a unification pair:
+match_condition?(t, s, PV): bool = match_condition?(cons((t, s), null), PV)
 
 %%%%%%%%%%%%%%%%%%%%%%% Theorems
 % get nice submatrices and get_all_sublists
-get_nice_submatrices_mem: CONJECTURE
+get_nice_submatrices_mem: LEMMA
    member(dio_matrix, get_nice_submatrices(dio_matrix_lst, args, PV)) IMPLIES
    member(dio_matrix, dio_matrix_lst)
    
-get_all_sublists_dio_cor: CONJECTURE 
+get_all_sublists_dio_cor: LEMMA 
    member(dio_matrix1, get_all_sublists(dio_matrix)) AND 
    dio_matrix_correct?(dio_matrix, mult_t1, mult_t2) IMPLIES
    dio_matrix_correct?(dio_matrix1, mult_t1, mult_t2)
 
-get_nice_submatrices_cor: CONJECTURE
+get_nice_submatrices_cor: LEMMA
    member(dio_matrix1, get_nice_submatrices(dio_matrix_lst, args, PV)) IMPLIES
    nice_submatrix?(dio_matrix1, args, PV)
 
-get_nice_submatrix_cor2: CONJECTURE
+get_nice_submatrix_cor2: LEMMA
    nice_submatrix?(dio_matrix1, args, PV) AND member(dio_matrix1, dio_matrix_lst)
    AND NOT null?(dio_matrix1) IMPLIES 
    member(dio_matrix1, get_nice_submatrices(dio_matrix_lst, args, PV))
 
-get_nice_submatrices_not_null: CONJECTURE
+get_nice_submatrices_not_null: LEMMA
    member(dio_matrix1, get_nice_submatrices(dio_matrix_lst, args, PV)) IMPLIES
    NOT null?(dio_matrix1)
 
 % constraints 1 and 2
-const2_sum1: CONJECTURE 
+const2_sum1: LEMMA 
    const2?(col) IMPLIES sum(col) = 1
 
-const2_sum: CONJECTURE 
+const2_sum: LEMMA 
    const2?(col) IFF sum(col) = 1
 
-if_non_var_const2_cor: CONJECTURE
+if_non_var_const2_cor: LEMMA
    if_non_var_const2?(dio_matrix, args, PV) AND i < length(args) AND
    (NOT var?(nth(args, i)) OR member(V(nth(args, i)), PV)) IMPLIES const2?(get_col_i(dio_matrix, i+1))
 
-if_non_var_const2_cor2: CONJECTURE 
+if_non_var_const2_cor2: LEMMA 
    (FORALL i: i < length(args) AND (NOT var?(nth(args, i)) OR member(V(nth(args, i)), PV)) IMPLIES
      const2?(get_col_i(dio_matrix, i+1)))
    IMPLIES if_non_var_const2?(dio_matrix, args, PV)
@@ -309,45 +347,54 @@ empty_col_get_repeat_lst: CONJECTURE
    IMPLIES get_col_i[nat](dio_matrix, i) = get_repeat_lst(0, length(dio_matrix))
 
 % added hypothesis to handle PV
-get_nice_submatrices_ren: CONJECTURE  
+get_nice_submatrices_ren: LEMMA  
     disjoint?(union(dom(rho), vars(img(rho))), PV) IMPLIES 
     get_nice_submatrices(dio_matrix_lst, args, PV) = get_nice_submatrices(dio_matrix_lst, subs(rho)(args), PV)
 
-
 % add new arg
-add_new_arg_mem: CONJECTURE
+add_new_arg_mem: LEMMA
    member(t1, add_new_arg(lst_args, row, t)) IMPLIES
    member(t1, lst_args) OR t1 = t
 
-add_new_arg_subs: CONJECTURE 
+add_new_arg_vars: LEMMA 
+   member(X, vars(add_new_arg(lst_args, row, t))) IMPLIES
+   (member(X, vars(lst_args)) OR
+    EXISTS i: i < length(row) AND nth(row, i) > 0 AND
+        member(X, vars(t)))
+
+add_new_arg_subs: LEMMA 
    add_new_arg(map(subs(sigma))(lst_args), row, subs(sigma)(t)) =
    map(subs(sigma))(add_new_arg(lst_args, row, t))
 
 % extract submatrices
-extract_submatrices_cor: CONJECTURE
+extract_submatrices_cor: LEMMA
    dio_matrix_correct?(dio_matrix, mult_t1, mult_t2) AND 
    member(dio_matrix1, extract_submatrices(dio_matrix, args, PV))
    IMPLIES dio_matrix_correct?(dio_matrix1, mult_t1, mult_t2) 
    
-extract_submatrices_nice: CONJECTURE
+extract_submatrices_cor2: LEMMA 
+   member(D, extract_submatrices(dio_solver(mt, ms, bound), args, PV)) IMPLIES 
+   dio_matrix_correct?(D, mt, ms) 
+
+extract_submatrices_nice: LEMMA
    member(dio_matrix1, extract_submatrices(dio_matrix, args, PV)) IMPLIES
    nice_submatrix?(dio_matrix1, args, PV)
 
-extract_submatrices_mem: CONJECTURE 
+extract_submatrices_mem: LEMMA 
    (member(dio_matrix1, get_all_sublists(dio_matrix)) AND nice_submatrix?(dio_matrix1, args, PV) AND
     matrix?(dio_matrix) AND NOT null?(dio_matrix1)) IFF member(dio_matrix1, extract_submatrices(dio_matrix, args, PV))
    
 % TO DO: added hypothesis to handle PV
-extract_submatrices_ren: CONJECTURE 
+extract_submatrices_ren: LEMMA 
    disjoint?(union(dom(rho), vars(img(rho))), PV) IMPLIES 
    extract_submatrices(dio, args, PV) = extract_submatrices(dio, subs(rho)(args), PV)
 
 % get_new_var, add_new_arg_len
-get_new_var_select_greater: CONJECTURE
+get_new_var_select_greater: LEMMA
     select_greater[nat](cons(get_new_var(vars2avoid), vars2avoid)) =
     select_greater[nat](vars2avoid) + 1
 
-get_new_var_correct: CONJECTURE
+get_new_var_correct: LEMMA
     NOT member(get_new_var(vars2avoid), vars2avoid)
 
 get_new_var_shift: CONJECTURE  
@@ -357,29 +404,29 @@ get_new_var_shift: CONJECTURE
     Z <= Z_ AND n > 0 IMPLIES 
     shift(lst_V, lst_V_, n) = append(cons((Z+1, null * (Z_ + 1)), null), shift(lst_V1, lst_V1_, n-1))    
 
-add_new_arg_len: CONJECTURE
+add_new_arg_len: LEMMA
     length(add_new_arg(lst_args, row, t)) = length(lst_args)
 
-add_new_arg_split: CONJECTURE
+add_new_arg_split: LEMMA
     split(add_new_arg(lst_args, row, t), n)`1 =
     add_new_arg(split(lst_args, n)`1, split[nat](row, n)`1, t)
 
-add_new_arg_split2: CONJECTURE
+add_new_arg_split2: LEMMA
     split(add_new_arg(lst_args, row, t), n)`2 =
     add_new_arg(split(lst_args, n)`2, split[nat](row, n)`2, t)
 
-add_new_arg_all_var?: CONJECTURE
+add_new_arg_all_var?: LEMMA
     all_var?(lst_args) IMPLIES all_var?(add_new_arg(lst_args, row, null * n))
 
-add_new_arg_null_nth: CONJECTURE
+add_new_arg_null_nth: LEMMA
     n < length(lst_args) AND length(lst_args) = length(row) AND null?(nth(add_new_arg(lst_args, row, t), n))
     IMPLIES null?(nth(lst_args, n)) AND nth(row, n) = 0
     
-add_new_arg_nth_len: CONJECTURE
+add_new_arg_nth_len: LEMMA
     n < length(lst_args) AND length(row) = length(lst_args) IMPLIES 
     length(nth(add_new_arg(lst_args, row, t), n)) = length(nth(lst_args, n)) + nth(row, n)
     
-add_new_arg_nth: CONJECTURE 
+add_new_arg_nth: LEMMA 
     n < length(lst_args) AND length(lst_args) = length(row) IMPLIES
     nth(add_new_arg(lst_args, row, t), n) = append(nth(lst_args, n), get_repeat_lst(t, nth(row, n)))
 
@@ -400,11 +447,11 @@ dot_product_count_add_new_arg: CONJECTURE
 	dot_product(map(count(t, equal?(G)))(lst_args), coef)
     ENDIF
         
-add_new_arg_var: CONJECTURE
+add_new_arg_var: LEMMA
     subset?(vars(add_new_arg(lst_args, row, t)), union(vars(lst_args), vars(t)))
 
 % get_pre_new_args
-get_pre_new_args_mem_mem_var: CONJECTURE
+get_pre_new_args_mem_mem_var: LEMMA
     member(args, get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1) AND member(t, args) IMPLIES
     member(t, lst_args) OR var?(t)
 
@@ -413,7 +460,7 @@ get_pre_new_args_mem_var: CONJECTURE
     NOT member(X, vars(lst_args)) AND member(X, vars(args)) IMPLIES
     NOT member(X, vars2avoid)
 
-get_pre_new_args_len: CONJECTURE
+get_pre_new_args_len: LEMMA
     length(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1) = length(lst_args) 
 
 get_pre_new_args_not_null_aux: CONJECTURE 
@@ -427,13 +474,21 @@ get_pre_new_args_not_null: CONJECTURE
     member(dio_matrix1, extract_submatrices(dio_matrix, args, PV)) AND length(lst_args) = length(args) 
     IMPLIES NOT null?(args1)
 
-get_pre_new_args_all_var?: CONJECTURE
+get_pre_new_args_all_var?: LEMMA
     all_var?(lst_args) IMPLIES
     all_var?(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1)
     
-get_pre_new_args_all_var?2: CONJECTURE
+get_pre_new_args_all_var?2: LEMMA
     member(args, get_pre_new_args(get_repeat_lst(null, n), dio_matrix, vars2avoid)`1)
     IMPLIES all_var?(args)
+
+get_pre_new_args_all_var?3_aux: LEMMA
+    member(args, get_pre_new_args(lst_args, D, lst_V)`1) IMPLIES 
+    member(t, args) IMPLIES ((var?(t) AND p(t) = null) OR member(t, lst_args))
+
+get_pre_new_args_all_var?3: LEMMA 
+    member(args, get_pre_new_args(get_repeat_lst(null, n), D, lst_V)`1) IMPLIES 
+    member(t, args) IMPLIES (var?(t) AND p(t) = null)
 
 split_get_pre_new_args: CONJECTURE
     split(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1, n)`1 = 
@@ -457,7 +512,7 @@ no_null_get_pre_new_args2: CONJECTURE
     nice_submatrix?(dio_matrix, args, PV) AND length(args) = length(lst_args) IMPLIES 
     no_null_entries?(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1)
 
-get_pre_new_args_nth: CONJECTURE 
+get_pre_new_args_nth: LEMMA 
     LET V1 = select_greater[nat](vars2avoid),
         new_var_lst = var_lst(from_min2max[nat](V1 + 1, V1 + length(D))) IN
     i < length(lst_args) AND matrix?(D, length(lst_args)) IMPLIES 
@@ -475,26 +530,31 @@ get_pre_new_args_count: CONJECTURE
     ELSE dot_product(map(count(t, equal?(G)))(lst_args), mult_t1)   
     ENDIF
 
-get_pre_new_args_nth_len: CONJECTURE
+get_pre_new_args_nth_len: LEMMA
     n < length(lst_args) AND matrix?(dio_matrix, length(lst_args)) IMPLIES 
     length(nth(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1, n)) =
     length(nth(lst_args, n)) + sum(get_col_i(dio_matrix, n+1))
 
-get_pre_new_args2_var_member: CONJECTURE
+get_pre_new_args2_var_member: LEMMA
     member(X, vars2avoid) IMPLIES 
     member(X, get_pre_new_args(lst_args, dio_matrix, vars2avoid)`2)
 
-get_pre_new_args12_var_subset: CONJECTURE
+get_pre_new_args12_var_subset: LEMMA
     subset?(vars(lst_args), vars2avoid) AND 
     member(X, vars(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1)) IMPLIES
     member(X, get_pre_new_args(lst_args, dio_matrix, vars2avoid)`2)
+
+get_pre_new_args_vars_nth: LEMMA
+    LET V = select_greater[nat](lst_V) IN 
+    n < length(D) AND member(V + n + 1, vars(get_pre_new_args(lst_args, D, lst_V)`1)) IMPLIES  
+    (sum(nth(D, n)) > 0  OR member(V + n + 1, vars(lst_args)))
     
 get_pre_new_args2: CONJECTURE 
     LET V1 = select_greater[nat](vars2avoid) IN 
     member(X, get_pre_new_args(lst_args, dio_matrix, vars2avoid)`2) IFF
     member(X, append(from_min2max[nat](V1 + 1, V1 + length(dio_matrix)), vars2avoid))
 
-get_pre_new_args_var_subset: CONJECTURE 
+get_pre_new_args_var_subset: LEMMA 
     LET V1 = select_greater[nat](vars2avoid) IN 
     member(args, get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1) IMPLIES 
     subset?(vars(args), union(list2set(from_min2max[nat](V1 + 1, V1 + length(dio_matrix))),
@@ -535,7 +595,7 @@ get_ac_from_args_gt1_ac_var: LEMMA
                               dio_matrix, vars2avoid)`1) IMPLIES  
     (is_ac_sym?(get_ac_from_args_gt1(f)(args), f) OR var?(get_ac_from_args_gt1(f)(args)))
 
-get_ac_from_args_gt1_is_var: CONJECTURE 
+get_ac_from_args_gt1_is_var: LEMMA 
     var?(get_ac_from_args_gt1(f)(args)) IFF (length(args) = 1 AND var?(car(args)))
 
 get_ac_from_args_gt1_vars: LEMMA
@@ -596,11 +656,11 @@ get_ac_from_args_gt1_select_gt: CONJECTURE
     AND member(X, vars(t)) IMPLIES X > select_greater[nat](lst_V)
 
 % elim_com_arg
-elim_com_arg_everyTCC2: CONJECTURE
+elim_com_arg_everyTCC2: LEMMA
    every[number](LAMBDA (x: number): number_field_pred(x) AND real_pred(x) AND rational_pred(x)
               AND integer_pred(x) AND (x >= 0) AND (x > 0))(elim_com_arg(G, t, s, f)`2)
 
-elim_com_arg_len: CONJECTURE
+elim_com_arg_len: LEMMA
    LET (args, mult_t1, mult_t2) = elim_com_arg(G, t1, t2, f) IN
        length(args) = length(mult_t1) + length(mult_t2)
    
@@ -608,7 +668,7 @@ elim_com_arg_mem: LEMMA
    member(t, elim_com_arg(G, t1, t2, f)`1) IMPLIES
    member(t, get_args(f)(t1)) OR member(t, get_args(f)(t2))
 
-elim_com_arg_vars: CONJECTURE  
+elim_com_arg_vars: LEMMA  
    subset?(vars(elim_com_arg(G, t1, t2, f)`1), vars((t1, t2)))
 
 % TO DO : I don't know if the context will be the same here
@@ -650,29 +710,52 @@ elim_com_arg_remove_common: CONJECTURE
    elim_com_arg(G, t, s, f) = elim_com_arg(G, t1, s1, f)
 
 % dio_matrix2ac_sol, construct_sub
-dio_matrix2ac_len: CONJECTURE 
+dio_matrix2ac_len: LEMMA 
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix) IN 
        length(unif_prb1) = length(args)
 
-dio_matrix2ac_mem_lhs: CONJECTURE  
+dio_matrix2ac_mem_lhs: LEMMA  
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix) IN 
        member(t, lhs(unif_prb1)) IMPLIES member(t, args)
 
-dio_matrix2ac_mem_lhs_nth: CONJECTURE 
+dio_matrix2ac_mem_lhs_nth: LEMMA 
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix) IN 
        i < length(args) IMPLIES nth(unif_prb1, i)`1 = nth(args, i)
   
-dio_matrix2ac_mem_var_rhs: CONJECTURE 
+dio_matrix2ac_mem_var_rhs: LEMMA 
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix),
        V1 = select_greater[nat](vars2avoid) IN 
        member(t, rhs(unif_prb1)) IMPLIES
        subset?(vars(t), list2set(from_min2max[nat](V1 + 1, V1 + length(dio_matrix))))
 
+dio_matrix2ac_mem_var_rhs2: LEMMA
+   LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1, V1 = select_greater[nat](lst_V) IN 
+       member(X, vars(rhs(P))) IMPLIES (EXISTS i: i < length(D) AND X = V1 + i + 1)
+
+dio_matrix2ac_vars_disjoint: LEMMA
+   LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1, V1 = select_greater[nat](lst_V) IN 
+    subset?(vars(args), lst_V) IMPLIES disjoint?(vars(lhs(P)), vars(rhs(P)))
+
+dio_matrix2ac_vars_rhs: LEMMA 
+   LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1, V1 = select_greater[nat](lst_V) IN 
+       nice_submatrix?(D, args, PV) AND
+       i < length(D) AND j < length(nth(D, i)) AND nth(nth(D, i), j) > 0 
+       IMPLIES member(V1 + i + 1, vars(nth(P, j)`2))
+       
+dio_matrix2ac_sum_ith_row: LEMMA
+   LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1, V1 = select_greater[nat](lst_V) IN 
+       i < length(D) AND member(V1 + i + 1, vars(rhs(P))) IMPLIES sum(nth(D, i)) > 0 
+
 dio_matrix2ac_mem_rhs: CONJECTURE 
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix) IN
    member(t, rhs(unif_prb1)) IMPLIES var?(t) OR is_ac_sym?(t, f)
 
-dio_matrix2ac_mem_rhs_well_formed: CONJECTURE 
+dio_matrix2ac_mem_rhs_is_var: LEMMA 
+   LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1 IN
+   nice_submatrix?(D, args, PV) AND i < length(P) AND
+   (NOT unptc_var?(nth(args, i), PV)) IMPLIES (var?(nth(P, i)`2) and p(nth(P, i)`2) = null)
+   
+dio_matrix2ac_mem_rhs_well_formed: LEMMA 
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix) IN
    const1?(dio_matrix, length(args)) AND length(args) > 0 AND 
    matrix?(dio_matrix, length(args)) AND member(t, rhs(unif_prb1)) AND well_formed?(args)
@@ -830,9 +913,13 @@ solve_ac_func_rhs: CONJECTURE
 %    AND subset?(vars((t, s)), vars2avoid) 
 %    IMPLIES temp?(unif_pair, unif_prb)
 
-solve_ac_sec_proj_vars: CONJECTURE
+solve_ac_sec_proj_vars: LEMMA
     NOT null?(solve_ac(G, t, s, vars2avoid, f, PV)) IMPLIES 
     subset?(list2set(vars2avoid), vars(sec_proj(solve_ac(G, t, s, vars2avoid, f, PV))))
+
+solve_ac_sec_proj_vars2: LEMMA
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV)))
+    IMPLIES subset?(V, vars(sec_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))))
 
 solve_ac_sec_proj_vars_not_null: CONJECTURE   
    LET V1 = vars(sec_proj(solve_ac(G, t, s, lst_V, f, PV))),
@@ -855,23 +942,63 @@ solve_ac_sec_proj_vars_dio: CONJECTURE
    member(dio, extract_submatrices(dio_solver(mult_t1, mult_t2, calculate_upper_bound(mult_t1, mult_t2)), args, PV))
    IMPLIES Z1 >= Z + length(dio)  
 
-solve_ac_first_proj_sec_proj_vars: CONJECTURE
+solve_ac_first_proj_sec_proj_vars: LEMMA
     member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
     member(X, vars(unif_prb)) AND subset?(vars(t, s), vars2avoid) IMPLIES 
     member(X, vars(sec_proj(solve_ac(G, t, s, vars2avoid, f, PV))))
+    
+solve_ac_first_proj_sec_proj_vars2: LEMMA 
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV)))
+    AND subset?(vars(t, s), V) IMPLIES 
+    subset?(vars(P), vars(sec_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))))
 
 solve_ac_vars: LEMMA
     member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
     member(X, vars(unif_prb)) IMPLIES member(X, vars(t, s)) OR NOT member(X, vars2avoid)
 
 solve_ac_vars2: LEMMA 
-    member(P, first_proj(solve_ac(G, t, s, finset2list[variable](V), f, PV))) AND 
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))) AND 
     contained?(sigma, V) AND NOT null?(P1) AND (t, s) = car(P1) AND disjoint?(vars(P1), dom(sigma))
     IMPLIES disjoint?(vars(P), dom(sigma))
 
-solve_ac_well_formed: CONJECTURE 
+solve_ac_well_formed: LEMMA 
     member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND
     well_formed?(t) AND well_formed?(s) IMPLIES well_formed?(unif_prb)
+
+solve_ac_match: LEMMA 
+    LET n = length(elim_com_arg(G, s, t, f)`2) IN 
+    member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
+    subset?(vars(s), PV) AND member(X, vars(rhs(P))) IMPLIES 
+    EXISTS j:
+       j < n AND nth(P, j)`2 = null * X
+
+min_ind_is_min: LEMMA 
+    i < length(P) AND i < min_ind(X, P) IMPLIES
+    NOT member(X, vars(nth(P, i)))
+
+min_ind_cor: LEMMA 
+    (EXISTS j: j < length(P) AND member(X, vars(nth(P, j)))) IMPLIES 
+     min_ind(X, P) < length(P) AND member(X, vars(nth(P, min_ind(X, P))))
+
+min_ind_le: LEMMA 
+    j < length(P) AND nth(P, j)`2 = null * X IMPLIES 
+    min_ind(X, P) <= j
+
+solve_ac_match_min: LEMMA 
+    LET n = length(elim_com_arg(G, s, t, f)`2) IN 
+    member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
+    subset?(vars(s), PV) AND member(X, vars(rhs(P))) AND subset?(vars(t, s), lst_V) IMPLIES 
+    EXISTS j:
+       j < n AND nth(P, j)`2 = null * X AND 
+       (FORALL i: i < j IMPLIES NOT member(X, vars(nth(P, i))))
+
+solve_ac_match_condition: LEMMA 
+    member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
+    subset?(vars(s), PV) IMPLIES match_condition?(P, PV)
+
+solve_ac_match_condition2: LEMMA 
+    member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
+    subset?(vars(s), PV) AND subset?(vars(t, s), lst_V) IMPLIES match_condition2?(P, PV)
 
 % soundness of solve_ac
 solve_ac_unify_sound: CONJECTURE 

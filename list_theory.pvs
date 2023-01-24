@@ -973,6 +973,12 @@ split_cor: LEMMA
     LET (lst1, lst2) = split(lst, n) IN
     append(lst1, lst2) = lst
 
+split_len1: LEMMA 
+    length(split(lst, n)`1) = min(length(lst), n)
+
+split_len2: LEMMA 
+    length(split(lst, n)`2) = max(length(lst) - n, 0)
+
 split_append: LEMMA
     split(append(lst1, lst2), length(lst1)) = (lst1, lst2)
     
@@ -1018,6 +1024,10 @@ get_lst_mult_len: LEMMA
 
 get_lst_mult_mem: LEMMA
     member(x, get_lst_mult(lst, coef)) IMPLIES member(x, lst)
+
+get_lst_mult_mem2: LEMMA 
+    length(lst) = length(coef) AND j < length(coef) AND nth(coef, j) > 0 IMPLIES 
+    member(nth(lst, j), get_lst_mult(lst, coef))
 
 get_lst_mult_count_increment: LEMMA
     i < length(coef) AND i < length(lst) IMPLIES 
