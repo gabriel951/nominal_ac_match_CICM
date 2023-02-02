@@ -29,14 +29,13 @@ id: VAR sub
 input, input_: VAR nice_input
 rho: VAR renaming
 
+
 % the AC-unification algorithm. In our paper we refer to it as ACUnif.
-% input is a triple of the form (P, σ, V). 
 unify(input): RECURSIVE list[[fresh_context, sub]] =
   LET (G, P, sigma, V, PV) = input IN 
   IF null?(P) THEN cons((G, sigma), null)
   ELSE LET
-     (up, P1) = choose_unif_pair(P), 
-     (t, s) = up IN 
+     (t, s) = car(P) IN 
 
      % TO DO: this is omitted since the variable s is always protected in a matching problem
      %IF var?(s) AND (NOT member(V(s), vars(t))) AND (NOT member(V(s), PV)) THEN LET
@@ -51,7 +50,7 @@ unify(input): RECURSIVE list[[fresh_context, sub]] =
 
      CASES t OF
         at(a):
-	  IF s = at(a) THEN unify(G, P1, sigma, V, PV)
+	  IF s = at(a) THEN unify(G, cdr(P), sigma, V, PV)
 	  ELSE null
 	  ENDIF,
 
@@ -61,39 +60,106 @@ unify(input): RECURSIVE list[[fresh_context, sub]] =
 	    (G1, bool1) = fresh_subs?(sigma, G), 
 	    new_G = append(G1, G), 
 	    new_sigma = append(sigma1, sigma), 
-	    new_P = apply_sub(sigma1, P1) IN 
+	    new_P = apply_sub(sigma1, cdr(P)) IN 
 	    IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
 	    ELSE null 
 	    ENDIF
 
 	  ELSIF var?(s) AND X = V(s) THEN LET
 	    new_G = append(fc(DS(pi, p(s)), X), G) IN
-	    unify(new_G, P1, sigma, V, PV)
+	    unify(new_G, cdr(P), sigma, V, PV)
 	  ELSE null
 	  ENDIF,
 
 	unit:
-	  IF s = unit THEN unify(G, P1, sigma, V, PV)  
+	  IF s = unit THEN unify(G, cdr(P), sigma, V, PV)  
 	  ELSE null 
 	  ENDIF,
 
 	app(f, arg):
 	  IF NOT app?(s) OR f /= f_sym(s) OR NOT decompose(arg, arg(s))`2 THEN null 
 	  ELSE LET dec_P = decompose(arg, arg(s))`1,
-	       	   new_P = append(dec_P, P1) IN
+	       	   new_P = append(dec_P, cdr(P)) IN
 		   unify(G, new_P, sigma, V, PV)
 	  ENDIF,
 
 	ac_app(f, ac_arg):
 	  IF NOT ac_app?(s) OR f /= ac_sym(s) THEN null
 	  ELSE LET
-	     input_lst = apply_ac(G, P1, null, sigma, V, PV), 
+	     input_lst = apply_ac(G, P, sigma, V, PV), 
 	     lst_results = map(unify)(input_lst) IN 
 	     flatten(lst_results) 
 	  ENDIF
         ENDCASES
     ENDIF
-MEASURE lex3(card(vars(input`2)), max_size(input`2), size(input`2))
+MEASURE lex4(card(vars(input`2)), max_ac_size(input`2), num_max_ac(input`2), size(input`2))
+
+%%%%%%%%%%%%%%%% OLD STUFF
+% the AC-unification algorithm. In our paper we refer to it as ACUnif.
+% input is a triple of the form (P, σ, V). 
+%unify(input): RECURSIVE list[[fresh_context, sub]] =
+%  LET (G, P, sigma, V, PV) = input IN 
+%  IF null?(P) THEN cons((G, sigma), null)
+%  ELSE LET
+%     (up, P1) = choose_unif_pair(P), 
+%     (t, s) = up IN 
+%
+%     % TO DO: this is omitted since the variable s is always protected in a matching problem
+%     %IF var?(s) AND (NOT member(V(s), vars(t))) AND (NOT member(V(s), PV)) THEN LET
+%        %sigma1 = cons((V(s), ext(reverse(p(s)))(t)), null),
+%	%(G1, bool1) = fresh_subs?(sigma, G), 
+%	%new_G = append(G1, G), 
+%	%new_sigma = append(sigma1, sigma), 
+%	%new_P = apply_sub(sigma1, P1)
+%	%IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
+%	%ELSE null 
+%	%ENDIF
+%
+%     CASES t OF
+%        at(a):
+%	  IF s = at(a) THEN unify(G, P1, sigma, V, PV)
+%	  ELSE null
+%	  ENDIF,
+%
+%	*(pi, X):
+%	  IF (NOT member(X, vars(s))) AND (NOT member(X, PV))  THEN LET
+%	    sigma1 = cons((X, ext(reverse(pi))(s)), null),
+%	    (G1, bool1) = fresh_subs?(sigma, G), 
+%	    new_G = append(G1, G), 
+%	    new_sigma = append(sigma1, sigma), 
+%	    new_P = apply_sub(sigma1, P1) IN 
+%	    IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
+%	    ELSE null 
+%	    ENDIF
+%
+%	  ELSIF var?(s) AND X = V(s) THEN LET
+%	    new_G = append(fc(DS(pi, p(s)), X), G) IN
+%	    unify(new_G, P1, sigma, V, PV)
+%	  ELSE null
+%	  ENDIF,
+%
+%	unit:
+%	  IF s = unit THEN unify(G, P1, sigma, V, PV)  
+%	  ELSE null 
+%	  ENDIF,
+%
+%	app(f, arg):
+%	  IF NOT app?(s) OR f /= f_sym(s) OR NOT decompose(arg, arg(s))`2 THEN null 
+%	  ELSE LET dec_P = decompose(arg, arg(s))`1,
+%	       	   new_P = append(dec_P, P1) IN
+%		   unify(G, new_P, sigma, V, PV)
+%	  ENDIF,
+%
+%	ac_app(f, ac_arg):
+%	  IF NOT ac_app?(s) OR f /= ac_sym(s) THEN null
+%	  ELSE LET
+%	     input_lst = apply_ac(G, P1, sigma, V, PV), 
+%	     lst_results = map(unify)(input_lst) IN 
+%	     flatten(lst_results) 
+%	  ENDIF
+%        ENDCASES
+%    ENDIF
+%MEASURE lex3(card(vars(input`2)), max_ac_size(input`2), num_max_size(input`2))
 
 %%%%%%%%%%%% LEMMAS
 % some properties of the substitutions computed, needed for the lemmas of soundness and completeness

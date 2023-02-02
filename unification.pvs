@@ -26,11 +26,11 @@ i, j: VAR nat
 
 % a unification pair (t, s) is composed of terms t and s that must be unified
 unif_pair: TYPE = [term, term]
-unif_pair, unif_pair1: VAR unif_pair
+unif_pair, unif_pair1, up: VAR unif_pair
 
 % in our PVS formalisation, we represent a unification problem as a list of unification pairs
 unif_prb: TYPE = list[unif_pair]
-unif_prb, unif_prb1, unif_prb2, P: VAR unif_prb
+unif_prb, unif_prb1, unif_prb2, P, P1, P2: VAR unif_prb
 lst_unif_prb: VAR list[unif_prb]
 
     IMPORTING list_theory[unif_pair]
@@ -176,6 +176,8 @@ all_ac_prb?(unif_prb): bool =
    FORALL unif_pair: 
    member(unif_pair, unif_prb) IMPLIES ac_prb?(unif_pair)
 
+exists_ac?(P): bool = EXISTS up: member(up, P) AND ac_prb?(up)
+
 % temporary unification pair
 % TO DO: this is being simplified 
 %temp?(unif_pair, unif_prb): bool =
@@ -250,6 +252,10 @@ member_unif_prb_append: LEMMA
    member(t, append(unif_prb1, unif_prb2)) IFF
    (member(t, unif_prb1) OR member(t, unif_prb2))
 
+member_unif_prb_append2: LEMMA 
+   member(unif_pair, append(unif_prb1, unif_prb2)) IFF
+   (member(unif_pair, unif_prb1) OR member(unif_pair, unif_prb2))
+
 member_lst_unif_prb_equiv: LEMMA
    member(t, lst_unif_prb) IFF
    EXISTS unif_prb:
@@ -276,6 +282,10 @@ member_lhs_append: LEMMA
    member(t, lhs(append(unif_prb1, unif_prb2))) IFF
    (member(t, lhs(unif_prb1)) OR member(t, lhs(unif_prb2)))
 
+lhs_rhs_subterms_subset: CONJECTURE 
+    subset?(subterms(lhs(P1)), subterms(lhs(P))) AND subset?(subterms(rhs(P1)), subterms(rhs(P)))
+    IMPLIES subset?(subterms(P1), subterms(P))
+    
 % vars no_var_pair
 vars_unif_prb: LEMMA
    member(X, vars(unif_prb)) IFF
@@ -626,16 +636,12 @@ decompose_ren1: LEMMA
    decompose(subs(rho)(t), subs(rho)(s))`1 = apply_sub(rho, decompose(t, s)`1)
 
 % match_problem 
-%match_prb_append: CONJECTURE 
-%   match_problem?(append(P1, P2), PV) = (match_problem?(P1, PV) AND match_problem?(P2, PV))
-%
+match_prb_append: LEMMA 
+   match_problem?(append(P1, P2), PV) = (match_problem?(P1, PV) AND match_problem?(P2, PV))
 
-%match_prb_apply_sub: CONJECTURE 
-%   subset?(vars(s), PV) AND 
-%   (FORALL X:
-%      member(X, intersection(dom(sigma), vars(s))) IMPLIES       
-%      subset?(vars(subs(sigma)(X)), PV))
-%   IMPLIES
-%   match_problem?(apply_sub(sigma, (t, s))) 
+match_prb_apply_sub: LEMMA 
+    match_problem?(P, PV) AND subset?(vars(img(sigma)), PV) IMPLIES 
+    match_problem?(apply_sub(sigma, P), PV)
+
 
 END unification 

@@ -269,31 +269,36 @@ choose_unif_pair(unif_prb): [unif_pair, unif_prb] =
 % this is needed to define match_condition 
 inst_ptc?(unif_pair, PV): bool = LET (t, s) = unif_pair IN subset?(vars(t), PV) AND var?(s)
 
-% the Matching condition is defined so that:
-% 1. When we apply "SolveAC" the resulting unification problem (let's call it P) satisfies the matching condition
-% 2. When we apply "instStep" to P we get a matching problem  
-match_condition?(P, PV): bool =
-   FORALL X:
-     (member(X, vars(rhs(P))) AND NOT member(X, PV)) IMPLIES 
-     EXISTS unif_pair, i:     
-        i < length(P) AND unif_pair = nth(P, i) AND member(null * X, unif_pair) AND
-        inst_ptc?(unif_pair, PV) AND 
-        (FORALL j: j < i AND member(null * X, nth(P, j)) IMPLIES inst_ptc?(nth(P, j), PV))
+% previous attempt at defining the match condition
+%match_condition2?(P, PV): bool =
+%   FORALL X:
+%     (member(X, vars(rhs(P))) AND NOT member(X, PV)) IMPLIES 
+%     EXISTS unif_pair, i:     
+%        i < length(P) AND unif_pair = nth(P, i) AND member(null * X, unif_pair) AND
+%        inst_ptc?(unif_pair, PV) AND 
+%        (FORALL j: j < i AND member(null * X, nth(P, j)) IMPLIES inst_ptc?(nth(P, j), PV))
 
-% TO DO: You need the hypothesis of member(null*X, nth(P, j))
+% TO DO: You need the hypothesis of member(null*X, nth(P, j)) in the last line
 % Example:
 % t = X
 % s = X
 % u = Z
-% TO DO: You must guarantee that null
+% 
+% TO DO: I am not sure the hypothesis of null * X is enough, because what prevents you from having
+% t = pi * X and the variables in t being unprotected. 
 
-match_condition2?(P, PV): bool = 
+% the Matching condition is defined so that:
+% 1. When we apply "SolveAC" the resulting unification problem (let's call it P) satisfies the matching condition
+% 2. When we apply "instStep" to P we get a matching problem  
+match_condition?(P, PV): bool = 
    FORALL X:
      (member(X, vars(rhs(P))) AND NOT member(X, PV)) IMPLIES 
      EXISTS unif_pair, i:     
         i < length(P) AND unif_pair = nth(P, i) AND member(null * X, unif_pair) AND
         inst_ptc?(unif_pair, PV) AND 
         (FORALL j: j < i IMPLIES NOT member(X, vars(nth(P, j))))
+
+match_condition2?(P, PV): bool = match_condition?(P, PV)
 
 % extends matching condition to a unification pair:
 match_condition?(t, s, PV): bool = match_condition?(cons((t, s), null), PV)
@@ -958,7 +963,7 @@ solve_ac_vars: LEMMA
 
 solve_ac_vars2: LEMMA 
     member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))) AND 
-    contained?(sigma, V) AND NOT null?(P1) AND (t, s) = car(P1) AND disjoint?(vars(P1), dom(sigma))
+    contained?(sigma, V) AND NOT null?(P1) AND member((t, s), P1) AND disjoint?(vars(P1), dom(sigma))
     IMPLIES disjoint?(vars(P), dom(sigma))
 
 solve_ac_well_formed: LEMMA 
@@ -994,11 +999,15 @@ solve_ac_match_min: LEMMA
 
 solve_ac_match_condition: LEMMA 
     member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
-    subset?(vars(s), PV) IMPLIES match_condition?(P, PV)
+    subset?(vars(s), PV) AND subset?(vars(t, s), lst_V) IMPLIES match_condition?(P, PV)
 
-solve_ac_match_condition2: LEMMA 
-    member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
-    subset?(vars(s), PV) AND subset?(vars(t, s), lst_V) IMPLIES match_condition2?(P, PV)
+solve_ac_rhs_not_protected: LEMMA
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))) AND 
+    subset?(PV, V) IMPLIES disjoint?(vars(rhs(P)), PV)
+
+solve_ac_vars_lhs: LEMMA
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV)))
+    IMPLIES subset?(vars(lhs(P)), vars(t, s))
 
 % soundness of solve_ac
 solve_ac_unify_sound: CONJECTURE 

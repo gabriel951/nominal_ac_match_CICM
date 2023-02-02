@@ -20,15 +20,15 @@ X, Y: VAR variable
 G, G1, Delta: VAR fresh_context 
 pi: VAR perm
 
-
+i, j: VAR nat
 
 f, sym: VAR string
 
-t, s, t1, t2, tsigma: VAR term
+t, s, t1, t2, s1, tsigma: VAR term
 args, args1: VAR args
 lst_args, lst_args1, lst_args2: VAR list[args]
 
-unif_pair, unif_pair2: VAR unif_pair
+unif_pair, unif_pair2, up, up1: VAR unif_pair
 
 % P stands for "unification Problem". Pu stands for "Unseen unification Problem".
 % Ps stands for "Seen unification Problem". 
@@ -138,6 +138,24 @@ inst_step(PV, G, lst_P): RECURSIVE list[[fresh_context, unif_prb, sub]] =
     ENDIF
 MEASURE lst_P BY << 
 
+% skip index 
+% i is a skip index if when we apply instStep, the 
+% the function assumes inst_step does not fail and that i < length(P)
+skip_index?(i, PV, G, P): RECURSIVE bool = 
+    IF null?(P) THEN FALSE
+    ELSE LET 
+   	(t, s) = car(P), 
+   	(G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+	IF i = 0 THEN skip 
+	ELSIF skip THEN  skip_index?(i-1, PV, G, cdr(P))
+	ELSE LET new_P = apply_sub(delta, cdr(P)) IN skip_index?(i-1, PV, G1, new_P)
+	ENDIF
+    ENDIF
+MEASURE length(P) 
+
+% this guarantees that if we don't fail then we compute the instantiation
+% V(t) -> (pi_t)^-1 s
+inst_left?(t, s): bool = var?(t) AND NOT var?(s)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LEMMAS
 % inst_step when analysing only two terms t and s
@@ -201,6 +219,10 @@ inst_step_sub_ren: CONJECTURE
 inst_step_idempotent2: LEMMA
     idempotent?(inst_step(PV, G, t, s)`2)
 
+inst_step_inst_left_not_var_aux: LEMMA
+    LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+    inst_left?(t, s) AND NOT fail IMPLIES NOT var?(subs(delta)(t))
+
 inst_step_inst_ptc_vars_img: LEMMA
     LET delta = inst_step(PV, G, t, s)`2 IN
     inst_ptc?((t, s), PV) IMPLIES subset?(vars(img(delta)), vars(t))
@@ -218,30 +240,45 @@ inst_step_inst_ptc: LEMMA
     inst_ptc?((t, s), PV) AND var?(s) AND NOT fail AND NOT member(V(s), PV)
     IMPLIES subset?(vars(subs(delta)(V(s))), PV)
 
+inst_step_match_cond_not_skip: LEMMA
+    LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+    member(X, vars(s)) AND match_condition?(cons((t, s), P), PV) AND NOT member(X, PV) 
+    IMPLIES NOT skip 
+
+inst_step_match_cond_dom: LEMMA
+    LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+    member(X, vars(s)) AND match_condition?(cons((t, s), P), PV) AND NOT member(X, PV) AND NOT fail
+    IMPLIES member(X, dom(delta))
+
+inst_step_match_cond_dom2: LEMMA 
+    LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+    member(X, dom(delta)) AND match_condition?(cons((t, s), P), PV) AND member(X, vars(rhs(P)))
+    AND NOT member(X, PV) IMPLIES member(X, vars(s))
+
+inst_step_match_cond_subs: LEMMA
+    LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+    member(X, vars(s)) AND match_condition?(cons((t, s), P), PV) AND NOT member(X, PV) AND NOT fail
+    IMPLIES subs(delta)(X) = subs(delta)(t)
+
 inst_step_match_img: LEMMA
     LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
-    match_condition2?(cons((t, s), P), PV) IMPLIES
+    match_condition?(cons((t, s), P), PV) IMPLIES
     subset?(vars(img(delta)), PV) 
 
-inst_step_inst_ptc_match: LEMMA 
+inst_step_inst_ptc_match2: LEMMA 
     LET delta = inst_step(PV, G, t, s)`2 IN
     inst_ptc?((t, s), PV) AND match_condition?(P, PV)
     IMPLIES match_condition?(apply_sub(delta, P), PV)
 
-inst_step_inst_ptc_match2: LEMMA 
-    LET delta = inst_step(PV, G, t, s)`2 IN
-    inst_ptc?((t, s), PV) AND match_condition2?(P, PV)
-    IMPLIES match_condition2?(apply_sub(delta, P), PV)
-
 inst_step_match_condition_apply_sub: LEMMA
     LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
-    NOT skip AND NOT fail AND match_condition2?(cons((t, s), P), PV)
-    IMPLIES match_condition2?(apply_sub(delta, P), PV)
+    NOT skip AND NOT fail AND match_condition?(cons((t, s), P), PV)
+    IMPLIES match_condition?(apply_sub(delta, P), PV)
 
 inst_step_match_condition_cdr: LEMMA
     LET skip = inst_step(PV, G, t, s)`3 IN 
-    skip AND match_condition2?(cons((t, s), P), PV) IMPLIES 
-    match_condition2?(P, PV)
+    skip AND match_condition?(cons((t, s), P), PV) IMPLIES 
+    match_condition?(P, PV)
 
 % inst_step when analysing unification problems
 inst_step_fail: LEMMA
@@ -505,19 +542,48 @@ inst_step_ren2: CONJECTURE
     inst_step(PV, G, apply_sub(rho, P), null, null)`2 =
     apply_sub(rho, inst_step(PV, G, P, null, null)`2)
 
-inst_step_match_var: CONJECTURE 
-    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
-    match_condition?(P, PV) AND member(null * Y, rhs(P)) AND
-    NOT member(Y, PV) AND NOT fail IMPLIES subset?(vars(subs(delta)(Y)), PV)
-    
+inst_step_match_img2: LEMMA
+    LET delta = inst_step(PV, G, P, null, null)`3 IN 
+    match_condition?(P, PV) IMPLIES subset?(vars(img(delta)), PV)
+
+% TO DO: I think this can be simplified by observing that Y must be in the image and that the
+% variables in the image are all protected. (the lemma above this) 
 inst_step_match_aux: LEMMA
     LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
-     match_condition2?(P, PV) AND member(Y, vars(rhs(P))) AND NOT member(Y, PV) 
+     match_condition?(P, PV) AND member(Y, vars(rhs(P))) AND NOT member(Y, PV) 
      AND NOT fail IMPLIES subset?(vars(subs(delta)(Y)), PV)
 
-inst_step_match: CONJECTURE 
+inst_step_match: LEMMA 
     LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
-    NOT fail AND match_condition2?(P, PV) IMPLIES match_problem?(P1, PV)
+    NOT fail AND match_condition?(P, PV) IMPLIES match_problem?(P1, PV)
+
+inst_step_match_dom: LEMMA 
+    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
+    NOT fail AND match_condition?(P, PV) AND member(X, vars(rhs(P))) AND NOT member(X, PV)
+    IMPLIES member(X, dom(delta))
+
+inst_step_skip_ind_mem: LEMMA
+    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
+    member(up1, P1) IMPLIES
+    EXISTS i:
+       i < length(P) AND up1 = apply_sub(delta, nth(P, i)) AND skip_index?(i, PV, G, P)
+
+inst_step_inst_left_not_var: LEMMA
+    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
+    member((t1, s1), P) AND inst_left?(t1, s1) AND NOT fail IMPLIES 
+    NOT var?(subs(delta)(V(t1)))
+
+inst_step_inst_left_dom: LEMMA
+    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
+    member((t1, s1), P) AND inst_left?(t1, s1) AND NOT fail IMPLIES 
+    member(V(t1), dom(delta))
+
+inst_step_match_skip_ind: LEMMA
+    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
+    member(Y, vars(rhs(P))) AND NOT member(Y, PV) AND match_condition?(P, PV) AND NOT fail IMPLIES
+    EXISTS j:
+        j < length(P) AND nth(P, j)`2 = null * Y AND
+	subs(delta)(Y) = subs(delta)(nth(P, j)`1) AND NOT skip_index?(j, PV, G, P)
 
 % inst_step when given a list of unification problems
 inst_step_mem: LEMMA

@@ -9,7 +9,9 @@
 
 rename_input: THEORY
 BEGIN 
-      IMPORTING apply_ac, more_list_theory_props
+      %IMPORTING apply_ac, more_list_theory_props
+      IMPORTING ac_step, more_list_theory_props
+
 pi: VAR perm
 X, Y: VAR variable
 t, s: VAR term

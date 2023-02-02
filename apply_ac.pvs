@@ -108,7 +108,7 @@ next_input?(input1_, input2_): bool =
        member(input2_, input_apply_ac(ac_results_subs, G, cdr(Pu), Ps, sigma, new_V, PV))
   ENDIF
 
-next_input_nice_input: CONJECTURE    
+next_input_nice_input: LEMMA    
    next_input?(input1_, input2_) AND nice_input?(input1_) IMPLIES 
    nice_input?(input2_)
 

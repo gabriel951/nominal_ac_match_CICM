@@ -1,7 +1,6 @@
 # name-replace
 # Lista Mágica
-inst_step2_mem_rhs
-inst_step_match_var
+9. match_prb_append + match_prb_apply_sub + inst_step_match_img2 + inst_step_match + solve_ac_match_condition
 
 ## solve_ac
 (name-replace "args" "elim_com_arg(G, s, t, f)`1")
@@ -21,15 +20,17 @@ inst_step_match_var
 (name-replace "Z1" "get_new_var(lst_V)")
 (name-replace "lst_args1" "add_new_arg(lst_args, car(D), null * Z1)")
 
-## apply_ac
+
+## NEW apply_ac
 (name-replace "G" "input`1")
-(name-replace "Pu" "input1_`2")
-(name-replace "Ps" "input1_`3")
-(name-replace "sig" "input1_`4")
-(name-replace "V" "input1_`5")
-(name-replace "PV" "input1_`6")
-(name-replace "t" "car(Pu)`1")
-(name-replace "s" "car(Pu)`2")
+(name-replace "P" "input`2")
+(name-replace "sig" "input`3")
+(name-replace "V" "input`4")
+(name-replace "PV" "input`5") 
+(name-replace "up" "choose_ac(P)`2")
+(name-replace "P_r" "choose_ac(P)`3")
+(name-replace "t" "up`1") 
+(name-replace "s" "up`2") 
 (name-replace "lst_V" "finset2list[variable](V)")
 (name-replace "ac_results"  "first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))")
 (name-replace "new_V"  "vars(sec_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)))")
@@ -45,3 +46,17 @@ inst_step_match_var
 
 ## substitution.pvs
 -> some lemmas that depend on "equal?(t, s) => equal?(sigma t, sigma s)" were not proved. 
+
+## OLD apply_ac
+(name-replace "G" "input`1")
+(name-replace "Pu" "input1_`2")
+(name-replace "Ps" "input1_`3")
+(name-replace "sig" "input1_`4")
+(name-replace "V" "input1_`5")
+(name-replace "PV" "input1_`6")
+(name-replace "t" "car(Pu)`1")
+(name-replace "s" "car(Pu)`2")
+(name-replace "lst_V" "finset2list[variable](V)")
+(name-replace "ac_results"  "first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))")
+(name-replace "new_V"  "vars(sec_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)))")
+(name-replace "ac_results_subs" "inst_step(PV, G, ac_results)")

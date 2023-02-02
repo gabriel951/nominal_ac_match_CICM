@@ -1,0 +1,201 @@
+% Authors:
+%		Gabriel Ferreira Silva (*)
+% 		Mauricio Ayala-Rincón (*)
+% 		Daniele Nantes Sobrinho (*)
+% 		Maribel Fernandez (**)
+%		(*) - University of Brasília			(**) - King's College London
+%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+ac_step: THEORY
+BEGIN
+	IMPORTING aux_unification, inst_step
+
+pre_nice_input: TYPE = [fresh_context, unif_prb, sub, finite_set[variable], finite_set[variable]]
+
+i, n: VAR nat
+
+f: VAR string
+
+X: VAR variable
+
+t, s: VAR term 
+
+G, G1, Delta: VAR fresh_context
+
+new_vars2avoid, vars2avoid, vars2avoid1, V, V1, PV: VAR finite_set[variable]
+
+lst_vars2avoid, lst_V: VAR list[variable]
+
+unif_pair, up: VAR unif_pair
+sigma, sigma1, delta, gamma: VAR sub
+
+P, P1, P2, Pu, Ps, unseen_unif_prb, seen_unif_prb, unif_prb, unif_prb1, unif_prb2: VAR unif_prb
+
+ac_results_subs: VAR list[[fresh_context, unif_prb, sub]]
+
+ac_sol, ac_sol1, ac_sol2: VAR [unif_prb, sub, finite_set[variable]]
+
+nice_input?(G, P, sigma, V, PV): bool =
+   idempotent?(sigma) AND disjoint?(vars(P), dom(sigma)) AND 
+   contained?(sigma, V) AND subset?(vars(P), V) AND
+   subset?(vars(G), V) AND subset?(PV, V) AND
+   well_formed?(P) AND well_formed?(sigma) AND match_problem?(P, PV)
+
+nice_input: TYPE = {input: [fresh_context, unif_prb, sub, finite_set[variable],
+                            finite_set[variable]] | nice_input?(input)}
+
+input, input1, input2: VAR nice_input 
+
+input1_: VAR pre_nice_input
+
+input_apply_ac(ac_results_subs, G, P, sigma, V, PV): RECURSIVE list[pre_nice_input] = 
+   IF null?(ac_results_subs) THEN null 
+   ELSE LET 
+       (G1, P1, sigma1) = car(ac_results_subs), 
+       new_P = append(P1, apply_sub(sigma1, P)), 
+       new_sigma = append(sigma1, sigma),  
+       input = (G1, new_P, new_sigma, V, PV) IN 
+       cons(input, input_apply_ac(cdr(ac_results_subs), G, P, sigma, V, PV))
+   ENDIF
+MEASURE ac_results_subs BY << 
+
+
+% number of unification pairs in P that are AC-unification pairs and whose size is n
+num_size_ac(P, n): RECURSIVE nat =
+  IF null?(P) THEN 0
+  ELSE LET up = car(P) IN
+       IF ac_prb?(up) AND size(up) = n THEN 1 + num_size_ac(cdr(P), n)
+       ELSE num_size_ac(cdr(P), n)
+       ENDIF
+  ENDIF
+MEASURE P BY << 
+
+% finds the maximum size of the AC problem in P
+max_ac_size(P): RECURSIVE nat =  
+  IF null?(P) THEN 0
+  ELSE LET up = car(P) IN
+       IF ac_prb?(up) THEN max(size(up), max_ac_size(cdr(P)))
+       ELSE max_ac_size(cdr(P))
+       ENDIF
+  ENDIF
+MEASURE P BY << 
+
+% num_max_ac_size
+num_max_ac(P): nat = num_size_ac(P, max_ac_size(P))
+  
+% this function should be initially called with Pu = P and Ps = null
+% it tries to find an AC unification pair in Pu whose size is n 
+% It returns a triple such that
+% 1. a boolean "bool" to indicate if it was possible to find an AC-unification pair of size n
+% 2. if "bool" is true, the second component is a unification pair of size n
+% 3. if "bool" is true, the third component is the remaining unification pairs in the
+%    unification problem
+choose_ac(Pu, Ps, n): RECURSIVE [bool, unif_pair, unif_prb] = 
+   IF null?(Pu) THEN (FALSE, (unit, unit),  null)
+   ELSE LET up = car(Pu) IN
+        IF ac_prb?(up) AND size(up) = n THEN (TRUE, up, append(cdr(Pu), Ps))
+	ELSE choose_ac(cdr(Pu), cons(up, Ps), n)
+	ENDIF 
+   ENDIF 
+MEASURE Pu BY <<
+
+% chooses the AC problem in P whose size is the greatest 
+choose_ac(P): [bool, unif_pair, unif_prb] = choose_ac(P, null, max_ac_size(P)) 
+
+%%%%%%%%%%%%%%%%%%%%% LEMMAS
+% nice input
+nice_input_subterms: CONJECTURE   
+   nice_input?(G, P, sigma, V, PV) AND
+   subset?(subterms(rhs(P1)), subterms(rhs(P))) AND
+   subset?(subterms(lhs(P1)), subterms(lhs(P))) AND no_pair?(P1) IMPLIES
+   nice_input?(G, P1, sigma, V, PV)
+
+nice_input_cdr: CONJECTURE 
+   nice_input?(G, P, sigma, V, PV) AND NOT null?(P) IMPLIES nice_input?(G, cdr(P), sigma, V, PV) 
+
+% input_apply_ac
+input_apply_ac_mem: LEMMA 
+    member(input1_, input_apply_ac(ac_results_subs, G, P, sigma, V, PV)) IFF 
+    EXISTS G1, P1, sigma1: 
+        member((G1, P1, sigma1), ac_results_subs) AND 
+	input1_`1 = G1 AND input1_`2 = append(P1, apply_sub(sigma1, P))
+	AND input1_`3 = append(sigma1, sigma) AND input1_`4 = V AND input1_`5 = PV
+
+% exists_ac
+exists_ac_max_ac0: LEMMA
+   max_ac_size(P) > 0 IMPLIES exists_ac?(P)
+   
+exists_ac_choose_ac_is_ac: LEMMA 
+   exists_ac?(P) IMPLIES ac_app?(choose_ac(P, P1, max_ac_size(P))`2`1)
+
+exists_ac_is_ac: LEMMA 
+   exists_ac?(P) IMPLIES ac_app?(choose_ac(P)`2`1)
+
+% choose_ac
+choose_ac_vars_aux: LEMMA
+    subset?(vars(choose_ac(P, P1, n)`3), union(vars(P), vars(P1)))
+
+choose_ac_vars: LEMMA 
+    subset?(vars(choose_ac(P)`3), vars(P))
+
+choose_ac_vars_aux2: LEMMA
+    subset?(vars(choose_ac(P, P1, n)`2), vars(P))
+
+choose_ac_vars2: LEMMA
+    subset?(vars(choose_ac(P)`2), vars(P))
+
+choose_ac_rhs_aux: LEMMA 
+    exists_ac?(P) IMPLIES
+    member(choose_ac(P, P1, max_ac_size(P))`2`2, rhs(P))
+
+choose_ac_rhs: LEMMA 
+    exists_ac?(P) IMPLIES member(choose_ac(P)`2`2, rhs(P))
+
+choose_ac2_mem_aux: LEMMA 
+    exists_ac?(P) IMPLIES member(choose_ac(P, P1, max_ac_size(P))`2, P)
+
+choose_ac2_mem: LEMMA 
+    exists_ac?(P) IMPLIES member(choose_ac(P)`2, P)
+
+choose_ac_unif_pair_aux: LEMMA
+    member(up, choose_ac(P, P1, n)`3) IMPLIES member(up, append(P, P1))
+
+choose_ac_unif_pair: LEMMA 
+    member(up, choose_ac(P)`3) IMPLIES member(up, P)
+
+choose_ac_well_formed: LEMMA 
+    well_formed?(P) IMPLIES well_formed?(choose_ac(P)`3) 
+
+choose_ac2_well_formed: LEMMA  
+    exists_ac?(P) AND well_formed?(P) IMPLIES well_formed?(choose_ac(P)`2) 
+
+choose_ac_match_problem: LEMMA 
+    match_problem?(P, PV) IMPLIES match_problem?(choose_ac(P)`3, PV)
+
+choose_ac_match_problem_subset: LEMMA
+    match_problem?(P, PV) AND exists_ac?(P) IMPLIES subset?(vars(choose_ac(P)`2`2), PV)
+
+% apply "solve_ac" and then instantiates the variables that it can 
+apply_ac(input): list[nice_input] = 
+   LET (G, P, sigma, V, PV) = input IN 
+   IF null?(P) OR NOT exists_ac?(P) THEN null 
+   ELSE LET 
+     (bool, up, P1) = choose_ac(P), 
+     (t, s) = up IN 
+     IF equal?(G)(t, s) THEN cons((G, P1, sigma, V, PV), null)
+     ELSE LET
+	lst_V = finset2list[variable](V),
+	ac_results = first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)),
+	new_V = vars(sec_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))),
+	ac_results_subs = inst_step(PV, G, ac_results) IN 
+	input_apply_ac(ac_results_subs, G, P1, sigma, new_V, PV)
+     ENDIF 
+   ENDIF
+
+% apply_ac
+apply_ac_vars: LEMMA
+    LET P = input`2, P1 = input1`2 IN 
+    member(input1, apply_ac(input)) IMPLIES subset?(vars(P1), vars(P))
+
+END ac_step

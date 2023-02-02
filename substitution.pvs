@@ -238,6 +238,9 @@ subs_ext: LEMMA
 subs_ord: LEMMA
     t = subs(sigma)(s) IMPLIES (ord(t) = ord(s) OR (var?(s) AND member(V(s), dom(sigma))))
     
+subs_var2: LEMMA
+    var?(t) IMPLIES (var?(subs(sigma)(t)) = var?(subs(sigma)(V(t))))
+
 subs_num_arg_ge1: LEMMA
     num_arg(f, t) > 1 IMPLIES num_arg(f, subs(sigma)(t)) > 1
 
