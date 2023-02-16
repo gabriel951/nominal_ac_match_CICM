@@ -271,6 +271,9 @@ member_lhs_rhs: LEMMA
 member_lhs_pareate: LEMMA
    member(t, lhs(pareate(args1, args2))) IMPLIES member(t, args1) 
 
+lhs_pareate: LEMMA 
+   length(args1) = length(args2) IMPLIES lhs(pareate(args1, args2)) = args1
+
 member_rhs_pareate: LEMMA
    member(t, rhs(pareate(args1, args2))) IMPLIES member(t, args2)
 
@@ -282,10 +285,6 @@ member_lhs_append: LEMMA
    member(t, lhs(append(unif_prb1, unif_prb2))) IFF
    (member(t, lhs(unif_prb1)) OR member(t, lhs(unif_prb2)))
 
-lhs_rhs_subterms_subset: CONJECTURE 
-    subset?(subterms(lhs(P1)), subterms(lhs(P))) AND subset?(subterms(rhs(P1)), subterms(rhs(P)))
-    IMPLIES subset?(subterms(P1), subterms(P))
-    
 % vars no_var_pair
 vars_unif_prb: LEMMA
    member(X, vars(unif_prb)) IFF
@@ -327,6 +326,13 @@ all_ac_prb_is_ac: LEMMA
 size_app_unif_prb: LEMMA
     size(append(unif_prb1, unif_prb2)) = size(unif_prb1) + size(unif_prb2)
 
+size_lhs_mem: LEMMA 
+    member(t, lhs(P)) IMPLIES size(t) <= size(lhs(P))
+
+size_lhs_nth: LEMMA 
+    i < length(P) AND j < length(P) AND NOT i = j IMPLIES
+    size(nth(P, i)`1) + size(nth(P, j)`1) <= size(lhs(P))
+    
 % subterms 
 subterms_mem: LEMMA
     member(t, subterms(unif_prb)) IFF
@@ -350,7 +356,7 @@ subterms_append: LEMMA
 subterms_pareate: LEMMA
     member(t, subterms(pareate(args1, args2))) IMPLIES (member(t, subterms(args1)) OR member(t, subterms(args2)))
 
-% subset
+% subset of a unification problem
 subset_vars: LEMMA
    subset?(unif_prb1, unif_prb2) IMPLIES subset?(vars(unif_prb1), vars(unif_prb2))
 
@@ -625,6 +631,10 @@ decompose_app_well_formed: LEMMA
    well_formed?(sigma) AND well_formed?((app(f, t), app(f, s))) AND bool1
    IMPLIES well_formed?(unif_prb)
 
+decompose_well_formed: LEMMA 
+   LET unif_prb = decompose(t, s)`1 IN
+   well_formed?(app(f, t), app(f, s)) IMPLIES well_formed?(unif_prb) 
+
 decompose_size: LEMMA 
    LET (unif_prb, bool1) = decompose(t, s) IN
    size(unif_prb) <= size((t, s))
@@ -634,6 +644,12 @@ decompose_ren: LEMMA
 
 decompose_ren1: LEMMA 
    decompose(subs(rho)(t), subs(rho)(s))`1 = apply_sub(rho, decompose(t, s)`1)
+
+decompose_vars: LEMMA 
+   subset?(vars(decompose(t, s)`1), vars(t, s))
+
+decompose_vars_rhs: LEMMA  
+   subset?(vars(rhs(decompose(t, s)`1)), vars(s))
 
 % match_problem 
 match_prb_append: LEMMA 

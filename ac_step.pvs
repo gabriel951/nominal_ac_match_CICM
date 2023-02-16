@@ -19,6 +19,7 @@ f: VAR string
 
 X: VAR variable
 
+pi: VAR perm
 t, s: VAR term 
 
 G, G1, Delta: VAR fresh_context
@@ -30,7 +31,7 @@ lst_vars2avoid, lst_V: VAR list[variable]
 unif_pair, up: VAR unif_pair
 sigma, sigma1, delta, gamma: VAR sub
 
-P, P1, P2, Pu, Ps, unseen_unif_prb, seen_unif_prb, unif_prb, unif_prb1, unif_prb2: VAR unif_prb
+P, P1, P2, PI, Pu, Ps, unseen_unif_prb, seen_unif_prb, unif_prb, unif_prb1, unif_prb2: VAR unif_prb
 
 ac_results_subs: VAR list[[fresh_context, unif_prb, sub]]
 
@@ -71,6 +72,13 @@ num_size_ac(P, n): RECURSIVE nat =
   ENDIF
 MEASURE P BY << 
 
+% finds the maximum size of a unification pair that is in P  problem in P
+max_size(P): RECURSIVE nat =  
+  IF null?(P) THEN 0
+  ELSE max(size(car(P)), max_size(cdr(P)))
+  ENDIF
+MEASURE P BY << 
+
 % finds the maximum size of the AC problem in P
 max_ac_size(P): RECURSIVE nat =  
   IF null?(P) THEN 0
@@ -105,14 +113,24 @@ choose_ac(P): [bool, unif_pair, unif_prb] = choose_ac(P, null, max_ac_size(P))
 
 %%%%%%%%%%%%%%%%%%%%% LEMMAS
 % nice input
-nice_input_subterms: CONJECTURE   
+nice_input_subterms: LEMMA   
    nice_input?(G, P, sigma, V, PV) AND
-   subset?(subterms(rhs(P1)), subterms(rhs(P))) AND
-   subset?(subterms(lhs(P1)), subterms(lhs(P))) AND no_pair?(P1) IMPLIES
+   subset?(subterms(P1), subterms(P)) AND subset?(vars(rhs(P1)), vars(rhs(P))) AND no_pair?(P1) IMPLIES
    nice_input?(G, P1, sigma, V, PV)
 
-nice_input_cdr: CONJECTURE 
+nice_input_cdr: LEMMA
    nice_input?(G, P, sigma, V, PV) AND NOT null?(P) IMPLIES nice_input?(G, cdr(P), sigma, V, PV) 
+
+nice_input_apply_sub: LEMMA   
+   LET sigma1 = cons((X, ext(reverse(pi))(s)), null), G1 = fresh_subs?(sigma, G)`1 IN 
+   nice_input?(G, P, sigma, V, PV) AND member(pi * X, P) AND member(s, rhs(P)) AND
+   NOT member(X, vars(s)) AND NOT null?(P) IMPLIES
+   nice_input?(append(G1, G), apply_sub(sigma1, cdr(P)), append(sigma1, sigma), V, PV)
+
+nice_input_decompose: LEMMA 
+   nice_input?(G, P, sigma, V, PV) AND member(t, P) AND member(s, rhs(P)) AND NOT null?(P)
+   AND app?(t) AND app?(s) AND same_func?(t, s) IMPLIES
+   nice_input?(G, append(decompose(arg(t), arg(s))`1, cdr(P)), sigma, V, PV)
 
 % input_apply_ac
 input_apply_ac_mem: LEMMA 
@@ -131,6 +149,10 @@ exists_ac_choose_ac_is_ac: LEMMA
 
 exists_ac_is_ac: LEMMA 
    exists_ac?(P) IMPLIES ac_app?(choose_ac(P)`2`1)
+
+% max_size, max_ac_size 
+max_size_unif_pair: LEMMA
+   NOT null?(P) IMPLIES EXISTS up: member(up, P) AND size(up) = max_size(P)
 
 % choose_ac
 choose_ac_vars_aux: LEMMA
@@ -197,5 +219,17 @@ apply_ac(input): list[nice_input] =
 apply_ac_vars: LEMMA
     LET P = input`2, P1 = input1`2 IN 
     member(input1, apply_ac(input)) IMPLIES subset?(vars(P1), vars(P))
+
+apply_ac_max_size_le: LEMMA
+   LET (G, P, sigma, V, PV) = input, (bool, up, P1) = choose_ac(P), (t, s) = up, 
+	lst_V = finset2list[variable](V),
+	ac_results = first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)),
+	ac_results_subs = inst_step(PV, G, ac_results) IN   
+   exists_ac?(P) AND NOT equal?(G)(t, s) AND
+   member((G1, PI, sigma1), ac_results_subs) AND
+   vars(append(PI, apply_sub(sigma1, P1))) = vars(P)
+   IMPLIES 
+   max_size(PI) < size(t) + size(s)
+    
 
 END ac_step

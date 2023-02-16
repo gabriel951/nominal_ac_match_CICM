@@ -367,7 +367,7 @@ count_vec_get_lst_mult: LEMMA
 count_vec_map: LEMMA
     count_vec(args1, f, G)(t) = map(count(t, f, G))(args1)
 
-% member_ac, count_elem2
+% member_ac, count_elem, count_elem2, size
 member_ac_perm: LEMMA
     perm?(G)(args1, args2) IMPLIES member_ac(s, args1, G) = member_ac(s, args2, G)
 
@@ -387,7 +387,17 @@ var_lst_dif_elem: LEMMA
 well_formed_count_elem2: LEMMA
    well_formed?(args1) IMPLIES well_formed?(count_elem2(args1, equal?(G))`1) 
 
+
+count_elem_size: LEMMA 
+    size(count_elem(args1, coef, args2, equal?(G))`1) <= size(args1) + size(args2)
+
+count_elem_size_cor: LEMMA  
+    size(count_elem(null, null, args1, equal?(G))`1) <= size(args1) 
+
 % remove_common, no_common_args
+remove_common_size: LEMMA 
+    size(remove_common(args1, args2, equal?(G))) <= size(args1) 
+
 remove_common_no_common: LEMMA 
    no_common_args?(args1, args2, G) IMPLIES remove_common(args1, args2, equal?(G)) = args1  
 

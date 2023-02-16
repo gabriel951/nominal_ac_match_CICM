@@ -70,14 +70,14 @@ MEASURE t BY <<
 
 % size of args, i.e., a list of terms
 size(args): RECURSIVE nat =
-     IF null?(args) THEN 1
+     IF null?(args) THEN 0
      ELSE LET t = car(args) IN size(t) + size(cdr(args)) 
      ENDIF 
 MEASURE length(args) 
 
 % size of lst_args, i.e., a list of args
 size(lst_args): RECURSIVE nat =
-     IF null?(lst_args) THEN 1
+     IF null?(lst_args) THEN 0
      ELSE LET args = car(lst_args) IN size(args) + size(cdr(lst_args)) 
      ENDIF 
 MEASURE length(lst_args) 
@@ -256,8 +256,11 @@ member_t_lst_args: LEMMA
 size_ge1: LEMMA
     size(t) >= 1
     
-size_args_ge1: LEMMA
-    size(args) >= 1
+size_args_append: LEMMA 
+    size(append(args1, args2)) = size(args1) + size(args2) 
+
+%size_args_ge1: LEMMA
+%    size(args) >= 1
 
 % num_arg
 num_arg_ge1: LEMMA
@@ -418,12 +421,19 @@ get_args_mem_selecti: LEMMA
 get_args_not_pair_ac: LEMMA
     NOT pair?(t) AND NOT is_ac_sym?(t, f) IMPLIES get_args(f)(t) = cons(t, null)
 
+get_args_size2: LEMMA
+    size(get_args(f)(t)) <= size(t)
+
+get_args_size3: LEMMA 
+    is_ac_sym?(t, f) IMPLIES size(get_args(f)(t)) < size(t)  
+
 get_args_not_pair_ac2: LEMMA
     no_pair_ac?(f, args) IMPLIES flatten(map(get_args(f))(args)) = args
 
 get_args_nth: LEMMA
     nice_ind?(i, num_arg(f, t)) IMPLIES
     nth(get_args(f)(t), i-1) = select(f, t)(i) 
+
 
 get_args_remove: LEMMA
     nice_ind?(i, num_arg(f, t)) AND num_arg(f, t) > 1 IMPLIES

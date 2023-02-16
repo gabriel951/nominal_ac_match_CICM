@@ -298,7 +298,6 @@ match_condition?(P, PV): bool =
         inst_ptc?(unif_pair, PV) AND 
         (FORALL j: j < i IMPLIES NOT member(X, vars(nth(P, j))))
 
-match_condition2?(P, PV): bool = match_condition?(P, PV)
 
 % extends matching condition to a unification pair:
 match_condition?(t, s, PV): bool = match_condition?(cons((t, s), null), PV)
@@ -759,7 +758,11 @@ dio_matrix2ac_mem_rhs_is_var: LEMMA
    LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1 IN
    nice_submatrix?(D, args, PV) AND i < length(P) AND
    (NOT unptc_var?(nth(args, i), PV)) IMPLIES (var?(nth(P, i)`2) and p(nth(P, i)`2) = null)
-   
+
+dio_matrix2ac_mem_rhs_is_var_perm_null: LEMMA 
+   LET P = dio_matrix2ac_sol(args, lst_V, f)(D)`1 IN
+   member(t, rhs(P)) AND var?(t) IMPLIES p(t) = null
+
 dio_matrix2ac_mem_rhs_well_formed: LEMMA 
    LET (unif_prb1, new_vars2avoid) = dio_matrix2ac_sol(args, vars2avoid, f)(dio_matrix) IN
    const1?(dio_matrix, length(args)) AND length(args) > 0 AND 
@@ -1008,6 +1011,19 @@ solve_ac_rhs_not_protected: LEMMA
 solve_ac_vars_lhs: LEMMA
     member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV)))
     IMPLIES subset?(vars(lhs(P)), vars(t, s))
+
+solve_ac_vars_unptc: LEMMA 
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))) AND 
+    i < length(P) AND (NOT unptc_var?(nth(P, i)`1, PV)) IMPLIES
+    (var?(nth(P, i)`2) and p(nth(P, i)`2) = null)
+
+solve_ac_var_rhs_perm_null: LEMMA 
+    member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))) AND 
+    member(t1, rhs(P)) AND var?(t1) IMPLIES p(t1) = null
+
+solve_ac_lhs_elim_com_arg: LEMMA
+    member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) IMPLIES 
+    lhs(P) = elim_com_arg(G, s, t, f)`1
 
 % soundness of solve_ac
 solve_ac_unify_sound: CONJECTURE 

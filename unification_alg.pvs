@@ -83,6 +83,20 @@ unify(input): RECURSIVE list[[fresh_context, sub]] =
 		   unify(G, new_P, sigma, V, PV)
 	  ENDIF,
 
+        abs(a, bd):
+	  IF NOT abs?(s) THEN null 
+	  ELSIF a = abstr(s) THEN LET new_P = cons((bd, body(s)), cdr(P)) IN 
+	  	unify(G, new_P, sigma, V, PV)	
+	  ELSE LET
+	       (G1, bool1) = fresh?(a, body(s)),
+	       new_G = append(G1, G), 
+	       up = (bd, ext(cons((a, abstr(s)), null))(body(s))), 
+	       new_P = cons(up, cdr(P)) IN 
+	       IF bool1 THEN unify(new_G, new_P, sigma, V, PV)
+	       ElSE null
+	       ENDIF
+	  ENDIF, 
+
 	ac_app(f, ac_arg):
 	  IF NOT ac_app?(s) OR f /= ac_sym(s) THEN null
 	  ELSE LET

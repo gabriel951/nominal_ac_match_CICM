@@ -1,6 +1,6 @@
 # name-replace
 # Lista Mágica
-9. match_prb_append + match_prb_apply_sub + inst_step_match_img2 + inst_step_match + solve_ac_match_condition
+decompose_vars + 
 
 ## solve_ac
 (name-replace "args" "elim_com_arg(G, s, t, f)`1")

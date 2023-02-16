@@ -144,4 +144,7 @@ vars_mem_context: LEMMA
 vars_fresh?: LEMMA 
     subset?(vars(fresh?(a, t)`1), vars(t))
 
+vars_fc: LEMMA 
+    subset?(vars(fc(l, X)), singleton(X)) 
+
 END freshness
