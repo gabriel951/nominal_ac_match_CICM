@@ -14,7 +14,7 @@ BEGIN
 a, i, j, n, k, inc, start: VAR nat
 X, Y, Z, Z_: VAR variable
 t, t1, t2, s, ti, arg, bd: VAR term
-args, args1, args2: VAR args
+args, args1, args2, A: VAR args
 lst_args: VAR list[args]
 
 G: VAR fresh_context
@@ -168,6 +168,7 @@ renaming?(sigma): bool =
 renaming: TYPE = {sigma: sub | renaming?(sigma)}
 rho: VAR renaming
 
+% TO DO: remove that from the formalisation
 keep_fresh?(G, sigma): bool = 
     FORALL (a, X): member((a, X), G) IMPLIES fresh(G)(a, subs(sigma)(X))
 
@@ -215,6 +216,9 @@ subs_ac2: LEMMA
 
 subs_ac3: LEMMA
     is_ac_sym?(subs(sigma)(t), f) IMPLIES (is_ac_sym?(t, f) OR var?(t))
+
+subs_are_ac: LEMMA 
+    are_ac?(t, s, f) IMPLIES are_ac?(subs(sigma)(t), subs(sigma)(s), f)
 
 subs_func: LEMMA
     func?(subs(sigma)(t)) IMPLIES (same_func?(subs(sigma)(t), t) OR var?(t))
@@ -328,28 +332,16 @@ mem_get_args_subs4: LEMMA
     member(ti, get_args(f)(t)) AND member(s, get_args(f)(subs(sigma)(ti)))
     IMPLIES member(s, get_args(f)(subs(sigma)(t)))
 
-keep_fresh_empty: LEMMA
-    keep_fresh?(null, sigma) 
+%keep_fresh_empty: LEMMA
+%    keep_fresh?(null, sigma) 
 
-keep_fresh_fresh: LEMMA 
-    keep_fresh?(G, sigma) AND fresh(G)(a, t)
-    IMPLIES fresh(G)(a, subs(sigma)(t))
+%keep_fresh_fresh: LEMMA 
+%    keep_fresh?(G, sigma) AND fresh(G)(a, t)
+%    IMPLIES fresh(G)(a, subs(sigma)(t))
 
-subs_equal?: LEMMA
-    equal?(G)(t, s) AND keep_fresh?(G, sigma) 
-    IMPLIES
-    equal?(G)(subs(sigma)(t), subs(sigma)(s))
-
-subs_perm?: LEMMA
-    perm?(G)(args1, args2) AND keep_fresh?(G, sigma) => perm?(G)(subs(sigma)(args1), subs(sigma)(args2))
-
-subs_perm?_get_args: LEMMA 
-    perm?(G)(args1, args2) AND keep_fresh?(G, delta) IMPLIES
-    perm?(G)(flatten(map(get_args(f))(map(subs(delta))(args1))), flatten(map(get_args(f))(map(subs(delta))(args2))))
-
-subs_same_count: LEMMA
-    same_count?(args1, args2, equal?(G)) AND keep_fresh?(G, sigma) IMPLIES
-    same_count?(subs(sigma)(args1), subs(sigma)(args2), equal?(G))
+%subs_same_count: LEMMA
+%    same_count?(args1, args2, equal?(G)) AND keep_fresh?(G, sigma) IMPLIES
+%    same_count?(subs(sigma)(args1), subs(sigma)(args2), equal?(G))
     
 subs_get_repeat_lst: LEMMA
     subs(sigma)(get_repeat_lst(t, i)) = get_repeat_lst(subs(sigma)(t), i)
@@ -366,6 +358,28 @@ subs_get_lst_mult2: LEMMA
 perm?_get_args_subs: LEMMA
     perm?(G)(subs(sigma)(get_args(f)(t)), subs(sigma)(get_args(f)(s))) IMPLIES
     perm?(G)(get_args(f)(subs(sigma)(t)), get_args(f)(subs(sigma)(s)))
+
+
+%nth_flatten_subs_get_args: CONJECTURE 
+%    i < length(flatten(map(subs(sigma))(map(get_args(f))(A)))) IMPLIES 
+%    EXISTS j1, j2: 
+%       j1 < length(A) AND j2 < length(get_args(f)(nth(A, j1))) AND 
+%       nth(flatten(map(subs(sigma))(map(get_args(f))(A))), i) =
+%       nth(subs(sigma)(get_args(f)(nth(A, j1))), j2) AND 
+%       perm?(G)(remove(flatten(map(subs(sigma))(map(get_args(f))(A))), i),
+%                map(subs(sigma)(map(get_args(f))(const_args(A, j1, j2, f))))
+
+perm?_get_args_subs2: CONJECTURE
+    perm?(G)(flatten(map(subs(sigma))(map(get_args(f))(args1))),
+             flatten(map(subs(sigma))(map(get_args(f))(args2)))) IMPLIES
+    perm?(G)(flatten(map(get_args(f))(subs(sigma)(args1))),
+             flatten(map(get_args(f))(subs(sigma)(args2))))
+
+same_count_get_args_subs: CONJECTURE
+    same_count?(flatten(map(subs(sigma))(map(get_args(f))(args1))),
+                flatten(map(subs(sigma))(map(get_args(f))(args2))), equal?(G)) IMPLIES
+    same_count?(flatten(map(get_args(f))(subs(sigma)(args1))),
+                flatten(map(get_args(f))(subs(sigma)(args2))), equal?(G))
 
 subs_flatten: LEMMA
     subs(sigma)(flatten(lst_args)) = flatten(map(subs(sigma))(lst_args))
@@ -642,9 +656,9 @@ equal_sub_res_trans: LEMMA
    equal?(G)(delta, gamma, set_vars) AND equal?(G)(gamma, sigma, set_vars) IMPLIES
    equal?(G)(delta, sigma, set_vars) 
 
-equal_sub_res_append: LEMMA 
-   equal?(G)(sigma, sigma1, set_vars) AND keep_fresh?(G, delta) IMPLIES
-   equal?(G)(append(delta, sigma), append(delta, sigma1), set_vars)
+%equal_sub_res_append: LEMMA 
+%   equal?(G)(sigma, sigma1, set_vars) AND keep_fresh?(G, delta) IMPLIES
+%   equal?(G)(append(delta, sigma), append(delta, sigma1), set_vars)
 
 % syntactic equality between substitutions
 equal_syn_t: LEMMA 
@@ -680,33 +694,33 @@ subs_equal_impossible2: LEMMA
    NOT equal?(G)(subs(delta)(s), subs(delta)(pi * X))
 
 % count
-subs_count_ge: LEMMA
-   (FORALL t1: count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))
-   AND keep_fresh?(G, sigma) 
-   IMPLIES 
-   (FORALL t2: count(t2, get_args(f)(subs(sigma)(s)), equal?(G)) >= count(t2, get_args(f)(subs(sigma)(t)), equal?(G)))
+%subs_count_ge: LEMMA
+%   (FORALL t1: count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))
+%   AND keep_fresh?(G, sigma) 
+%   IMPLIES 
+%   (FORALL t2: count(t2, get_args(f)(subs(sigma)(s)), equal?(G)) >= count(t2, get_args(f)(subs(sigma)(t)), equal?(G)))
     
 count_subs_get_args: LEMMA 
     count(s, subs(sigma)(t), f, G) = sum(count_vec(subs(sigma)(get_args(f)(t)), f, G)(s))
 
-count_subs_count_elem: LEMMA 
-    LET (no_rep_args, coef) = count_elem(null, null, get_args(f)(t), equal?(G)) IN 
-    keep_fresh?(G, sigma) IMPLIES 
-    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s) , coef)
+%count_subs_count_elem: LEMMA 
+%    LET (no_rep_args, coef) = count_elem(null, null, get_args(f)(t), equal?(G)) IN 
+%    keep_fresh?(G, sigma) IMPLIES 
+%    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s) , coef)
 
-count_subs_subset_aux: LEMMA   
-   LET (no_rep_args, coef) = count_elem(null, null, args1, equal?(G)), 
-       (no_rep_args1, coef1) = count_coef(args2, args1, equal?(G)) IN 
-   subset_lst?(args1, args2) AND dif_elem?(args2, equal?(G)) AND keep_fresh?(G, sigma)
-   IMPLIES 
-   dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef) =
-   dot_product(count_vec(subs(sigma)(no_rep_args1), f, G)(s), coef1)
+%count_subs_subset_aux: LEMMA   
+%   LET (no_rep_args, coef) = count_elem(null, null, args1, equal?(G)), 
+%       (no_rep_args1, coef1) = count_coef(args2, args1, equal?(G)) IN 
+%   subset_lst?(args1, args2) AND dif_elem?(args2, equal?(G)) AND keep_fresh?(G, sigma)
+%   IMPLIES 
+%   dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef) =
+%   dot_product(count_vec(subs(sigma)(no_rep_args1), f, G)(s), coef1)
 
-count_subs_subset: LEMMA   
-    LET (no_rep_args, coef) = count_coef(args1, get_args(f)(t), equal?(G)) IN 
-    subset_lst?(get_args(f)(t), args1) AND dif_elem?(args1, equal?(G)) AND
-    keep_fresh?(G, sigma) IMPLIES
-    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef)
+%count_subs_subset: LEMMA   
+%    LET (no_rep_args, coef) = count_coef(args1, get_args(f)(t), equal?(G)) IN 
+%    subset_lst?(get_args(f)(t), args1) AND dif_elem?(args1, equal?(G)) AND
+%    keep_fresh?(G, sigma) IMPLIES
+%    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef)
 
 %% contained, more_general
 subs_inst: LEMMA 

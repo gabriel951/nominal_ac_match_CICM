@@ -1,0 +1,30 @@
+(nat_bags_order
+ (difference_TCC1 0
+  (difference_TCC1-1 nil 3885653312 ("" (subtype-tcc) nil nil)
+   ((finite_bag type-eq-decl nil finite_bags structures)
+    (is_finite const-decl "bool" finite_bags structures)
+    (bag type-eq-decl nil bags structures))
+   nil
+   (difference subtype
+    "(number_fields.-)(nat_bags_order.M(nat_bags_order.x), nat_bags_order.N(nat_bags_order.x))"
+    "nat")))
+ (bag_order_well_founded 0
+  (bag_order_well_founded-1 nil 3885653732
+   ("" (skeep)
+    (("" (expand "well_founded?" 1)
+      (("" (skolem 1 "P")
+        (("" (flatten)
+          (("" (skolem -2 "M")
+            (("" (inst 1 "M")
+              (("" (skolem 1 "N")
+                (("" (expand "bag_order?" -1) (("" (postpone) nil nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   nil shostak)))
+

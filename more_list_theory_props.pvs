@@ -51,11 +51,21 @@ map_split: LEMMA
 map_split2: LEMMA
     split(map(h)(lst_of_lsts), n)`2 = map(h)(split[list[T]](lst_of_lsts, n)`2)
 
+no_null_entries_get_lst_mult: LEMMA 
+    no_null_entries?(lst_of_lsts) IMPLIES 
+    no_null_entries?(get_lst_mult(lst_of_lsts, coef))
+
 split_no_null_entries?1: LEMMA
     no_null_entries?(lst_of_lsts) IMPLIES no_null_entries?(split(lst_of_lsts, n)`1)
 
 split_no_null_entries?2: LEMMA
     no_null_entries?(lst_of_lsts) IMPLIES no_null_entries?(split(lst_of_lsts, n)`2)
+
+split_get_repeat_lst1: LEMMA
+    i <= n IMPLIES split(get_repeat_lst(lst, n), i)`1 = get_repeat_lst(lst, i)
+
+split_get_repeat_lst2: LEMMA
+    i <= n IMPLIES split(get_repeat_lst(lst, n), i)`2 = get_repeat_lst(lst, n - i)
 
 count_flatten_get_repeat_lst: LEMMA
    count(x, flatten(get_repeat_lst(lst, n)), equal?) = count(x, lst, equal?) * n

@@ -20,7 +20,7 @@ lst_args1, lst_args2: VAR list[args]
 sym, f: VAR string
 
 i, j, n: VAR nat
-coef, lst_nat: VAR list[nat]
+coef, coef2, lst_nat: VAR list[nat]
 
 
 equal?(Delta)(t, s): RECURSIVE bool =
@@ -99,6 +99,10 @@ equal?_num_arg2: LEMMA
 equal?_append: LEMMA 
     equal?(G)(args1, args2) AND equal?(G)(args3, args4) IMPLIES
     equal?(G)(append(args1, args3), append(args2, args4))
+
+equal?_append2: LEMMA 
+    equal?(G)(append(args1, args3), append(args2, args4)) AND length(args1) = length(args2)
+    IMPLIES equal?(G)(args1, args2) AND equal?(G)(args3, args4)
 
 equal?_get_repeat_lst: LEMMA
     equal?(G)(t, s) IMPLIES equal?(G)(get_repeat_lst(t, n), get_repeat_lst(s, n))
@@ -358,11 +362,22 @@ count_vec_perm_aux: LEMMA
 count_vec_perm: LEMMA 
     perm?(G)(args1, args2) IMPLIES sum(count_vec(args1, f, G)(t)) = sum(count_vec(args2, f, G)(t))
 
+count_vec_eq: LEMMA 
+    equal?(G)(args1, args2) IMPLIES count_vec(args1, f, G)(t) = count_vec(args2, f, G)(t)
+    
 count_vec_get_repeat_lst: LEMMA
     sum(count_vec(get_repeat_lst(s, n), f, G)(t)) = count(t, s, f, G) * n
 
 count_vec_get_lst_mult: LEMMA
     sum(count_vec(get_lst_mult(args1, coef), f, G)(t)) = dot_product(count_vec(args1, f, G)(t), coef)
+
+count_vec_get_lst_mult2: LEMMA 
+    (FORALL t: 
+       dot_product(count_vec(args1, f, G)(t), coef) =
+       dot_product(count_vec(args2, f, G)(t), coef2)) 
+     IFF 
+     perm?(G)(flatten(map(get_args(f))(get_lst_mult(args1, coef))),
+              flatten(map(get_args(f))(get_lst_mult(args2, coef2)))) 
 
 count_vec_map: LEMMA
     count_vec(args1, f, G)(t) = map(count(t, f, G))(args1)
@@ -387,7 +402,6 @@ var_lst_dif_elem: LEMMA
 well_formed_count_elem2: LEMMA
    well_formed?(args1) IMPLIES well_formed?(count_elem2(args1, equal?(G))`1) 
 
-
 count_elem_size: LEMMA 
     size(count_elem(args1, coef, args2, equal?(G))`1) <= size(args1) + size(args2)
 
@@ -395,6 +409,9 @@ count_elem_size_cor: LEMMA
     size(count_elem(null, null, args1, equal?(G))`1) <= size(args1) 
 
 % remove_common, no_common_args
+no_common_args_sym: LEMMA
+    no_common_args?(args1, args2, G) = no_common_args?(args2, args1, G) 
+
 remove_common_size: LEMMA 
     size(remove_common(args1, args2, equal?(G))) <= size(args1) 
 
@@ -404,5 +421,15 @@ remove_common_no_common: LEMMA
 remove_common_sym: LEMMA
    remove_common(t, s, f, G)`1 = remove_common(s, t, f, G)`2 AND
    remove_common(t, s, f, G)`2 = remove_common(s, t, f, G)`1
+
+remove_common_no_pair_ac: LEMMA
+    no_pair_ac?(f, remove_common(get_args(f)(t), args2, equal?(G))) 
+
+remove_common_no_common2: LEMMA 
+   LET (t1, s1) = remove_common(t, s, f, G) IN    
+   NOT null?(remove_common(get_args(f)(t), get_args(f)(s), equal?(G))) AND
+   NOT null?(remove_common(get_args(f)(s), get_args(f)(t), equal?(G))) IMPLIES 
+   no_common_args?(get_args(f)(t1), get_args(f)(s1), G)
+
 
 END equality

@@ -12,18 +12,18 @@ BEGIN
 
 	IMPORTING substitution
 
-	t,s,u,w: VAR term
-	X,Y: VAR variable
-	pi, pi1: VAR perm
-	a, b: VAR atom
-	f: VAR string
-	
+t, t1, t2, s, u, w: VAR term
+X,Y: VAR variable
+pi, pi1: VAR perm
+a, b: VAR atom
+f: VAR string
+args, args1, args2: VAR args
+set_vars, set_vars1, V1, V1_, PV: VAR finite_set[variable]
 
+Delta, Nabla, Nabla1, Nabla2, G, G1: VAR fresh_context
+sigma, gamma, lambda1, sigma1, delta: VAR sub
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	Delta, Nabla, Nabla1, Nabla2: VAR fresh_context
-	sigma, gamma, lambda1, sigma1: VAR sub
+coef, coef2, lst_nat: VAR list[nat]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The function fresh_subs applies a substituion sigma to every variable in a 
@@ -40,23 +40,6 @@ fresh_subs(Delta)(sigma, Nabla): RECURSIVE bool =
    ENDCASES
    MEASURE Nabla BY <<
 
-% Characterisation of fresh_subs.
-fresh_subs_character: CONJECTURE
-   fresh_subs(Delta)(sigma, Nabla) = 
-   (FORALL (ax:[atom, variable]): member(ax,Nabla) IMPLIES fresh(Delta)(ax`1, subs(sigma)((::)*ax`2)))
-
-% Verifying fresh_subs for an append of two contexts is equal
-% to verify them separately.
-fresh_subs_append_context: CONJECTURE
-   fresh_subs(Delta)(sigma, append(Nabla1, Nabla2)) =
-   (fresh_subs(Delta)(sigma, Nabla1) AND fresh_subs(Delta)(sigma, Nabla2))
-
-% Generalisation of weakening of freshness contexts to fresh_subs.
-fresh_subs_weakening: CONJECTURE 
-   fresh_subs(Nabla1)(sigma, Delta) AND
-   (FORALL (a, X): member((a, X), Nabla1) => member((a, X), Nabla2)) IMPLIES
-   fresh_subs(Nabla2)(sigma, Delta)
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The next function is used in the unification algorithm.
 % fresh_subs? does something very similar to fresh_subs. It applies a substitution
@@ -70,6 +53,83 @@ fresh_subs?(sigma, Nabla): RECURSIVE [fresh_context, bool] =
    ENDCASES
    MEASURE Nabla BY <<
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LEMMAS
+% fresh_subs
+fresh_subs_character: LEMMA
+   fresh_subs(Delta)(sigma, Nabla) = 
+   (FORALL (ax:[atom, variable]): member(ax,Nabla) IMPLIES fresh(Delta)(ax`1, subs(sigma)((::)*ax`2)))
+
+fresh_subs_append_context: LEMMA
+   fresh_subs(Delta)(sigma, append(Nabla1, Nabla2)) =
+   (fresh_subs(Delta)(sigma, Nabla1) AND fresh_subs(Delta)(sigma, Nabla2))
+
+fresh_subs_weakening: LEMMA 
+   fresh_subs(Nabla1)(sigma, Delta) AND
+   (FORALL (a, X): member((a, X), Nabla1) => member((a, X), Nabla2)) IMPLIES
+   fresh_subs(Nabla2)(sigma, Delta)
+
+fresh_subs_fresh: LEMMA 
+   fresh_subs(G1)(sigma, G) AND fresh(G)(a, t) IMPLIES fresh(G1)(a, subs(sigma)(t))
+
+% substitution and their connection with fresh_subs
+subs_equal?: LEMMA  
+    equal?(G)(t, s) AND fresh_subs(G1)(sigma, G) 
+    IMPLIES
+    equal?(G1)(subs(sigma)(t), subs(sigma)(s))
+
+subs_perm?: LEMMA
+    perm?(G)(args1, args2) AND fresh_subs(G1)(sigma, G) IMPLIES
+    perm?(G1)(subs(sigma)(args1), subs(sigma)(args2))
+
+subs_perm?_get_args: LEMMA 
+    perm?(G)(args1, args2) AND fresh_subs(G1)(sigma, G) IMPLIES
+    perm?(G1)(flatten(map(get_args(f))(map(subs(sigma))(args1))), flatten(map(get_args(f))(map(subs(sigma))(args2))))
+
+subs_same_count: LEMMA 
+    same_count?(args1, args2, equal?(G)) AND fresh_subs(G1)(sigma, G) IMPLIES
+    same_count?(subs(sigma)(args1), subs(sigma)(args2), equal?(G1))
+
+% args 1 = map(get_ac_from_args(gt1)(lst_args))
+subs_count_vec: CONJECTURE 
+    (FORALL t: 
+       dot_product(count_vec(args1, f, G)(t), coef) = dot_product(count_vec(args2, f, G)(t), coef2)) 
+    AND fresh_subs(G1)(sigma, G) AND no_pair_ac?(f, args1) AND no_pair_ac?(f, args2) IMPLIES 
+    (FORALL s: 
+       dot_product(count_vec(subs(sigma)(args1), f, G1)(s), coef) =
+       dot_product(count_vec(subs(sigma)(args2), f, G1)(s), coef2))
+
+equal_sub_res_append: LEMMA 
+   equal?(G)(sigma, sigma1, set_vars) AND fresh_subs(G1)(delta, G) IMPLIES
+   equal?(G1)(append(delta, sigma), append(delta, sigma1), set_vars)
+
+subs_count_ge: LEMMA
+   (FORALL t1: count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))
+   AND fresh_subs(G1)(sigma, G) 
+   IMPLIES 
+   (FORALL t2: count(t2, get_args(f)(subs(sigma)(s)), equal?(G1))
+                >= count(t2, get_args(f)(subs(sigma)(t)), equal?(G1)))
+
+count_subs_count_elem: LEMMA 
+    LET (no_rep_args, coef) = count_elem(null, null, get_args(f)(t), equal?(G)) IN 
+    fresh_subs(G1)(sigma, G) IMPLIES 
+    count(s, subs(sigma)(t), f, G1) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G1)(s) , coef)
+
+count_subs_subset_aux: LEMMA   
+   LET (no_rep_args, coef) = count_elem(null, null, args1, equal?(G)), 
+       (no_rep_args1, coef1) = count_coef(args2, args1, equal?(G)) IN 
+   subset_lst?(args1, args2) AND dif_elem?(args2, equal?(G)) AND fresh_subs(G1)(sigma, G) 
+   IMPLIES 
+   dot_product(count_vec(subs(sigma)(no_rep_args), f, G1)(s), coef) =
+   dot_product(count_vec(subs(sigma)(no_rep_args1), f, G1)(s), coef1)
+
+count_subs_subset: LEMMA   
+    LET (no_rep_args, coef) = count_coef(args1, get_args(f)(t), equal?(G)) IN 
+    subset_lst?(get_args(f)(t), args1) AND dif_elem?(args1, equal?(G)) AND
+    fresh_subs(G1)(sigma, G) IMPLIES
+    count(s, subs(sigma)(t), f, G1) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G1)(s), coef)
+
+%%%%%%%%%
+% fresh_subs?
 fresh_subs?_var: LEMMA 
    subset?(vars(fresh_subs?(sigma, Nabla)`1), union(vars(img(sigma)), vars(Nabla)))
 

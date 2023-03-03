@@ -606,6 +606,10 @@ no_null_entries?_mem2: LEMMA
     (FORALL lst: member(lst, lst_of_lsts) => NOT null?(lst)) IFF
     no_null_entries?(lst_of_lsts)
 
+no_null_entries_append: LEMMA 
+    no_null_entries?(append(lst_of_lsts, lst_of_lsts1)) IFF
+    (no_null_entries?(lst_of_lsts) AND no_null_entries?(lst_of_lsts1))
+
 % from_min2max:
 from_min2max_len: LEMMA
     length(from_min2max(i, n)) = max(0, n-i+1)
@@ -979,6 +983,12 @@ split_len1: LEMMA
 split_len2: LEMMA 
     length(split(lst, n)`2) = max(length(lst) - n, 0)
 
+split_mem1: LEMMA
+    member(x, split(lst, n)`1) IMPLIES member(x, lst)
+
+split_mem2: LEMMA
+    member(x, split(lst, n)`2) IMPLIES member(x, lst)
+
 split_append: LEMMA
     split(append(lst1, lst2), length(lst1)) = (lst1, lst2)
     
@@ -1186,6 +1196,7 @@ remove_common_count_gt: LEMMA
     count(x, remove_common(lst1, lst2, equal?), equal?) > 0 IMPLIES 
     count(x, lst1, equal?) > count(x, lst2, equal?) 
 
+
 remove_common_no_effect: LEMMA
     (FORALL x: member(x, lst1) IMPLIES count(x, lst2, equal?) = 0) IMPLIES 
     remove_common(lst1, lst2, equal?) = lst1
@@ -1193,6 +1204,10 @@ remove_common_no_effect: LEMMA
 remove_common_mem_not_common: LEMMA
     member(x, remove_common(lst1, lst2, equal?)) IMPLIES
     NOT member(x, remove_common(lst2, lst1, equal?))
+
+remove_common_count_gt0: LEMMA
+    count(x, remove_common(lst1, lst2, equal?), equal?) > 0 IMPLIES 
+    count(x, remove_common(lst2, lst1, equal?), equal?) = 0 
 
 get_common_null: LEMMA
     null?(lst2) IMPLIES

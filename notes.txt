@@ -1,7 +1,12 @@
-# name-replace
-# Lista Mágica
-decompose_vars + 
+# Lema atual 
+get_pre_new_args_same_count -> get_pre_new_args_dot_product  
 
+# Important Lemmas used in SolveAC
+3. count_subs_count_elem + count_vec_perm + count_vec_get_lst_mult + solve_ac_lhs_elim_com_arg
+get_pre_new_args_same_count + get_ac_from_args_gt1_get_args_same_count + count_vec_eq
+
+
+# name-replace
 ## solve_ac
 (name-replace "args" "elim_com_arg(G, s, t, f)`1")
 (name-replace "ms" "elim_com_arg(G, s, t, f)`2")
@@ -27,10 +32,9 @@ decompose_vars +
 (name-replace "sig" "input`3")
 (name-replace "V" "input`4")
 (name-replace "PV" "input`5") 
-(name-replace "up" "choose_ac(P)`2")
-(name-replace "P_r" "choose_ac(P)`3")
-(name-replace "t" "up`1") 
-(name-replace "s" "up`2") 
+(name-replace "P1" "cdr(P)")
+(name-replace "t" "car(P)`1") 
+(name-replace "s" "car(P)`2") 
 (name-replace "lst_V" "finset2list[variable](V)")
 (name-replace "ac_results"  "first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))")
 (name-replace "new_V"  "vars(sec_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)))")

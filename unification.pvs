@@ -10,15 +10,17 @@
 
 unification: THEORY
 BEGIN
-	IMPORTING substitution, list_theory2[term, term]
+	IMPORTING fresh_subs, list_theory2[term, term]
 
-Delta, G: VAR fresh_context 
+a, b: VAR atom
+Delta, G, G1: VAR fresh_context 
 sigma, sigma1, delta: VAR sub
 rho: VAR renaming
 lst_sub: VAR list[sub]
 vars2avoid, set_vars, PV: VAR finite_set[variable]
 args1, args2: VAR args
 X: VAR variable
+pi: VAR perm
 t, s, t1: VAR term
 f: VAR string
 
@@ -148,12 +150,12 @@ size(unif_prb): RECURSIVE nat =
 MEASURE unif_prb BY << 
      
 % maximum size of a unification problem
-max_size(unif_prb): RECURSIVE nat =
-    IF null?(unif_prb) THEN 0
-    ELSE LET unif_pair = car(unif_prb) in
-    	 max(size(unif_pair), max_size(cdr(unif_prb)))
-    ENDIF
-MEASURE unif_prb BY << 
+%max_size(unif_prb): RECURSIVE nat =
+    %IF null?(unif_prb) THEN 0
+    %ELSE LET unif_pair = car(unif_prb) in
+    	 %max(size(unif_pair), max_size(cdr(unif_prb)))
+    %ENDIF
+%MEASURE unif_prb BY << 
      
 % lst of vars in an unif_pair
 lst_vars(unif_pair): list[variable] =
@@ -268,11 +270,17 @@ is_finite_mem_unif_prb: LEMMA
 member_lhs_rhs: LEMMA
    member(t, unif_prb) IFF (member(t, lhs(unif_prb)) OR member(t, rhs(unif_prb)))
 
+lhs_rhs_len: LEMMA
+   length(lhs(P)) = length(rhs(P))
+
 member_lhs_pareate: LEMMA
    member(t, lhs(pareate(args1, args2))) IMPLIES member(t, args1) 
 
 lhs_pareate: LEMMA 
    length(args1) = length(args2) IMPLIES lhs(pareate(args1, args2)) = args1
+
+rhs_pareate: LEMMA
+   length(args1) = length(args2) IMPLIES rhs(pareate(args1, args2)) = args2
 
 member_rhs_pareate: LEMMA
    member(t, rhs(pareate(args1, args2))) IMPLIES member(t, args2)
@@ -364,6 +372,7 @@ subset_unif_prb_append: LEMMA
    (subset?(unif_prb, unif_prb1) IMPLIES subset?(unif_prb, append(unif_prb1, unif_prb2))) AND
    (subset?(unif_prb, unif_prb2) IMPLIES subset?(unif_prb, append(unif_prb1, unif_prb2))) 
 
+
 % unifies?
 unifies?_append: LEMMA
     unifies?(G, sigma, append(unif_prb1, unif_prb2)) =
@@ -372,6 +381,9 @@ unifies?_append: LEMMA
 unifies?_pareate: LEMMA
     length(args1) = length(args2) AND unifies?(G, sigma, pareate(args1, args2))
     IMPLIES equal?(G)(subs(sigma)(args1), subs(sigma)(args2))
+
+unifies?_lhs_rhs: LEMMA
+    unifies?(G, sigma, P) IMPLIES equal?(G)(subs(sigma)(lhs(P)), subs(sigma)(rhs(P)))
 
 unifies?_equiv: LEMMA
     unifies?(G, sigma, unif_prb) IFF
@@ -467,6 +479,10 @@ apply_sub_elim_var: LEMMA
 apply_sub_elim_var2: LEMMA 
     idempotent?(sigma) IMPLIES disjoint?(dom(sigma), vars(apply_sub(sigma, unif_prb)))
 
+apply_sub_elim_var3: LEMMA 
+    NOT member(X, vars(t)) IMPLIES 
+    NOT member(X, vars(apply_sub(cons((X, ext(pi)(t)), null), P)))
+    
 apply_sub_vars: LEMMA 
     subset?(vars(apply_sub(sigma, unif_prb)), union(vars(img(sigma)), vars(unif_prb)))
 
@@ -536,14 +552,12 @@ well_formed_subset: LEMMA
 well_formed_unif_prb_append: LEMMA 
    well_formed?(append(unif_prb, unif_prb1)) IFF (well_formed?(unif_prb) AND well_formed?(unif_prb1))
 
-% TO DO: I am not sure how to adapt this lemmas, I am not sure whether it will be only one context
-% or it will be necessary to work with more than one context
-unifies?_impossible: CONJECTURE
+unifies?_impossible: LEMMA
    (FORALL t1:
     count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))
    AND are_ac?(t, s, f)
-   AND NOT same_count?(get_args(f)(t), get_args(f)(s), equal?(G)) AND keep_fresh?(G, delta) 
-   IMPLIES NOT unifies?(G, delta, (t, s))
+   AND NOT same_count?(get_args(f)(t), get_args(f)(s), equal?(G)) AND fresh_subs(G1)(delta, G) 
+   IMPLIES NOT unifies?(G1, delta, (t, s))
 
 unifies?_impossible2: LEMMA  
    unifies?(G, sigma, (t, s)) AND NOT var?(t) AND well_formed?(t) IMPLIES  
@@ -554,32 +568,43 @@ remove_common_not_null_count: LEMMA
        count(t1, args1, equal?(G)) > count(t1, args2, equal?(G)))
    IMPLIES NOT null?(remove_common(args1, args2, equal?(G)))
 
-% TO DO: again, not sure if I will need more than one context
-remove_common_not_null_unifies: CONJECTURE 
-   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+remove_common_not_null_unifies: LEMMA 
+   unifies?(G1, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND
+   fresh_subs(G1)(delta, G)  IMPLIES  
    (NOT null?(remove_common(get_args(f)(t), get_args(f)(s), equal?(G))) AND
     NOT null?(remove_common(get_args(f)(s), get_args(f)(t), equal?(G))))
 
-remove_common_args_cor: CONJECTURE
+remove_common_args_cor: LEMMA
    LET (t1, s1) = remove_common(t, s, f, G) IN
-   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   unifies?(G1, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f)
+   AND fresh_subs(G1)(delta, G) IMPLIES  
    remove_common(get_args(f)(t), get_args(f)(s), equal?(G)) =
    remove_common(get_args(f)(t1), get_args(f)(s1), equal?(G))
 
-get_args_remove_common: CONJECTURE
+get_args_remove_common: LEMMA
    LET (t1, s1) = remove_common(t, s, f, G) IN
-   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   unifies?(G1, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND 
+   fresh_subs(G1)(delta, G) IMPLIES 
    get_args(f)(t1) = remove_common(get_args(f)(t), get_args(f)(s), equal?(G))
 
-remove_common_eq: CONJECTURE 
+remove_common_eq: LEMMA 
     LET (t1, s1) = remove_common(t, s, f, G) IN 
-    NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND unifies?(G, delta, (t, s)) IMPLIES 
-    equal?(G)(subs(delta)(t1), subs(delta)(s1))
+    NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND unifies?(G1, delta, (t, s)) AND
+    fresh_subs(G1)(delta, G) IMPLIES 
+    equal?(G1)(subs(delta)(t1), subs(delta)(s1))
 
-remove_common_no_common_args: CONJECTURE 
+remove_common_no_common_args: LEMMA 
    LET (t1, s1) = remove_common(t, s, f, G) IN 
-   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
+   unifies?(G1, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND
+   fresh_subs(G1)(delta, G) IMPLIES 
    no_common_args?(get_args(f)(t1), get_args(f)(s1), G)
+
+remove_common_eq2: LEMMA 
+    LET (t1, s1) = remove_common(t, s, f, G) IN 
+    NOT null?(remove_common(get_args(f)(t), get_args(f)(s), equal?(G)))
+    AND NOT null?(remove_common(get_args(f)(s), get_args(f)(t), equal?(G))) AND
+    are_ac?(t, s, f) AND unifies?(G1, delta, (t1, s1)) AND
+    fresh_subs(G1)(delta, G) IMPLIES equal?(G1)(subs(delta)(t), subs(delta)(s))
 
 remove_common_vars: LEMMA 
    LET (t1, s1) = remove_common(t, s, f, G) IN
@@ -635,6 +660,10 @@ decompose_well_formed: LEMMA
    LET unif_prb = decompose(t, s)`1 IN
    well_formed?(app(f, t), app(f, s)) IMPLIES well_formed?(unif_prb) 
 
+decompose_well_formed_abs: LEMMA  
+   LET unif_prb = decompose(t, s)`1 IN
+   well_formed?(abs(a, t), abs(b, s)) IMPLIES well_formed?(unif_prb) 
+
 decompose_size: LEMMA 
    LET (unif_prb, bool1) = decompose(t, s) IN
    size(unif_prb) <= size((t, s))
@@ -645,6 +674,9 @@ decompose_ren: LEMMA
 decompose_ren1: LEMMA 
    decompose(subs(rho)(t), subs(rho)(s))`1 = apply_sub(rho, decompose(t, s)`1)
 
+decompose_ext: LEMMA 
+   decompose(t, s)`2 = decompose(t, ext(pi)(s))`2
+   
 decompose_vars: LEMMA 
    subset?(vars(decompose(t, s)`1), vars(t, s))
 
@@ -659,5 +691,7 @@ match_prb_apply_sub: LEMMA
     match_problem?(P, PV) AND subset?(vars(img(sigma)), PV) IMPLIES 
     match_problem?(apply_sub(sigma, P), PV)
 
+match_prb_subset: LEMMA
+    subset?(P1, P) AND match_problem?(P, PV) IMPLIES match_problem?(P1, PV)
 
 END unification 

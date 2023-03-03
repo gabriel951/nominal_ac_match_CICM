@@ -434,7 +434,6 @@ get_args_nth: LEMMA
     nice_ind?(i, num_arg(f, t)) IMPLIES
     nth(get_args(f)(t), i-1) = select(f, t)(i) 
 
-
 get_args_remove: LEMMA
     nice_ind?(i, num_arg(f, t)) AND num_arg(f, t) > 1 IMPLIES
     remove(get_args(f)(t), i-1) = get_args(f)(delete(f, t)(i)) 
@@ -974,6 +973,9 @@ ext_delete: LEMMA
 
 ext_vars: LEMMA
    vars(ext(pi)(t)) = vars(t) 
+
+ext_size: LEMMA 
+   size(ext(pi)(t)) = size(t)
 
 ext_size2: LEMMA
    size2(ext(pi)(t)) = size2(t)
