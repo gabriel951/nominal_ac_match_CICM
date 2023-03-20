@@ -117,7 +117,6 @@ equal?_ref: LEMMA
 equal?_fresh: LEMMA
     equal?(G)(t, s) IMPLIES (fresh(G)(a, t) = fresh(G)(a, s))
 
-
 equal?_ext_invariance_right_aux: LEMMA
     act(pi1) = act(pi2) AND equal?(G)(t, ext(pi1)(s))
     IMPLIES equal?(G)(t, ext(pi2)(s))
@@ -162,6 +161,9 @@ equal?_select_delete: LEMMA
 
 equal?_vars: LEMMA  
     equal?(G)(t, s) IMPLIES vars(t) = vars(s)
+
+equal?_is_ac_sym: LEMMA 
+    equal?(G)(t, s) IMPLIES is_ac_sym?(t, f) = is_ac_sym?(s, f)
 
 perm?_len: LEMMA
     perm?(G)(args1, args2) IMPLIES length(args1) = length(args2) 

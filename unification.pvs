@@ -13,7 +13,7 @@ BEGIN
 	IMPORTING fresh_subs, list_theory2[term, term]
 
 a, b: VAR atom
-Delta, G, G1: VAR fresh_context 
+Delta, G, G1, Nabla: VAR fresh_context 
 sigma, sigma1, delta: VAR sub
 rho: VAR renaming
 lst_sub: VAR list[sub]
@@ -137,6 +137,19 @@ apply_sub(sigma, unif_prb): RECURSIVE unif_prb =
     ENDIF
 MEASURE unif_prb BY << 
 
+% TO DO: add a description here  
+is_sol?(Delta, delta)(Nabla, P, sigma, PV): bool =
+    fresh_subs(Delta)(delta, Nabla) AND unifies?(Delta, delta, P) AND 
+    more_general?(Delta)(sigma, delta) AND disjoint?(dom(delta), PV) AND
+    well_formed?(delta)
+
+% TO DO: add a description here: 
+solves?(Delta, delta)(Nabla, P, sigma, PV): bool =
+    fresh_subs(Delta)(delta, Nabla) AND unifies?(Delta, delta, P) AND 
+    more_general?(Delta)(sigma, delta, vars(P)) AND disjoint?(dom(delta), PV) AND
+    well_formed?(delta)
+
+
 % size of a unification pair
 size(unif_pair): nat =
     LET (t, s) = unif_pair IN size(t) + size(s) 
@@ -148,14 +161,6 @@ size(unif_prb): RECURSIVE nat =
     	 size(unif_pair) + size(cdr(unif_prb))
     ENDIF
 MEASURE unif_prb BY << 
-     
-% maximum size of a unification problem
-%max_size(unif_prb): RECURSIVE nat =
-    %IF null?(unif_prb) THEN 0
-    %ELSE LET unif_pair = car(unif_prb) in
-    	 %max(size(unif_pair), max_size(cdr(unif_prb)))
-    %ENDIF
-%MEASURE unif_prb BY << 
      
 % lst of vars in an unif_pair
 lst_vars(unif_pair): list[variable] =
@@ -212,6 +217,8 @@ well_formed?(unif_prb): bool =
    FORALL t:
      (member(t, subterms(unif_prb)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1) AND
      (member(t, unif_prb) IMPLIES NOT pair?(t))
+
+alm_well_formed?(unif_pair): bool = alm_well_formed?(unif_pair`1) AND alm_well_formed?(unif_pair`2)
 
 alm_well_formed?(unif_prb): bool =
    FORALL t: member(t, unif_prb) IMPLIES alm_well_formed?(t)
@@ -412,9 +419,6 @@ unifies?_append_disjoint3: LEMMA
     disjoint?(dom(sigma), vars(unif_prb)) IMPLIES 
     unifies?(G, append(sigma1, sigma), unif_prb) = unifies?(G, sigma1, unif_prb)
 
-unifies?_append_disjoint4: LEMMA 
-    unifies?(G, sigma, unif_prb) AND keep_fresh?(G, sigma1)
-    IMPLIES unifies?(G, append(sigma1, sigma), unif_prb)
     
 % apply_sub
 apply_sub_mem: LEMMA
@@ -525,6 +529,9 @@ all_ac_prb_renaming: LEMMA
 apply_sub_unifies: LEMMA 
    unifies?(G, sigma, apply_sub(sigma1, unif_prb)) IFF unifies?(G, append(sigma, sigma1), unif_prb)
 
+apply_sub_unifies2: LEMMA 
+   unifies?(G, sigma, apply_sub(sigma1, unif_pair)) IFF unifies?(G, append(sigma, sigma1), unif_pair)
+
 apply_sub_eq: LEMMA 
    equal_syn?(sigma, sigma1, vars(unif_prb)) IMPLIES 
    apply_sub(sigma, unif_prb) = apply_sub(sigma1, unif_prb)
@@ -610,11 +617,11 @@ remove_common_vars: LEMMA
    LET (t1, s1) = remove_common(t, s, f, G) IN
    subset?(vars(t1, s1), vars(t, s))
    
-% TO DO: again, not sure if we will need more than one context
-remove_common_alm_well_formed?: CONJECTURE  
+remove_common_alm_well_formed?: LEMMA  
    LET (t1, s1) = remove_common(t, s, f, G) IN
-   unifies?(G, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) IMPLIES  
-   well_formed?(cons((t, s), null)) IMPLIES alm_well_formed?(cons((t1, s1), null)) 
+   unifies?(G1, delta, (t, s)) AND NOT equal?(G)(t, s) AND are_ac?(t, s, f) AND
+   fresh_subs(G1)(delta, G) AND well_formed?((t, s)) IMPLIES
+   alm_well_formed?((t1, s1)) 
 
 % decompose
 decompose_num_arg: LEMMA 
@@ -637,6 +644,17 @@ decompose_correct_app: LEMMA
    LET (unif_prb, bool1) = decompose(t, s) IN
    bool1 AND well_formed?(sigma) IMPLIES 
    unifies?(G, sigma, (app(f, t), app(f, s))) = unifies?(G, sigma, unif_prb)
+
+decompose_correct_abs1: LEMMA    
+   LET (unif_prb, bool1) = decompose(t, s) IN
+   bool1 AND well_formed?(sigma) IMPLIES 
+   unifies?(G, sigma, (abs(a, t), abs(a, s))) = unifies?(G, sigma, unif_prb)
+
+decompose_correct_abs2: LEMMA    
+   LET pi = cons((a, b), null),  
+      (unif_prb, bool1) = decompose(t, ext(pi)(s)) IN
+   bool1 AND well_formed?(sigma) AND a /= b AND fresh(G)(a, subs(sigma)(s)) IMPLIES 
+   unifies?(G, sigma, (abs(a, t), abs(b, s))) = unifies?(G, sigma, unif_prb)
 
 decompose_no_pair: LEMMA 
    no_pair?(decompose(t, s)`1)
@@ -677,6 +695,11 @@ decompose_ren1: LEMMA
 decompose_ext: LEMMA 
    decompose(t, s)`2 = decompose(t, ext(pi)(s))`2
    
+decompose_not_fail3: LEMMA 
+   LET (unif_prb, bool1) = decompose(t, s) IN
+   well_formed?(sigma) AND unifies?(G, sigma, (abs(a, t), abs(b, s)))
+   IMPLIES bool1 
+
 decompose_vars: LEMMA 
    subset?(vars(decompose(t, s)`1), vars(t, s))
 
@@ -693,5 +716,36 @@ match_prb_apply_sub: LEMMA
 
 match_prb_subset: LEMMA
     subset?(P1, P) AND match_problem?(P, PV) IMPLIES match_problem?(P1, PV)
+
+% used by inst_step or in the algorithm of unification
+unifies_more_general_sub_no_effect: LEMMA
+    unifies?(Delta, delta, apply_sub(sigma1, P)) AND
+    more_general?(Delta)(append(sigma1, sigma), delta) AND
+    disjoint?(dom(sigma), vars(P)) AND idempotent?(sigma1) AND
+    disjoint?(dom(sigma), vars(img(sigma1)))
+    IMPLIES unifies?(Delta, delta, P)
+
+unifies_is_more_general_basic_sub: LEMMA 
+    more_general?(G)(sigma, delta) AND unifies?(G, delta, (t, s)) AND 
+    var?(t) AND NOT member(V(t), vars(s)) AND
+    disjoint?(dom(sigma), vars(t, s)) IMPLIES 
+    (LET sigma1 = cons((V(t), ext(reverse(p(t)))(s)), null) IN
+         more_general?(G)(append(sigma1, sigma), delta)) 
+
+unifies_sub_no_effect: LEMMA
+    unifies?(Delta, append(delta, append(sigma1, sigma)), apply_sub(sigma1, (t, s)))
+    AND disjoint?(dom(sigma), vars(img(sigma1))) AND idempotent?(sigma1) AND 
+    disjoint?(dom(sigma), vars(t, s)) IMPLIES 
+    unifies?(Delta, append(delta, append(sigma1, sigma)), (t, s))
+
+unifies_basic_sub: LEMMA
+    LET delta = cons((X, ext(reverse(pi))(s)), null) IN
+    disjoint?(dom(sigma), add(X, vars(s))) AND NOT member(X, vars(s)) IMPLIES 
+    unifies?(Delta, append(append(sigma1, delta), sigma), (pi * X, s))
+
+unifies_fresh_subs: LEMMA 
+    unifies?(Delta, delta, (t, s)) AND var?(t) AND var?(s) AND V(t) = V(s)
+    AND disjoint?(dom(delta), vars(s)) IMPLIES 
+    fresh_subs(Delta)(delta, fc(DS(p(t), p(s)), V(t)))
 
 END unification 

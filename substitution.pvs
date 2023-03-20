@@ -136,6 +136,9 @@ well_formed?(delta): bool =
     (FORALL X: NOT pair?(subs(delta)(X)) AND 
       FORALL t: member(t, subterms(subs(delta)(X))) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
 
+well_formed?(delta, PV): bool = 
+    well_formed?(delta) AND disjoint?(dom(delta), PV)
+
 contained?(delta, set_vars): bool = 
     subset?(dom(delta), set_vars) AND subset?(vars(img(delta)), set_vars)
 
@@ -217,6 +220,9 @@ subs_ac2: LEMMA
 subs_ac3: LEMMA
     is_ac_sym?(subs(sigma)(t), f) IMPLIES (is_ac_sym?(t, f) OR var?(t))
 
+subs_is_ac_sym: LEMMA
+    is_ac_sym?(t, f) IMPLIES is_ac_sym?(subs(sigma)(t), f)
+
 subs_are_ac: LEMMA 
     are_ac?(t, s, f) IMPLIES are_ac?(subs(sigma)(t), subs(sigma)(s), f)
 
@@ -226,9 +232,6 @@ subs_func: LEMMA
 subs_abs2: LEMMA 
     abs?(subs(sigma)(t)) IMPLIES (abs?(t) OR var?(t))
 
-subs_basic_ext: LEMMA
-    subs(sigma_basic, ext(pi)(t)) = ext(pi)(subs(sigma_basic, t))
-
 subs_ext_pi: LEMMA
     subs(sigma)(pi * X) = ext(pi)(subs(sigma)(X))
 
@@ -236,14 +239,24 @@ subs_ext_pi2: LEMMA
    subs(sigma)(pi*X) = pi * X IMPLIES
    subs(sigma)(pi1*X) = pi1*X
 
+basic_subs_ext: LEMMA 
+   subs((X, s), ext(pi)(t)) = ext(pi)(subs((X, s), t)) 
+   
 subs_ext: LEMMA 
     subs(sigma)(ext(pi)(t)) = ext(pi)(subs(sigma)(t))
+
+subs_fresh: LEMMA
+   fresh?(a, subs(sigma)(t))`2 IMPLIES fresh?(a, t)`2
 
 subs_ord: LEMMA
     t = subs(sigma)(s) IMPLIES (ord(t) = ord(s) OR (var?(s) AND member(V(s), dom(sigma))))
     
 subs_var2: LEMMA
     var?(t) IMPLIES (var?(subs(sigma)(t)) = var?(subs(sigma)(V(t))))
+
+subs_ac3_better: LEMMA
+    is_ac_sym?(subs(sigma)(t), f) IMPLIES
+    (is_ac_sym?(t, f) OR (var?(t) AND member(V(t), dom(sigma))))
 
 subs_num_arg_ge1: LEMMA
     num_arg(f, t) > 1 IMPLIES num_arg(f, subs(sigma)(t)) > 1
@@ -434,6 +447,9 @@ img_dom_singleton: LEMMA
 subs_no_effect_t: LEMMA
     disjoint?(dom(sigma), vars(t)) IMPLIES subs(sigma)(t) = t
 
+subs_no_effect_t2: LEMMA
+    subs(sigma)(t) = t IMPLIES disjoint?(dom(sigma), vars(t))
+
 dom_append2: LEMMA  
     disjoint?(vars(img(sigma)), dom(delta)) AND disjoint?(dom(delta), dom(sigma)) IMPLIES 
     dom(append(delta, sigma)) = union(dom(delta), dom(sigma))
@@ -505,6 +521,9 @@ basic_sub_well_formed: LEMMA
 %subterms_subs: CONJECTURE
 %    subset?(subterms(subs(sigma)(t)),
 %            union(image(subs(sigma))(subterms(t)), subterms(img(sigma))))
+
+subterms_subs_x: LEMMA
+     subset?(subterms(subs(sigma)(X)), add(null * X, subterms(img(sigma))))
 
 subterms_subs2: LEMMA 
     member(t, subterms(subs(sigma)(s))) IMPLIES 
@@ -674,13 +693,11 @@ subs_size2_map_get_args: LEMMA
    member(t, args) AND length(args) > 1 IMPLIES 
    size2(subs(delta)(t)) < sum(map(size2)(flatten(map(get_args(f))(map(subs(delta))(args)))))
 
-% TODO: this changed slightly
 subs_not_same_size2: LEMMA
    member(X, vars(s)) AND NOT var?(s) AND
    (FORALL t: member(t, subterms(s)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
    IMPLIES size2(subs(delta)(X)) < size2(subs(delta)(s))
 
-% TODO: this changed slightly
 subs_equal_impossible: LEMMA
    member(X, vars(s)) AND NOT var?(s) AND
    (FORALL t: member(t, subterms(s)) AND ac_app?(t) IMPLIES num_arg(ac_sym(t), t) > 1)
@@ -722,12 +739,31 @@ count_subs_get_args: LEMMA
 %    keep_fresh?(G, sigma) IMPLIES
 %    count(s, subs(sigma)(t), f, G) = dot_product(count_vec(subs(sigma)(no_rep_args), f, G)(s), coef)
 
-%% contained, more_general
+
 subs_inst: LEMMA 
     LET delta = cons((X, t), null) IN 
     equal?(G)(subs(sigma)(X), subs(sigma)(t)) IMPLIES 
     equal?(G)(sigma, append(sigma, delta))
 
+subs_inst_correct: LEMMA 
+    LET delta = cons((X, ext(reverse(pi))(s)), null) IN 
+    NOT member(X, vars(s)) IMPLIES 
+    equal?(G)(subs(sigma)(subs(delta)(pi * X)), subs(sigma)(subs(delta)(s)))
+
+subs_unify_alg_aux: LEMMA
+    equal?(G)(delta, append(delta1, append(sigma1, sigma))) AND
+    disjoint?(dom(sigma), union(vars(t), vars(s))) AND idempotent?(sigma1) AND
+    disjoint?(dom(sigma), vars(img(sigma1)))
+    IMPLIES  
+     (equal?(G)(subs(delta)(subs(sigma1)(t)), subs(delta)(subs(sigma1)(s)))
+      IFF equal?(G)(subs(delta)(t), subs(delta)(s)))
+
+subs_unify_alg_aux2: LEMMA 
+    more_general?(G)(append(sigma1, sigma), delta) AND
+    idempotent?(sigma1) AND disjoint?(dom(sigma), V1)
+    AND contained?(sigma1, V1) IMPLIES equal?(G)(delta, append(delta, sigma1))
+
+%% contained, more_general
 contained_append: LEMMA
     contained?(delta, set_vars) AND contained?(sigma, set_vars)
     IMPLIES contained?(append(delta, sigma), set_vars)
@@ -747,6 +783,10 @@ more_general_supset: LEMMA
     more_general?(G)(sigma, append(delta1, delta), set_vars1) AND subset?(set_vars, set_vars1)
     AND disjoint?(dom(delta1), set_vars) AND contained?(delta, set_vars)
     IMPLIES more_general?(G)(sigma, delta, set_vars)
+
+more_general_is_more_general: LEMMA 
+    more_general?(G)(sigma, sigma1) IMPLIES more_general?(G)(sigma, sigma1, V1)
+
 
 % renamings
 renaming_ord: LEMMA 

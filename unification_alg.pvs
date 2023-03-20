@@ -9,14 +9,15 @@
 
 unification_alg: THEORY
 BEGIN
-	IMPORTING rename_input, list_theory[sub] 
+	IMPORTING rename_input, list_theory[sub]
 
 
-IMPORTING map_theory[nice_input, sub]
+IMPORTING map_theory[nice_input, [fresh_context, sub]]
 
-Nabla, Nabla_, G: VAR fresh_context
+Delta, Nabla, Nabla_, G, Gamma, Gamma1: VAR fresh_context
 pi: VAR perm
 
+a: VAR atom
 X: VAR variable
 t, s: VAR term
 sigma, sigma1, delta, gamma, gamma_: VAR sub
@@ -57,7 +58,7 @@ unify(input): RECURSIVE list[[fresh_context, sub]] =
 	*(pi, X):
 	  IF (NOT member(X, vars(s))) AND (NOT member(X, PV))  THEN LET
 	    sigma1 = cons((X, ext(reverse(pi))(s)), null),
-	    (G1, bool1) = fresh_subs?(sigma, G), 
+	    (G1, bool1) = fresh_subs?(sigma1, G), 
 	    new_G = append(G1, G), 
 	    new_sigma = append(sigma1, sigma), 
 	    new_P = apply_sub(sigma1, P1) IN 
@@ -111,86 +112,97 @@ unify(input): RECURSIVE list[[fresh_context, sub]] =
     ENDIF
 MEASURE lex3(card(vars(input`2)), max_size(input`2), num_max_size(input`2))
 
-%%%%%%%%%%%%%%% OLD STUFF
-% the AC-unification algorithm. In our paper we refer to it as ACUnif.
-%unify(input): RECURSIVE list[[fresh_context, sub]] =
-%  LET (G, P, sigma, V, PV) = input IN 
-%  IF null?(P) THEN cons((G, sigma), null)
-%  ELSE LET
-%     (t, s) = car(P) IN 
-%
-%     % TO DO: this is omitted since the variable s is always protected in a matching problem
-%     %IF var?(s) AND (NOT member(V(s), vars(t))) AND (NOT member(V(s), PV)) THEN LET
-%        %sigma1 = cons((V(s), ext(reverse(p(s)))(t)), null),
-%	%(G1, bool1) = fresh_subs?(sigma, G), 
-%	%new_G = append(G1, G), 
-%	%new_sigma = append(sigma1, sigma), 
-%	%new_P = apply_sub(sigma1, P1)
-%	%IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
-%	%ELSE null 
-%	%ENDIF
-%
-%     CASES t OF
-%        at(a):
-%	  IF s = at(a) THEN unify(G, cdr(P), sigma, V, PV)
-%	  ELSE null
-%	  ENDIF,
-%
-%	*(pi, X):
-%	  IF (NOT member(X, vars(s))) AND (NOT member(X, PV))  THEN LET
-%	    sigma1 = cons((X, ext(reverse(pi))(s)), null),
-%	    (G1, bool1) = fresh_subs?(sigma, G), 
-%	    new_G = append(G1, G), 
-%	    new_sigma = append(sigma1, sigma), 
-%	    new_P = apply_sub(sigma1, cdr(P)) IN 
-%	    IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
-%	    ELSE null 
-%	    ENDIF
-%
-%	  ELSIF var?(s) AND X = V(s) THEN LET
-%	    new_G = append(fc(DS(pi, p(s)), X), G) IN
-%	    unify(new_G, cdr(P), sigma, V, PV)
-%	  ELSE null
-%	  ENDIF,
-%
-%	unit:
-%	  IF s = unit THEN unify(G, cdr(P), sigma, V, PV)  
-%	  ELSE null 
-%	  ENDIF,
-%
-%	app(f, arg):
-%	  IF NOT app?(s) OR f /= f_sym(s) OR NOT decompose(arg, arg(s))`2 THEN null 
-%	  ELSE LET dec_P = decompose(arg, arg(s))`1,
-%	       	   new_P = append(dec_P, cdr(P)) IN
-%		   unify(G, new_P, sigma, V, PV)
-%	  ENDIF,
-%
-%        abs(a, bd):
-%	  IF NOT abs?(s) THEN null 
-%	  ELSIF a = abstr(s) THEN LET new_P = cons((bd, body(s)), cdr(P)) IN 
-%	  	unify(G, new_P, sigma, V, PV)	
-%	  ELSE LET
-%	       (G1, bool1) = fresh?(a, body(s)),
-%	       new_G = append(G1, G), 
-%	       up = (bd, ext(cons((a, abstr(s)), null))(body(s))), 
-%	       new_P = cons(up, cdr(P)) IN 
-%	       IF bool1 THEN unify(new_G, new_P, sigma, V, PV)
-%	       ElSE null
-%	       ENDIF
-%	  ENDIF, 
-%
-%	ac_app(f, ac_arg):
-%	  IF NOT ac_app?(s) OR f /= ac_sym(s) THEN null
-%	  ELSE LET
-%	     input_lst = apply_ac(G, P, sigma, V, PV), 
-%	     lst_results = map(unify)(input_lst) IN 
-%	     flatten(lst_results) 
-%	  ENDIF
-%        ENDCASES
-%    ENDIF
-%MEASURE lex4(card(vars(input`2)), max_ac_size(input`2), num_max_ac(input`2), size(input`2))
-
 %%%%%%%%%%%% LEMMAS
+unify_sound_inst: LEMMA 
+   LET (G, P, sigma, V, PV) = input IN 
+   (NOT null?(P) AND
+   LET (up, P1) = choose_eq(P), (t, s) = up IN 
+   var?(t) AND NOT member(V(t), vars(s)) AND 
+   LET sigma1 = cons((V(t), ext(reverse(p(t)))(s)), null),
+       (G1, bool1) = fresh_subs?(sigma1, G), 
+       new_G = append(G1, G), 
+       new_sigma = append(sigma1, sigma), 
+       new_P = apply_sub(sigma1, P1) IN 
+   is_sol?(Delta, delta)(new_G, new_P, new_sigma, PV)) IMPLIES
+   is_sol?(Delta, delta)(G, P, sigma, PV)
+
+unify_sound_abs: LEMMA
+   LET (G, P, sigma, V, PV) = input IN 
+   (NOT null?(P) AND 
+   LET (up, P1) = choose_eq(P), (t, s) = up IN 
+   abs?(t) AND abs?(s) AND decompose(body(t), body(s))`2 AND
+   abstr(t) /= abstr(s) AND 
+   LET (G1, bool1) = fresh?(abstr(t), body(s)),
+       new_G = append(G1, G), 
+       pi = cons((abstr(t), abstr(s)), null), 
+       dec_P = decompose(body(t), ext(pi)(body(s)))`1, 
+       new_P = append(dec_P, P1) IN 
+   bool1 AND is_sol?(Delta, delta)(new_G, new_P, sigma, PV)) IMPLIES
+   is_sol?(Delta, delta)(G, P, sigma, PV)
+
+unify_sound: LEMMA 
+   LET (Gamma, P, sigma, V, PV) = input IN 
+   is_sol?(Delta, delta)(Gamma1, null, sigma1, PV) AND 
+   member((Gamma1, sigma1), unify(input)) IMPLIES
+   is_sol?(Delta, delta)(Gamma, P, sigma, PV)
+
+unify_sound_cor: LEMMA 
+   is_sol?(Delta, delta)(Gamma, null, sigma, vars(s)) AND well_formed?((t, s)) AND
+   member((Gamma, sigma), unify(null, cons((t, s), null), null, vars(t, s), vars(s))) IMPLIES 
+   is_sol?(Delta, delta)(null, cons((t, s), null), null, vars(s)) 
+
+unify_completeness_inst: LEMMA 
+   LET (G, P, sigma, V, PV) = input,  
+       (up, P1) = choose_eq(P), (t, s) = up IN 
+   is_sol?(Delta, delta)(G, P, sigma, PV) AND
+   NOT null?(P) AND var?(t) AND NOT member(V(t), vars(s)) IMPLIES 
+   (LET sigma1 = cons((V(t), ext(reverse(p(t)))(s)), null),
+       (G1, bool1) = fresh_subs?(sigma1, G), 
+       new_G = append(G1, G), 
+       new_sigma = append(sigma1, sigma), 
+       new_P = apply_sub(sigma1, P1) IN 
+   bool1 IMPLIES is_sol?(Delta, delta)(new_G, new_P, new_sigma, PV))
+
+unify_completeness_inst2: LEMMA 
+   LET (G, P, sigma, V, PV) = input,  
+       (up, P1) = choose_eq(P), (t, s) = up IN 
+   is_sol?(Delta, delta)(G, P, sigma, PV) AND
+   NOT null?(P) AND var?(t) AND NOT member(V(t), vars(s)) IMPLIES 
+   (LET sigma1 = cons((V(t), ext(reverse(p(t)))(s)), null),
+       (G1, bool1) = fresh_subs?(sigma1, G), 
+       new_G = append(G1, G), 
+       new_sigma = append(sigma1, sigma), 
+       new_P = apply_sub(sigma1, P1) IN bool1)
+
+unify_completeness_inst3: LEMMA 
+   LET (G, P, sigma, V, PV) = input,  
+       (up, P1) = choose_eq(P), (t, s) = up IN 
+   is_sol?(Delta, delta)(G, P, sigma, PV) AND
+   NOT null?(P) AND var?(t) AND var?(s) AND V(t) = V(s) IMPLIES 
+   (LET new_G = append(fc(DS(p(t), p(s)), V(t)), G) IN
+        is_sol?(Delta, delta)(new_G, P1, sigma, PV))
+
+unify_completeness_abs: LEMMA 
+   LET (G, P, sigma, V, PV) = input,  
+       (up, P1) = choose_eq(P), (t, s) = up IN 
+   is_sol?(Delta, delta)(G, P, sigma, PV) AND
+   NOT null?(P) AND abs?(t) AND abs?(s) AND abstr(t) /= abstr(s) AND
+   decompose(body(t), body(s))`2 IMPLIES 
+   (LET (G1, bool1) = fresh?(abstr(t), body(s)),
+	new_G = append(G1, G), 
+	pi = cons((abstr(t), abstr(s)), null), 
+	dec_P = decompose(body(t), ext(pi)(body(s)))`1, 
+	new_P = append(dec_P, P1) IN 
+	bool1 AND is_sol?(Delta, delta)(new_G, new_P, sigma, PV))
+
+unify_completeness: CONJECTURE 
+   LET (Gamma, P, sigma, V, PV) = input IN 
+   is_sol?(Delta, delta)(Gamma, P, sigma, PV) AND contained?(delta, V) IMPLIES 
+   EXISTS Gamma1, sigma1: 
+      member((Gamma1, sigma1), unify(input)) AND
+      solves?(Delta, delta)(Gamma1, null, sigma1, PV)
+
+
 % some properties of the substitutions computed, needed for the lemmas of soundness and completeness
 unify_subs: CONJECTURE 
    LET (G, P, sigma, V, PV) = input IN 

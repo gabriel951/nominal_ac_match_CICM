@@ -753,7 +753,6 @@ var_lst_nth: LEMMA
    i < length(lst_nat) IMPLIES 
    nth(var_lst(lst_nat), i) = *(null, nth(lst_nat, i))
 
-% TODO: this changed
 var_lst_mem: LEMMA
    member(t, var_lst(lst_nat)) IFF (var?(t) AND member(V(t), lst_nat) AND null?(p(t)))
 
@@ -945,6 +944,9 @@ well_formed_get_args: LEMMA
 
 alm_well_formed_get_args: LEMMA 
     alm_well_formed?(t) AND is_ac_sym?(t, f) IMPLIES well_formed?(get_args(f)(t))
+
+well_formed_get_ac_from_args: LEMMA 
+    well_formed?(args) AND length(args) > 1 IMPLIES well_formed?(get_ac_from_args(f)(args))
 
 % ext
 ext_identity: LEMMA

@@ -698,7 +698,7 @@
     (f_symbol type-eq-decl nil term_properties nil)
     (ac_symbol type-eq-decl nil term_properties nil)
     (term type-decl nil term_adt nil)
-    (PRED type-eq-decl nil defined_types nil) nil
+    (PRED type-eq-decl nil defined_types nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (TRUE const-decl "bool" booleans nil)
     (variable type-eq-decl nil term_properties nil)
@@ -706,7 +706,7 @@
     (rhs const-decl "args" unification nil)
     (lhs const-decl "args" unification nil)
     (args type-eq-decl nil term_properties nil)
-    (length def-decl "nat" list_props nil) nil
+    (length def-decl "nat" list_props nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
     (unif_prb type-eq-decl nil unification nil))
    shostak))
@@ -931,7 +931,6 @@
     (ac_symbol type-eq-decl nil term_properties nil)
     (term type-decl nil term_adt nil)
     (PRED type-eq-decl nil defined_types nil)
-    (every adt-def-decl "boolean" term_adt nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (TRUE const-decl "bool" booleans nil)
     (variable type-eq-decl nil term_properties nil)
@@ -942,8 +941,7 @@
     (length def-decl "nat" list_props nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
-    (args type-eq-decl nil term_properties nil)
-    (every adt-def-decl "boolean" list_adt nil))
+    (args type-eq-decl nil term_properties nil))
    shostak))
  (member_rhs_pareate 0
   (member_rhs_pareate-1 nil 3832945912
@@ -4238,76 +4236,6 @@
     (boolean nonempty-type-decl nil booleans nil)
     (number nonempty-type-decl nil numbers nil))
    shostak))
- (unifies?_append_disjoint4 0
-  (unifies?_append_disjoint4-1 nil 3850328971
-   ("" (skolem 1 ("G" "sig" "sig1" "P"))
-    (("" (prop)
-      (("" (rewrite "unifies?_equiv")
-        (("" (rewrite "unifies?_equiv")
-          (("" (skolem 1 "up")
-            (("" (prop)
-              (("" (inst -1 "up")
-                (("" (assert)
-                  (("" (expand "unifies?")
-                    (("" (rewrite "subs_append2")
-                      (("" (rewrite "subs_append2")
-                        (("" (lemma "subs_equal?")
-                          (("" (assert)
-                            ((""
-                              (inst -1 "G" "subs(sig)(up`2)" "sig1"
-                               "subs(sig)(up`1)")
-                              (("" (assert) nil nil)) nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((append def-decl "list[T]" list_props nil)
-    (subs_append2 formula-decl nil substitution nil)
-    (unifies? const-decl "bool" unification nil)
-    (unif_prb type-eq-decl nil unification nil)
-    (unif_pair type-eq-decl nil unification nil)
-    (sub type-eq-decl nil substitution nil)
-    (basic_sub type-eq-decl nil substitution nil)
-    (TRUE const-decl "bool" booleans nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (PRED type-eq-decl nil defined_types nil)
-    (term type-decl nil term_adt nil)
-    (ac_symbol type-eq-decl nil term_properties nil)
-    (f_symbol type-eq-decl nil term_properties nil)
-    (char type-eq-decl nil strings nil)
-    (char? adt-recognizer-decl "[character -> boolean]" character_adt
-     nil)
-    (character type-decl nil character_adt nil)
-    (below type-eq-decl nil nat_types nil)
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (perm type-eq-decl nil atoms nil)
-    (fresh_context type-eq-decl nil freshness nil)
-    (list type-decl nil list_adt nil)
-    (variable type-eq-decl nil term_properties nil)
-    (atom type-eq-decl nil atoms nil) (>= const-decl "bool" reals nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number nonempty-type-decl nil numbers nil)
-    (unifies?_equiv formula-decl nil unification nil))
-   shostak))
  (apply_sub_mem 0
   (apply_sub_mem-1 nil 3827693738
    ("" (induct "unif_prb")
@@ -6865,6 +6793,52 @@
     (number nonempty-type-decl nil numbers nil)
     (unifies?_equiv formula-decl nil unification nil))
    shostak))
+ (apply_sub_unifies2 0
+  (apply_sub_unifies2-1 nil 3887388817
+   ("" (skolem 1 ("G" "sig" "sig1" "up"))
+    (("" (expand "unifies?")
+      (("" (expand "apply_sub")
+        (("" (rewrite "subs_append2")
+          (("" (rewrite "subs_append2") (("" (prop) nil nil)) nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((unifies? const-decl "bool" unification nil)
+    (subs_append2 formula-decl nil substitution nil)
+    (number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (variable type-eq-decl nil term_properties nil)
+    (atom type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (perm type-eq-decl nil atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (unif_pair type-eq-decl nil unification nil)
+    (apply_sub const-decl "unif_pair" unification nil))
+   shostak))
  (apply_sub_eq 0
   (apply_sub_eq-1 nil 3854739761
    ("" (induct "unif_prb")
@@ -7449,7 +7423,6 @@
     (subs_ext_pi formula-decl nil substitution nil)
     (term_times_eta formula-decl nil term_adt nil)
     (subs const-decl "term" substitution nil)
-    (well_formed? const-decl "bool" substitution nil)
     (subs_pair2 formula-decl nil substitution nil)
     (subterms_mem_unif_prb formula-decl nil unification nil)
     (number nonempty-type-decl nil numbers nil)
@@ -18035,220 +18008,62 @@
     (("" (skoletin)
       (("" (flatten)
         (("" (expand "alm_well_formed?" 2)
-          (("" (skolem 2 "v")
-            (("" (prop)
-              (("" (expand "member" -4)
-                (("" (prop)
-                  (("1" (replace -1)
-                    (("1" (expand "t1" 2)
-                      (("1" (hide -1)
-                        (("1" (expand "alm_well_formed?" 2)
-                          (("1" (prop)
-                            (("1" (expand "remove_common" -1)
-                              (("1"
-                                (expand "get_ac_from_args" -1 1)
-                                (("1" (propax) nil nil))
-                                nil))
-                              nil)
-                             ("2" (skolem 1 "t2")
-                              (("2"
-                                (flatten)
-                                (("2"
-                                  (expand "remove_common" -1)
-                                  (("2"
-                                    (use "subterm_get_ac_from_args")
-                                    (("2"
-                                      (prop)
-                                      (("1"
-                                        (expand "remove_common" 1)
-                                        (("1" (assert) nil nil))
-                                        nil)
-                                       ("2"
-                                        (hide -2)
-                                        (("2"
-                                          (rewrite "subterm_args")
-                                          (("2"
-                                            (skolem -1 "t2S")
-                                            (("2"
-                                              (prop)
-                                              (("2"
-                                                (use
-                                                 "remove_common_mem[term]")
-                                                (("2"
-                                                  (assert)
-                                                  (("2"
-                                                    (hide -2)
-                                                    (("2"
-                                                      (rewrite
-                                                       "well_formed_unif_prb")
-                                                      (("2"
-                                                        (inst -6 "t")
-                                                        (("2"
-                                                          (expand
-                                                           "member"
-                                                           -6)
-                                                          (("2"
-                                                            (use
-                                                             "well_formed_get_args")
-                                                            (("2"
-                                                              (assert)
-                                                              (("2"
-                                                                (expand
-                                                                 "well_formed?"
-                                                                 -1)
-                                                                (("2"
-                                                                  (inst
-                                                                   -1
-                                                                   "t2")
-                                                                  (("2"
-                                                                    (assert)
-                                                                    (("2"
-                                                                      (rewrite
-                                                                       "subterm_args")
-                                                                      (("2"
-                                                                        (inst
-                                                                         1
-                                                                         "t2S")
-                                                                        (("2"
-                                                                          (assert)
-                                                                          nil
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil)
-                                       ("3"
-                                        (hide -2)
-                                        (("3"
-                                          (use
-                                           "remove_common_not_null_unifies")
-                                          (("3" (assert) nil nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
+          (("" (prop)
+            (("1" (expand "t1" 1)
+              (("1" (expand "alm_well_formed?" 1)
+                (("1" (prop)
+                  (("1" (expand "remove_common" -1)
+                    (("1" (expand "get_ac_from_args" -1 1)
+                      (("1" (propax) nil nil)) nil))
                     nil)
-                   ("2" (replace -1)
-                    (("2" (expand "alm_well_formed?" 2)
-                      (("2" (prop)
-                        (("1" (expand "s1" -1)
-                          (("1" (expand "remove_common" -1)
-                            (("1" (expand "get_ac_from_args" -1)
-                              (("1" (propax) nil nil)) nil))
-                            nil))
-                          nil)
-                         ("2" (skolem 1 "s2")
+                   ("2" (skolem 1 "t2")
+                    (("2" (flatten)
+                      (("2" (expand "remove_common" -1)
+                        (("2" (use "subterm_get_ac_from_args")
                           (("2" (prop)
-                            (("2" (expand "s1" -1)
+                            (("1" (expand "remove_common" 1)
+                              (("1" (assert) nil nil)) nil)
+                             ("2" (hide -2)
                               (("2"
-                                (expand "remove_common" -1)
+                                (rewrite "subterm_args")
                                 (("2"
-                                  (use "subterm_get_ac_from_args")
+                                  (skolem -1 "t2S")
                                   (("2"
-                                    (assert)
+                                    (prop)
                                     (("2"
-                                      (prop)
-                                      (("1"
-                                        (expand "s1" 1)
-                                        (("1"
-                                          (expand "remove_common" 1)
-                                          (("1" (assert) nil nil))
-                                          nil))
-                                        nil)
-                                       ("2"
-                                        (hide -2)
+                                      (use "remove_common_mem[term]")
+                                      (("2"
+                                        (assert)
                                         (("2"
-                                          (rewrite "subterm_args")
+                                          (hide -2)
                                           (("2"
-                                            (skolem -1 "s2S")
+                                            (expand "well_formed?" -7)
                                             (("2"
-                                              (prop)
+                                              (flatten)
                                               (("2"
                                                 (use
-                                                 "remove_common_mem[term]")
+                                                 "well_formed_get_args")
                                                 (("2"
                                                   (assert)
                                                   (("2"
-                                                    (rewrite
+                                                    (expand
                                                      "well_formed?"
-                                                     -8)
+                                                     -1)
                                                     (("2"
-                                                      (inst -8 "s2")
+                                                      (inst -1 "t2")
                                                       (("2"
                                                         (assert)
                                                         (("2"
-                                                          (expand
-                                                           "subterms"
-                                                           4)
+                                                          (rewrite
+                                                           "subterm_args"
+                                                           1)
                                                           (("2"
-                                                            (expand
-                                                             ("member"
-                                                              "union")
-                                                             4)
+                                                            (inst
+                                                             1
+                                                             "t2S")
                                                             (("2"
-                                                              (prop)
-                                                              (("2"
-                                                                (expand
-                                                                 "subterms"
-                                                                 4)
-                                                                (("2"
-                                                                  (expand
-                                                                   ("member"
-                                                                    "union")
-                                                                   4)
-                                                                  (("2"
-                                                                    (prop)
-                                                                    (("2"
-                                                                      (lemma
-                                                                       "get_args_subterms")
-                                                                      (("2"
-                                                                        (inst
-                                                                         -1
-                                                                         "f"
-                                                                         "s2S"
-                                                                         "s")
-                                                                        (("2"
-                                                                          (assert)
-                                                                          (("2"
-                                                                            (expand
-                                                                             "subset?"
-                                                                             -1)
-                                                                            (("2"
-                                                                              (inst
-                                                                               -1
-                                                                               "s2")
-                                                                              (("2"
-                                                                                (assert)
-                                                                                nil
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
+                                                              (assert)
+                                                              nil
                                                               nil))
                                                             nil))
                                                           nil))
@@ -18260,43 +18075,83 @@
                                               nil))
                                             nil))
                                           nil))
-                                        nil)
-                                       ("3"
-                                        (hide -2)
-                                        (("3"
-                                          (use
-                                           "remove_common_not_null_unifies")
-                                          (("3"
-                                            (assert)
-                                            (("3"
-                                              (hide 2 3 -7 -8)
-                                              (("3"
-                                                (prop)
-                                                (("1"
-                                                  (expand "unifies?")
-                                                  (("1"
-                                                    (use "equal?_sym")
-                                                    (("1"
-                                                      (assert)
-                                                      nil
-                                                      nil))
-                                                    nil))
-                                                  nil)
-                                                 ("2"
-                                                  (lemma "equal?_sym")
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("3"
+                              (use "remove_common_not_null_unifies")
+                              (("3" (assert) nil nil)) nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (expand "s1" 1)
+              (("2" (expand "alm_well_formed?" 1)
+                (("2" (prop)
+                  (("1" (expand "remove_common" -1)
+                    (("1" (expand "get_ac_from_args" -1 1)
+                      (("1" (propax) nil nil)) nil))
+                    nil)
+                   ("2" (skolem 1 "t2")
+                    (("2" (flatten)
+                      (("2" (expand "remove_common" -1)
+                        (("2" (use "subterm_get_ac_from_args")
+                          (("2" (prop)
+                            (("1" (expand "remove_common" 1)
+                              (("1" (assert) nil nil)) nil)
+                             ("2" (hide -2)
+                              (("2"
+                                (rewrite "subterm_args")
+                                (("2"
+                                  (skolem -1 "t2S")
+                                  (("2"
+                                    (prop)
+                                    (("2"
+                                      (use "remove_common_mem[term]")
+                                      (("2"
+                                        (assert)
+                                        (("2"
+                                          (hide -2)
+                                          (("2"
+                                            (expand "well_formed?" -7)
+                                            (("2"
+                                              (flatten)
+                                              (("2"
+                                                (use
+                                                 "well_formed_get_args")
+                                                (("2"
+                                                  (assert)
                                                   (("2"
-                                                    (inst -1 "t" "s")
+                                                    (expand
+                                                     "well_formed?"
+                                                     -1)
                                                     (("2"
-                                                      (assert)
-                                                      nil
+                                                      (inst -1 "t2")
+                                                      (("2"
+                                                        (assert)
+                                                        (("2"
+                                                          (rewrite
+                                                           "subterm_args"
+                                                           1)
+                                                          (("2"
+                                                            (inst
+                                                             1
+                                                             "t2S")
+                                                            (("2"
+                                                              (assert)
+                                                              nil
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
                                                       nil))
-                                                    nil))
-                                                  nil)
-                                                 ("3"
-                                                  (hide-all-but (-5 1))
-                                                  (("3"
-                                                    (grind)
-                                                    nil
                                                     nil))
                                                   nil))
                                                 nil))
@@ -18308,13 +18163,41 @@
                                     nil))
                                   nil))
                                 nil))
+                              nil)
+                             ("3"
+                              (use "remove_common_not_null_unifies")
+                              (("3"
+                                (assert)
+                                (("3"
+                                  (hide -1 -2)
+                                  (("3"
+                                    (prop)
+                                    (("1"
+                                      (expand "unifies?")
+                                      (("1"
+                                        (rewrite "equal?_sym")
+                                        nil
+                                        nil))
+                                      nil)
+                                     ("2"
+                                      (rewrite "equal?_sym" 3)
+                                      nil
+                                      nil)
+                                     ("3"
+                                      (expand "are_ac?")
+                                      (("3"
+                                        (flatten)
+                                        (("3" (assert) nil nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
                               nil))
                             nil))
                           nil))
                         nil))
                       nil))
-                    nil)
-                   ("3" (expand "member" -1) (("3" (propax) nil nil))
                     nil))
                   nil))
                 nil))
@@ -18324,55 +18207,31 @@
         nil))
       nil))
     nil)
-   ((equal?_sym formula-decl nil equality nil)
-    (union const-decl "set" sets nil)
-    (member const-decl "bool" sets nil)
-    (subterms const-decl
-     "finite_set[term[atom, perm, variable, f_symbol, ac_symbol]]"
-     unification nil)
-    (subset? const-decl "bool" sets nil)
-    (get_args_subterms formula-decl nil term_properties nil)
-    (get_ac_from_args const-decl "term" term_properties nil)
-    (subterm_get_ac_from_args formula-decl nil term_properties nil)
-    (args type-eq-decl nil term_properties nil)
-    (equivalence? const-decl "bool" relations nil)
-    (equiv type-eq-decl nil list_theory nil)
-    (remove_common def-decl "list[T]" list_theory nil)
-    (remove_common_not_null_unifies formula-decl nil unification nil)
-    (remove_common_mem formula-decl nil list_theory nil)
-    (well_formed_get_args formula-decl nil term_properties nil)
-    (well_formed_unif_prb formula-decl nil unification nil)
+   ((subterm_args formula-decl nil term_properties nil)
     (real_gt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
-    (subterm_args formula-decl nil term_properties nil)
+    (well_formed_get_args formula-decl nil term_properties nil)
+    (remove_common_mem formula-decl nil list_theory nil)
+    (remove_common_not_null_unifies formula-decl nil unification nil)
+    (remove_common def-decl "list[T]" list_theory nil)
+    (equiv type-eq-decl nil list_theory nil)
+    (equivalence? const-decl "bool" relations nil)
+    (args type-eq-decl nil term_properties nil)
+    (subterm_get_ac_from_args formula-decl nil term_properties nil)
+    (get_ac_from_args const-decl "term" term_properties nil)
+    (equal?_sym formula-decl nil equality nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
     (basic_sub type-eq-decl nil substitution nil)
-    (list type-decl nil list_adt nil)
     (sub type-eq-decl nil substitution nil)
     (unif_pair type-eq-decl nil unification nil)
     (unifies? const-decl "bool" unification nil)
     (NOT const-decl "[bool -> bool]" booleans nil)
     (are_ac? const-decl "bool" term_properties nil)
-    (unif_prb type-eq-decl nil unification nil)
-    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
-    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
-    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
-    (null adt-constructor-decl "(null?)" list_adt nil)
-    (alm_well_formed? const-decl "bool" unification nil)
+    (fresh_subs def-decl "bool" fresh_subs nil)
     (remove_common const-decl "[term, term]" equality nil)
+    (fresh_context type-eq-decl nil freshness nil)
     (string type-eq-decl nil strings nil)
     (variable type-eq-decl nil term_properties nil)
-    (constant type-eq-decl nil term_properties nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (>= const-decl "bool" reals nil)
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (PRED type-eq-decl nil defined_types nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
@@ -18385,6 +18244,17 @@
     (character type-decl nil character_adt nil)
     (below type-eq-decl nil nat_types nil)
     (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (perm type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (atom type-eq-decl nil atoms nil) (>= const-decl "bool" reals nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
     (number nonempty-type-decl nil numbers nil)
     (IFF const-decl "[bool, bool -> bool]" booleans nil)
     (boolean nonempty-type-decl nil booleans nil)
@@ -19256,13 +19126,270 @@
     (app? adt-recognizer-decl "[term -> boolean]" term_adt nil)
     (unifies? const-decl "bool" unification nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
-    (well_formed? const-decl "bool" substitution nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
     (unif_prb type-eq-decl nil unification nil)
     (unif_pair type-eq-decl nil unification nil)
     (sub type-eq-decl nil substitution nil)
     (basic_sub type-eq-decl nil substitution nil)
     (string type-eq-decl nil strings nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (wf_nat formula-decl nil naturalnumbers nil)
+    (< const-decl "bool" reals nil)
+    (naturalnumber type-eq-decl nil naturalnumbers nil)
+    (variable type-eq-decl nil term_properties nil)
+    (TRUE const-decl "bool" booleans nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (term type-decl nil term_adt nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (char type-eq-decl nil strings nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (character type-decl nil character_adt nil)
+    (below type-eq-decl nil nat_types nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (perm type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (atom type-eq-decl nil atoms nil) (>= const-decl "bool" reals nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (measure_induction formula-decl nil measure_induction nil)
+    (well_founded? const-decl "bool" orders nil)
+    (pred type-eq-decl nil defined_types nil))
+   shostak))
+ (decompose_correct_abs1 0
+  (decompose_correct_abs1-1 nil 3887187658
+   ("" (measure-induct "size(t)" "t")
+    (("" (skolem 1 "t")
+      (("" (prop)
+        (("" (skolem 1 ("G" "a" "s" "sig"))
+          (("" (prop)
+            (("" (iff)
+              (("" (prop)
+                (("1" (expand "unifies?" -1)
+                  (("1" (rewrite "subs_abs")
+                    (("1" (rewrite "subs_abs")
+                      (("1" (expand "equal?" -1)
+                        (("1" (hide -2)
+                          (("1" (use "decompose_correct")
+                            (("1" (assert)
+                              (("1"
+                                (expand "unifies?" -1 1)
+                                (("1" (propax) nil nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil)
+                 ("2" (expand "unifies?" 1)
+                  (("2" (rewrite "subs_abs" 1)
+                    (("2" (rewrite "subs_abs" 1)
+                      (("2" (expand "equal?" 1)
+                        (("2" (use "decompose_correct")
+                          (("2" (assert)
+                            (("2" (assert)
+                              (("2"
+                                (expand "unifies?" -1)
+                                (("2" (propax) nil nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((decompose_correct formula-decl nil unification nil)
+    (subs_abs formula-decl nil substitution nil)
+    (decompose def-decl "[unif_prb, bool]" unification nil)
+    (unifies? def-decl "bool" unification nil)
+    (abs adt-constructor-decl "[[atom, term] -> (abs?)]" term_adt nil)
+    (abs? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (unifies? const-decl "bool" unification nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (unif_prb type-eq-decl nil unification nil)
+    (unif_pair type-eq-decl nil unification nil)
+    (sub type-eq-decl nil substitution nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (wf_nat formula-decl nil naturalnumbers nil)
+    (< const-decl "bool" reals nil)
+    (naturalnumber type-eq-decl nil naturalnumbers nil)
+    (variable type-eq-decl nil term_properties nil)
+    (TRUE const-decl "bool" booleans nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (term type-decl nil term_adt nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (char type-eq-decl nil strings nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (character type-decl nil character_adt nil)
+    (below type-eq-decl nil nat_types nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (perm type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (atom type-eq-decl nil atoms nil) (>= const-decl "bool" reals nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (measure_induction formula-decl nil measure_induction nil)
+    (well_founded? const-decl "bool" orders nil)
+    (pred type-eq-decl nil defined_types nil))
+   shostak))
+ (decompose_correct_abs2 0
+  (decompose_correct_abs2-1 nil 3887189644
+   ("" (measure-induct "size(t)" "t")
+    (("" (skolem 1 "t")
+      (("" (prop)
+        (("" (skolem 1 ("G" "a" "b" "s" "sig"))
+          (("" (flatten)
+            (("" (iff)
+              (("" (prop)
+                (("1" (expand "unifies?" -1)
+                  (("1" (rewrite "subs_abs")
+                    (("1" (rewrite "subs_abs")
+                      (("1" (expand "equal?" -1)
+                        (("1" (hide -2)
+                          (("1" (assert)
+                            (("1"
+                              (name-replace "pi"
+                               "cons[[atom, atom]]((a, b), null)")
+                              (("1"
+                                (reveal -1)
+                                (("1"
+                                  (lemma "decompose_correct")
+                                  (("1"
+                                    (inst
+                                     -1
+                                     "G"
+                                     "ext(pi)(s)"
+                                     "sig"
+                                     "t")
+                                    (("1"
+                                      (assert)
+                                      (("1"
+                                        (assert)
+                                        (("1"
+                                          (expand "unifies?" 1)
+                                          (("1"
+                                            (rewrite "subs_ext")
+                                            nil
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil)
+                 ("2" (hide -2)
+                  (("2" (expand "unifies?" 1)
+                    (("2"
+                      (name-replace "pi"
+                       "cons[[atom, atom]]((a, b), null)")
+                      (("2" (reveal -1)
+                        (("2" (rewrite "subs_abs")
+                          (("2" (rewrite "subs_abs")
+                            (("2" (expand "equal?" 1)
+                              (("2"
+                                (assert)
+                                (("2"
+                                  (replace -1)
+                                  (("2"
+                                    (lemma "decompose_correct")
+                                    (("2"
+                                      (inst
+                                       -1
+                                       "G"
+                                       "ext(pi)(s)"
+                                       "sig"
+                                       "t")
+                                      (("2"
+                                        (assert)
+                                        (("2"
+                                          (expand "unifies?" -1)
+                                          (("2"
+                                            (rewrite "subs_ext")
+                                            nil
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((decompose_correct formula-decl nil unification nil)
+    (subs_ext formula-decl nil substitution nil)
+    (subs_abs formula-decl nil substitution nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (ext def-decl "term" term_properties nil)
+    (decompose def-decl "[unif_prb, bool]" unification nil)
+    (unifies? def-decl "bool" unification nil)
+    (abs adt-constructor-decl "[[atom, term] -> (abs?)]" term_adt nil)
+    (abs? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (unifies? const-decl "bool" unification nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (fresh def-decl "bool" freshness nil)
+    (/= const-decl "boolean" notequal nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (unif_prb type-eq-decl nil unification nil)
+    (unif_pair type-eq-decl nil unification nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (sub type-eq-decl nil substitution nil)
+    (basic_sub type-eq-decl nil substitution nil)
     (fresh_context type-eq-decl nil freshness nil)
     (wf_nat formula-decl nil naturalnumbers nil)
     (< const-decl "bool" reals nil)
@@ -19642,7 +19769,6 @@
     (pair? adt-recognizer-decl "[term -> boolean]" term_adt nil)
     (decompose def-decl "[unif_prb, bool]" unification nil)
     (unifies? const-decl "bool" unification nil)
-    (well_formed? const-decl "bool" substitution nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
     (unif_prb type-eq-decl nil unification nil)
     (unif_pair type-eq-decl nil unification nil)
@@ -19821,7 +19947,6 @@
     (nonempty_singleton_finite application-judgement
      "non_empty_finite_set" finite_sets nil)
     (singleton const-decl "(singleton?)" sets nil)
-    (well_formed? const-decl "bool" substitution nil)
     (subs const-decl "term" substitution nil)
     (subterms const-decl
      "finite_set[term[atom, perm, variable, f_symbol, ac_symbol]]"
@@ -21555,6 +21680,111 @@
     (well_founded? const-decl "bool" orders nil)
     (pred type-eq-decl nil defined_types nil))
    shostak))
+ (decompose_not_fail3 0
+  (decompose_not_fail3-1 nil 3888243955
+   ("" (skeep)
+    (("" (assert)
+      (("" (prop)
+        (("" (expand "unifies?" -2)
+          (("" (rewrite "subs_abs" -2)
+            (("" (rewrite "subs_abs" -2)
+              (("" (expand "equal?" -2)
+                (("" (split -2)
+                  (("1" (flatten)
+                    (("1" (lemma "decompose_not_fail")
+                      (("1" (inst -1 "G" "s" "sigma" "t")
+                        (("1" (assert)
+                          (("1" (assert)
+                            (("1" (expand "unifies?" 1)
+                              (("1" (propax) nil nil)) nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("2" (flatten)
+                    (("2" (rewrite "subs_ext" -2 :dir rl)
+                      (("2"
+                        (name-replace "s1"
+                         "ext(cons((a, b), null))(s)")
+                        (("2" (reveal -1)
+                          (("2" (lemma "decompose_not_fail")
+                            (("2" (inst -1 "G" "s1" "sigma" "t")
+                              (("2"
+                                (assert)
+                                (("2"
+                                  (assert)
+                                  (("2"
+                                    (expand "unifies?" -1)
+                                    (("2"
+                                      (replace -2 -1 :dir rl)
+                                      (("2"
+                                        (use "decompose_ext")
+                                        (("2" (assert) nil nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((subs_abs formula-decl nil substitution nil)
+    (number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (atom type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (perm type-eq-decl nil atoms nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (every adt-def-decl "boolean" term_adt nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (variable type-eq-decl nil term_properties nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (equal? def-decl "bool" equality nil)
+    (ext def-decl "term" term_properties nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (decompose_ext formula-decl nil unification nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (subs_ext formula-decl nil substitution nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (decompose_not_fail formula-decl nil unification nil)
+    (unifies? const-decl "bool" unification nil))
+   shostak))
  (decompose_vars 0
   (decompose_vars-1 nil 3885220029
    ("" (measure-induct "size(t)" "t")
@@ -22193,5 +22423,987 @@
     (subset? const-decl "bool" unification nil)
     (sec_proj_mem formula-decl nil list_theory2 nil)
     (rhs const-decl "args" unification nil))
+   shostak))
+ (unifies_more_general_sub_no_effect 0
+  (unifies_more_general_sub_no_effect-1 nil 3887297620
+   ("" (skeep)
+    (("" (rewrite "unifies?_equiv")
+      (("" (rewrite "unifies?_equiv")
+        (("" (skolem 1 "up")
+          (("" (flatten)
+            (("" (inst -1 "apply_sub(sigma1, up)")
+              (("" (prop)
+                (("1" (expand "unifies?" -1)
+                  (("1" (expand "unifies?" 1)
+                    (("1" (expand "apply_sub" -1)
+                      (("1" (lemma "subs_unify_alg_aux")
+                        (("1" (expand "more_general?" -3)
+                          (("1" (skolem -3 "delta1")
+                            (("1"
+                              (inst -1 "Delta" "delta" "delta1" "up`2"
+                               "sigma" "sigma1" "up`1")
+                              (("1"
+                                (assert)
+                                (("1"
+                                  (hide-all-but (-3 -6 1))
+                                  (("1"
+                                    (expand "disjoint?")
+                                    (("1"
+                                      (expand "empty?")
+                                      (("1"
+                                        (skeep)
+                                        (("1"
+                                          (inst?)
+                                          (("1"
+                                            (expand
+                                             ("member" "intersection")
+                                             -1)
+                                            (("1"
+                                              (expand
+                                               ("member"
+                                                "intersection")
+                                               1)
+                                              (("1"
+                                                (prop)
+                                                (("1"
+                                                  (rewrite
+                                                   "vars_unif_prb")
+                                                  (("1"
+                                                    (expand
+                                                     ("member" "union")
+                                                     -2)
+                                                    (("1"
+                                                      (prop)
+                                                      (("1"
+                                                        (inst 1 "up`1")
+                                                        (("1"
+                                                          (assert)
+                                                          (("1"
+                                                            (rewrite
+                                                             "member_unif_prb_equiv"
+                                                             1)
+                                                            (("1"
+                                                              (inst
+                                                               1
+                                                               "up")
+                                                              nil
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil)
+                                                       ("2"
+                                                        (inst 1 "up`2")
+                                                        (("2"
+                                                          (assert)
+                                                          (("2"
+                                                            (rewrite
+                                                             "member_unif_prb_equiv"
+                                                             1)
+                                                            (("2"
+                                                              (inst
+                                                               1
+                                                               "up")
+                                                              nil
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil)
+                 ("2" (rewrite "apply_sub_unif_pair" 1)
+                  (("2" (inst 1 "up") nil nil)) nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((unifies?_equiv formula-decl nil unification nil)
+    (number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil) (atom type-eq-decl nil atoms nil)
+    (variable type-eq-decl nil term_properties nil)
+    (list type-decl nil list_adt nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (perm type-eq-decl nil atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (unif_pair type-eq-decl nil unification nil)
+    (unif_prb type-eq-decl nil unification nil)
+    (apply_sub def-decl "unif_prb" unification nil)
+    (apply_sub const-decl "unif_pair" unification nil)
+    (apply_sub_unif_pair formula-decl nil unification nil)
+    (unifies? const-decl "bool" unification nil)
+    (empty? const-decl "bool" sets nil)
+    (vars_unif_prb formula-decl nil unification nil)
+    (member_unif_prb_equiv formula-decl nil unification nil)
+    (union const-decl "set" sets nil)
+    (member const-decl "bool" sets nil)
+    (intersection const-decl "set" sets nil)
+    (disjoint? const-decl "bool" sets nil)
+    (finite_intersection1 application-judgement "finite_set"
+     finite_sets nil)
+    (finite_union application-judgement "finite_set" finite_sets nil)
+    (subs_unify_alg_aux formula-decl nil substitution nil))
+   shostak))
+ (unifies_is_more_general_basic_sub 0
+  (unifies_is_more_general_basic_sub-1 nil 3888147466
+   ("" (skolem 1 ("G" "del" "s" "sig" "t"))
+    (("" (flatten)
+      (("" (assert)
+        ((""
+          (name-replace "sig1"
+           "cons((V(t), ext(reverse(p(t)))(s)), null)")
+          (("" (expand "unifies?" -2)
+            (("" (reveal -1)
+              (("" (expand "more_general?" -2)
+                (("" (skolem -2 "del1")
+                  (("" (lemma "equal_sub_change_eq_terms")
+                    ((""
+                      (inst -1 "G" "del" "s" "append(del1, sig)" "t")
+                      (("" (assert)
+                        (("" (rewrite "subs_append2")
+                          (("" (rewrite "subs_append2")
+                            ((""
+                              (case "subs(sig)(t) = t AND subs(sig)(s) = s")
+                              (("1"
+                                (flatten)
+                                (("1"
+                                  (replace -1)
+                                  (("1"
+                                    (replace -2)
+                                    (("1"
+                                      (hide -1 -2)
+                                      (("1"
+                                        (lemma "subs_inst")
+                                        (("1"
+                                          (inst
+                                           -1
+                                           "G"
+                                           "V(t)"
+                                           "del1"
+                                           "ext(reverse(p(t)))(s)")
+                                          (("1"
+                                            (assert)
+                                            (("1"
+                                              (replace -3)
+                                              (("1"
+                                                (prop)
+                                                (("1"
+                                                  (expand
+                                                   "more_general?"
+                                                   2)
+                                                  (("1"
+                                                    (inst 2 "del1")
+                                                    (("1"
+                                                      (expand
+                                                       "equal?"
+                                                       2)
+                                                      (("1"
+                                                        (skolem 2 "X")
+                                                        (("1"
+                                                          (expand
+                                                           "subs"
+                                                           2)
+                                                          (("1"
+                                                            (rewrite
+                                                             "subs_append2")
+                                                            (("1"
+                                                              (rewrite
+                                                               "subs_append2")
+                                                              (("1"
+                                                                (expand
+                                                                 "equal?"
+                                                                 -4)
+                                                                (("1"
+                                                                  (inst
+                                                                   -4
+                                                                   "X")
+                                                                  (("1"
+                                                                    (expand
+                                                                     "subs"
+                                                                     -4)
+                                                                    (("1"
+                                                                      (rewrite
+                                                                       "subs_append2")
+                                                                      (("1"
+                                                                        (lemma
+                                                                         "equal?_trans")
+                                                                        (("1"
+                                                                          (inst
+                                                                           -1
+                                                                           "G"
+                                                                           "subs(del)(null*X)"
+                                                                           "subs(del1)(subs(sig)(null * X))"
+                                                                           "subs(del1)(subs(sig1)(subs(sig)(null * X)))")
+                                                                          (("1"
+                                                                            (assert)
+                                                                            (("1"
+                                                                              (hide
+                                                                               3)
+                                                                              (("1"
+                                                                                (lemma
+                                                                                 "equal_sub_equiv")
+                                                                                (("1"
+                                                                                  (inst
+                                                                                   -1
+                                                                                   "G"
+                                                                                   "del1"
+                                                                                   "append(del1, sig1)"
+                                                                                   "subs(sig)(null*X)")
+                                                                                  (("1"
+                                                                                    (assert)
+                                                                                    (("1"
+                                                                                      (rewrite
+                                                                                       "subs_append2")
+                                                                                      nil
+                                                                                      nil))
+                                                                                    nil))
+                                                                                  nil))
+                                                                                nil))
+                                                                              nil))
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil)
+                                                 ("2"
+                                                  (rewrite
+                                                   "subs_ext"
+                                                   1)
+                                                  (("2"
+                                                    (rewrite
+                                                     "equal?_ext_reverse"
+                                                     1
+                                                     :dir
+                                                     rl)
+                                                    (("2"
+                                                      (expand
+                                                       "subs"
+                                                       1
+                                                       1)
+                                                      (("2"
+                                                        (rewrite
+                                                         "subs_ext"
+                                                         1
+                                                         :dir
+                                                         rl)
+                                                        (("2"
+                                                          (expand
+                                                           "ext"
+                                                           1)
+                                                          (("2"
+                                                            (rewrite
+                                                             "append_null")
+                                                            (("2"
+                                                              (use
+                                                               "term_times_eta")
+                                                              (("2"
+                                                                (replace
+                                                                 -1)
+                                                                (("2"
+                                                                  (propax)
+                                                                  nil
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil)
+                               ("2"
+                                (hide-all-but (-6 1))
+                                (("2"
+                                  (prop)
+                                  (("1"
+                                    (use "subs_no_effect_t")
+                                    (("1"
+                                      (assert)
+                                      (("1"
+                                        (expand "disjoint?")
+                                        (("1"
+                                          (expand "empty?")
+                                          (("1"
+                                            (skeep)
+                                            (("1"
+                                              (inst?)
+                                              (("1" (grind) nil nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil)
+                                   ("2"
+                                    (use "subs_no_effect_t")
+                                    (("2"
+                                      (assert)
+                                      (("2"
+                                        (expand "disjoint?")
+                                        (("2"
+                                          (expand "empty?")
+                                          (("2"
+                                            (skeep)
+                                            (("2"
+                                              (inst?)
+                                              (("2" (grind) nil nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (variable type-eq-decl nil term_properties nil)
+    (atom type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (perm type-eq-decl nil atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (V adt-accessor-decl "[(var?) -> variable]" term_adt nil)
+    (ext def-decl "term" term_properties nil)
+    (reverse def-decl "list[T]" list_props nil)
+    (p adt-accessor-decl "[(var?) -> perm]" term_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (append def-decl "list[T]" list_props nil)
+    (subs_append2 formula-decl nil substitution nil)
+    (subs_ext formula-decl nil substitution nil)
+    (term_times_eta formula-decl nil term_adt nil)
+    (append_null formula-decl nil list_props nil)
+    (equal?_ext_reverse formula-decl nil equality nil)
+    (subs const-decl "term" substitution nil)
+    (equal_sub_equiv formula-decl nil substitution nil)
+    (equal?_trans formula-decl nil equality nil)
+    (* adt-constructor-decl "[[perm, variable] -> (var?)]" term_adt
+       nil)
+    (subs_inst formula-decl nil substitution nil)
+    (empty? const-decl "bool" sets nil)
+    (union const-decl "set" sets nil)
+    (vars const-decl "finite_set[variable]" unification nil)
+    (intersection const-decl "set" sets nil)
+    (singleton const-decl "(singleton?)" sets nil)
+    (member const-decl "bool" sets nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (nonempty_singleton_finite application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (finite_union application-judgement "finite_set" finite_sets nil)
+    (nonempty_finite_union1 application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (disjoint? const-decl "bool" sets nil)
+    (finite_intersection1 application-judgement "finite_set"
+     finite_sets nil)
+    (subs_no_effect_t formula-decl nil substitution nil)
+    (equal_sub_change_eq_terms formula-decl nil substitution nil)
+    (unifies? const-decl "bool" unification nil))
+   shostak))
+ (unifies_sub_no_effect 0
+  (unifies_sub_no_effect-1 nil 3887441393
+   ("" (skolem 1 ("Del" "del" "s" "sig" "sig1" "t"))
+    (("" (prop)
+      (("" (lemma "unifies_more_general_sub_no_effect")
+        ((""
+          (inst -1 "Del" "cons((t, s), null)"
+           "append(del, append(sig1, sig))" "sig" "sig1")
+          (("" (assert)
+            (("" (prop)
+              (("1" (expand "unifies?" -1) (("1" (propax) nil nil))
+                nil)
+               ("2" (expand "apply_sub" 1)
+                (("2" (expand "unifies?" 1)
+                  (("2" (expand "apply_sub" 1)
+                    (("2" (expand "unifies?" 1)
+                      (("2" (propax) nil nil)) nil))
+                    nil))
+                  nil))
+                nil)
+               ("3" (expand "more_general?" 1)
+                (("3" (inst 1 "del")
+                  (("3" (expand "equal?" 1)
+                    (("3" (skeep)
+                      (("3" (expand "subs" 1)
+                        (("3" (rewrite "equal?_ref") nil nil)) nil))
+                      nil))
+                    nil))
+                  nil))
+                nil)
+               ("4" (hide-all-but (-4 1))
+                (("4" (expand "disjoint?")
+                  (("4" (expand "empty?")
+                    (("4" (skeep) (("4" (grind) nil nil)) nil)) nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil) (atom type-eq-decl nil atoms nil)
+    (variable type-eq-decl nil term_properties nil)
+    (list type-decl nil list_adt nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (perm type-eq-decl nil atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (unif_pair type-eq-decl nil unification nil)
+    (unif_prb type-eq-decl nil unification nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (append def-decl "list[T]" list_props nil)
+    (unifies? def-decl "bool" unification nil)
+    (apply_sub def-decl "unif_prb" unification nil)
+    (* adt-constructor-decl "[[perm, variable] -> (var?)]" term_adt
+       nil)
+    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (equal?_ref formula-decl nil equality nil)
+    (subs const-decl "term" substitution nil)
+    (finite_intersection1 application-judgement "finite_set"
+     finite_sets nil)
+    (disjoint? const-decl "bool" sets nil)
+    (intersection const-decl "set" sets nil)
+    (emptyset const-decl "set" sets nil)
+    (union const-decl "set" sets nil)
+    (member const-decl "bool" sets nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (vars const-decl "finite_set[variable]" unification nil)
+    (finite_union application-judgement "finite_set" finite_sets nil)
+    (finite_emptyset name-judgement "finite_set" finite_sets nil)
+    (empty? const-decl "bool" sets nil)
+    (unifies_more_general_sub_no_effect formula-decl nil unification
+     nil))
+   shostak))
+ (unifies_basic_sub 0
+  (unifies_basic_sub-1 nil 3887445323
+   ("" (skolem 1 ("Del" "X" "pi" "s" "sig" "sig1"))
+    (("" (assert)
+      (("" (name-replace "del" "cons((X, ext(reverse(pi))(s)), null)")
+        (("" (reveal -1)
+          (("" (flatten)
+            (("" (expand "unifies?" 2)
+              (("" (rewrite "subs_append2")
+                (("" (rewrite "subs_append2")
+                  (("" (rewrite "subs_append2")
+                    (("" (rewrite "subs_append2")
+                      (("" (lemma "subs_no_effect_t")
+                        (("" (inst -1 "sig" "pi * X")
+                          (("" (prop)
+                            (("1" (replace -1)
+                              (("1"
+                                (lemma "subs_no_effect_t")
+                                (("1"
+                                  (inst -1 "sig" "s")
+                                  (("1"
+                                    (prop)
+                                    (("1"
+                                      (replace -1 2)
+                                      (("1"
+                                        (lemma "subs_inst_correct")
+                                        (("1"
+                                          (inst
+                                           -1
+                                           "Del"
+                                           "X"
+                                           "pi"
+                                           "s"
+                                           "sig1")
+                                          (("1"
+                                            (assert)
+                                            (("1"
+                                              (replace -4)
+                                              (("1" (prop) nil nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil)
+                                     ("2"
+                                      (hide-all-but (-3 1))
+                                      (("2"
+                                        (expand "disjoint?")
+                                        (("2"
+                                          (expand "empty?")
+                                          (("2"
+                                            (skeep)
+                                            (("2"
+                                              (inst?)
+                                              (("2" (grind) nil nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (hide-all-but (-2 1))
+                              (("2"
+                                (expand "disjoint?")
+                                (("2"
+                                  (expand "empty?")
+                                  (("2"
+                                    (skeep)
+                                    (("2" (grind) nil nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (variable type-eq-decl nil term_properties nil)
+    (atom type-eq-decl nil atoms nil) (list type-decl nil list_adt nil)
+    (perm type-eq-decl nil atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (TRUE const-decl "bool" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
+    (ext def-decl "term" term_properties nil)
+    (reverse def-decl "list[T]" list_props nil)
+    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
+    (null adt-constructor-decl "(null?)" list_adt nil)
+    (* adt-constructor-decl "[[perm, variable] -> (var?)]" term_adt
+       nil)
+    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (append def-decl "list[T]" list_props nil)
+    (sub type-eq-decl nil substitution nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (subs_append2 formula-decl nil substitution nil)
+    (subs_no_effect_t formula-decl nil substitution nil)
+    (subs_inst_correct formula-decl nil substitution nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (finite_intersection1 application-judgement "finite_set"
+     finite_sets nil)
+    (disjoint? const-decl "bool" sets nil)
+    (subs const-decl "term" substitution nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (member const-decl "bool" sets nil)
+    (intersection const-decl "set" sets nil)
+    (add const-decl "(nonempty?)" sets nil)
+    (empty? const-decl "bool" sets nil)
+    (singleton const-decl "(singleton?)" sets nil)
+    (nonempty_singleton_finite application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (unifies? const-decl "bool" unification nil)
+    (nonempty_add_finite application-judgement "non_empty_finite_set"
+     finite_sets nil))
+   shostak))
+ (unifies_fresh_subs 0
+  (unifies_fresh_subs-1 nil 3888163475
+   ("" (skeep)
+    (("" (rewrite "fresh_subs_character" 1)
+      (("" (skolem 1 "ax")
+        (("" (prop)
+          (("" (lemma "fc_member")
+            (("" (inst -1 "V(t)" "ax`2" "ax`1" "DS(p(t), p(s))")
+              (("" (assert)
+                (("" (case "ax = (ax`1, ax`2)")
+                  (("1" (replace -1 :dir rl)
+                    (("1" (assert)
+                      (("1" (flatten)
+                        (("1" (name-replace "a" "ax`1")
+                          (("1" (replace -3)
+                            (("1" (expand "disjoint?" -8)
+                              (("1"
+                                (expand "empty?" -8)
+                                (("1"
+                                  (inst -8 "V(s)")
+                                  (("1"
+                                    (expand
+                                     ("member" "intersection")
+                                     1)
+                                    (("1"
+                                      (prop)
+                                      (("1"
+                                        (expand ("member" "dom") 1)
+                                        (("1"
+                                          (flatten)
+                                          (("1"
+                                            (expand "subs" -1)
+                                            (("1"
+                                              (replace -8)
+                                              (("1"
+                                                (replace -1)
+                                                (("1"
+                                                  (expand
+                                                   "unifies?"
+                                                   -5)
+                                                  (("1"
+                                                    (lemma
+                                                     "term_times_eta")
+                                                    (("1"
+                                                      (inst -1 "s")
+                                                      (("1"
+                                                        (replace
+                                                         -1
+                                                         -6
+                                                         :dir
+                                                         rl)
+                                                        (("1"
+                                                          (rewrite
+                                                           "subs_ext_pi"
+                                                           -6)
+                                                          (("1"
+                                                            (expand
+                                                             "subs"
+                                                             -6
+                                                             2)
+                                                            (("1"
+                                                              (replace
+                                                               -2)
+                                                              (("1"
+                                                                (expand
+                                                                 "ext"
+                                                                 -6)
+                                                                (("1"
+                                                                  (rewrite
+                                                                   "append_null"
+                                                                   -6)
+                                                                  (("1"
+                                                                    (lemma
+                                                                     "term_times_eta")
+                                                                    (("1"
+                                                                      (inst
+                                                                       -1
+                                                                       "t")
+                                                                      (("1"
+                                                                        (replace
+                                                                         -1
+                                                                         -7
+                                                                         :dir
+                                                                         rl)
+                                                                        (("1"
+                                                                          (rewrite
+                                                                           "subs_ext_pi"
+                                                                           -7)
+                                                                          (("1"
+                                                                            (replace
+                                                                             -10)
+                                                                            (("1"
+                                                                              (expand
+                                                                               "subs"
+                                                                               -7)
+                                                                              (("1"
+                                                                                (replace
+                                                                                 -3)
+                                                                                (("1"
+                                                                                  (expand
+                                                                                   "ext"
+                                                                                   -7)
+                                                                                  (("1"
+                                                                                    (rewrite
+                                                                                     "append_null"
+                                                                                     -7)
+                                                                                    (("1"
+                                                                                      (expand
+                                                                                       "equal?"
+                                                                                       -7)
+                                                                                      (("1"
+                                                                                        (expand
+                                                                                         "fresh"
+                                                                                         1)
+                                                                                        (("1"
+                                                                                          (expand
+                                                                                           "reverse"
+                                                                                           1)
+                                                                                          (("1"
+                                                                                            (expand
+                                                                                             "act"
+                                                                                             1)
+                                                                                            (("1"
+                                                                                              (inst
+                                                                                               -7
+                                                                                               "a")
+                                                                                              (("1"
+                                                                                                (rewrite
+                                                                                                 "DS_member"
+                                                                                                 -5
+                                                                                                 :dir
+                                                                                                 rl)
+                                                                                                (("1"
+                                                                                                  (expand
+                                                                                                   "member"
+                                                                                                   -5)
+                                                                                                  (("1"
+                                                                                                    (propax)
+                                                                                                    nil
+                                                                                                    nil))
+                                                                                                  nil))
+                                                                                                nil))
+                                                                                              nil))
+                                                                                            nil))
+                                                                                          nil))
+                                                                                        nil))
+                                                                                      nil))
+                                                                                    nil))
+                                                                                  nil))
+                                                                                nil))
+                                                                              nil))
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (expand "vars" 1)
+                                        (("2" (grind) nil nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("2" (decompose-equality 1) nil nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((fresh_subs_character formula-decl nil fresh_subs nil)
+    (number nonempty-type-decl nil numbers nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil) (atom type-eq-decl nil atoms nil)
+    (variable type-eq-decl nil term_properties nil)
+    (list type-decl nil list_adt nil)
+    (fresh_context type-eq-decl nil freshness nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (fc def-decl "fresh_context" freshness nil)
+    (perm type-eq-decl nil atoms nil)
+    (DS const-decl "list[atom]" atoms nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (below type-eq-decl nil nat_types nil)
+    (character type-decl nil character_adt nil)
+    (char? adt-recognizer-decl "[character -> boolean]" character_adt
+     nil)
+    (char type-eq-decl nil strings nil)
+    (f_symbol type-eq-decl nil term_properties nil)
+    (ac_symbol type-eq-decl nil term_properties nil)
+    (term type-decl nil term_adt nil)
+    (TRUE const-decl "bool" booleans nil)
+    (var? adt-recognizer-decl "[term -> boolean]" term_adt nil)
+    (p adt-accessor-decl "[(var?) -> perm]" term_adt nil)
+    (V adt-accessor-decl "[(var?) -> variable]" term_adt nil)
+    (basic_sub type-eq-decl nil substitution nil)
+    (sub type-eq-decl nil substitution nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (disjoint? const-decl "bool" sets nil)
+    (unifies? const-decl "bool" unification nil)
+    (subs_ext_pi formula-decl nil substitution nil)
+    (append_null formula-decl nil list_props nil)
+    (reverse def-decl "list[T]" list_props nil)
+    (ds const-decl "set[atom]" atoms nil)
+    (set type-eq-decl nil sets nil)
+    (DS_member formula-decl nil atoms nil)
+    (act def-decl "atom" atoms nil)
+    (fresh def-decl "bool" freshness nil)
+    (ext def-decl "term" term_properties nil)
+    (term_times_eta formula-decl nil term_adt nil)
+    (subs const-decl "term" substitution nil)
+    (dom const-decl "finite_set[variable]" substitution nil)
+    (singleton const-decl "(singleton?)" sets nil)
+    (nonempty_singleton_finite application-judgement
+     "non_empty_finite_set" finite_sets nil)
+    (member const-decl "bool" sets nil)
+    (intersection const-decl "set" sets nil)
+    (empty? const-decl "bool" sets nil)
+    (fc_member formula-decl nil freshness nil))
    shostak)))
 

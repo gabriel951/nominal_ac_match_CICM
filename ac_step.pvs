@@ -104,7 +104,7 @@ nice_input_cons: LEMMA
    (nice_input?(G, cons(up, null), sigma, V, PV) AND nice_input?(G, P, sigma, V, PV))
 
 nice_input_apply_sub: LEMMA   
-   LET sigma1 = cons((X, ext(reverse(pi))(s)), null), G1 = fresh_subs?(sigma, G)`1 IN 
+   LET sigma1 = cons((X, ext(reverse(pi))(s)), null), G1 = fresh_subs?(sigma1, G)`1 IN 
    nice_input?(G, P, sigma, V, PV) AND member(pi * X, P) AND member(s, rhs(P)) AND
    NOT member(X, vars(s)) AND subset?(P1, P) AND NOT null?(P) IMPLIES
    nice_input?(append(G1, G), apply_sub(sigma1, P1), append(sigma1, sigma), V, PV)
@@ -185,6 +185,41 @@ choose_eq_max_size: LEMMA
    NOT null?(P) IMPLIES max_size(P) = size(choose_eq(P)`1) AND 
    (max_size(P) > max_size(P1) OR (max_size(P) = max_size(P1) AND num_max_size(P) = num_max_size(P1) + 1))
 
+choose_eq_unifies: LEMMA 
+    NOT null?(P) IMPLIES    
+    unifies?(Delta, delta, P) = (unifies?(Delta, delta, choose_eq(P)`1) AND
+    		    	         unifies?(Delta, delta, choose_eq(P)`2))
+ 
+% impossible cases that are used in the proof of completeness 
+choose_eq_not_unifies_atom: LEMMA 
+    LET (up, P1) = choose_eq(P) IN 
+    unifies?(G, delta, up) AND match_problem?(P, PV) AND atom?(up`1)
+    AND disjoint?(dom(delta), PV) AND NOT null?(P) IMPLIES up`2 = at(a(up`1))
+
+choose_eq_not_unifies_var: LEMMA
+    LET (up, P1) = choose_eq(P), (t, s) = up IN 
+    unifies?(G, delta, up) AND match_problem?(P, PV) AND var?(t) AND
+    disjoint?(dom(delta), PV) AND NOT null?(P) IMPLIES 
+    ((NOT member(V(t), vars(s))) AND (NOT member(V(t), PV)))
+    OR (var?(s) AND V(t) = V(s))
+
+choose_eq_not_unifies_unit: LEMMA
+    LET (up, P1) = choose_eq(P) IN 
+    unifies?(G, delta, up) AND match_problem?(P, PV) AND unit?(up`1)
+    AND disjoint?(dom(delta), PV) AND NOT null?(P) IMPLIES up`2 = unit 
+
+choose_eq_not_unifies_app: LEMMA
+    LET (up, P1) = choose_eq(P), (t, s) = up IN 
+    unifies?(G, delta, up) AND match_problem?(P, PV) AND app?(t) AND NOT null?(P) AND  
+    disjoint?(dom(delta), PV) AND well_formed?(delta) IMPLIES
+    app?(s) AND f_sym(t) = f_sym(s) AND decompose(arg(t), arg(s))`2
+
+choose_eq_not_unifies_abs: LEMMA 
+    LET (up, P1) = choose_eq(P), (t, s) = up IN 
+    unifies?(G, delta, up) AND match_problem?(P, PV) AND abs?(t) AND NOT null?(P) AND  
+    disjoint?(dom(delta), PV) AND well_formed?(delta) IMPLIES
+    abs?(s) AND decompose(body(t), body(s))`2
+
 %%% apply ac
 apply_ac(input): list[nice_input] = 
    LET (G, P, sigma, V, PV) = input IN 
@@ -202,6 +237,9 @@ apply_ac(input): list[nice_input] =
    ENDIF
 
 % apply_ac
+apply_ac_mem5: LEMMA
+    member(input1, apply_ac(input)) IMPLIES input1`5 = input`5
+
 apply_ac_vars: LEMMA
     LET P = input`2, P1 = input1`2 IN 
     member(input1, apply_ac(input)) IMPLIES subset?(vars(P1), vars(P))
@@ -229,6 +267,25 @@ apply_ac_apply_sub_no_effect: LEMMA
    vars(append(PI, apply_sub(sigma1, P1))) = vars(P))
    IMPLIES 
    apply_sub(sigma1, cdr(P)) = cdr(P)
+
+apply_ac_sound: LEMMA
+   LET (G, P, sigma, V, PV) = input IN 
+   (NOT null?(P) AND
+   LET (up, P1) = choose_eq(P), (t, s) = up IN 
+   ac_prb?((t, s)) AND
+   member(input1, apply_ac(G, cons((t, s), P1), sigma, V, PV))
+   AND is_sol?(Delta, delta)(input1`1, input1`2, input1`3, input1`5))
+   IMPLIES is_sol?(Delta, delta)(G, P, sigma, PV)
+
+apply_ac_complete: CONJECTURE 
+   LET (G, P, sigma, V, PV) = input,  
+       (up, P1) = choose_eq(P), (t, s) = up IN 
+   ac_prb?((t, s)) AND NOT null?(P) AND is_sol?(Delta, delta)(G, P, sigma, PV) 
+   IMPLIES EXISTS gamma, input1: 
+      member(input1, apply_ac(G, cons((t, s), P1), sigma, V, PV)) AND 
+      is_sol?(Delta, append(gamma, delta))(input1`1, input1`2, input1`3, input1`5)
+      AND well_formed?(gamma, PV) AND subset?(dom(gamma), difference(input1`4, V)) AND
+      contained?(gamma, input1`4)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OLD STUFF 
 % number of unification pairs in P that are AC-unification pairs and whose size is n
@@ -331,5 +388,6 @@ apply_ac_apply_sub_no_effect: LEMMA
 %choose_ac_match_problem_subset: LEMMA
 %    match_problem?(P, PV) AND exists_ac?(P) IMPLIES subset?(vars(choose_ac(P)`2`2), PV)
 %
+
 
 END ac_step
