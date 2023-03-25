@@ -121,6 +121,7 @@ supset_dom_correct2: LEMMA
 % image of a substitution 
 img(sigma): finite_set[term] = {t | EXISTS X: member(X, dom(sigma)) AND subs(sigma)(X) = t} 
 
+
 idempotent?(sigma): bool = 
    FORALL X: subs(sigma)(subs(sigma)(X)) = subs(sigma)(X)
 
@@ -382,17 +383,17 @@ perm?_get_args_subs: LEMMA
 %       perm?(G)(remove(flatten(map(subs(sigma))(map(get_args(f))(A))), i),
 %                map(subs(sigma)(map(get_args(f))(const_args(A, j1, j2, f))))
 
-perm?_get_args_subs2: CONJECTURE
-    perm?(G)(flatten(map(subs(sigma))(map(get_args(f))(args1))),
-             flatten(map(subs(sigma))(map(get_args(f))(args2)))) IMPLIES
-    perm?(G)(flatten(map(get_args(f))(subs(sigma)(args1))),
-             flatten(map(get_args(f))(subs(sigma)(args2))))
+%perm?_get_args_subs2: CONJECTURE
+%    perm?(G)(flatten(map(subs(sigma))(map(get_args(f))(args1))),
+%             flatten(map(subs(sigma))(map(get_args(f))(args2)))) IMPLIES
+%    perm?(G)(flatten(map(get_args(f))(subs(sigma)(args1))),
+%             flatten(map(get_args(f))(subs(sigma)(args2))))
 
-same_count_get_args_subs: CONJECTURE
-    same_count?(flatten(map(subs(sigma))(map(get_args(f))(args1))),
-                flatten(map(subs(sigma))(map(get_args(f))(args2))), equal?(G)) IMPLIES
-    same_count?(flatten(map(get_args(f))(subs(sigma)(args1))),
-                flatten(map(get_args(f))(subs(sigma)(args2))), equal?(G))
+%same_count_get_args_subs: CONJECTURE
+%    same_count?(flatten(map(subs(sigma))(map(get_args(f))(args1))),
+%                flatten(map(subs(sigma))(map(get_args(f))(args2))), equal?(G)) IMPLIES
+%    same_count?(flatten(map(get_args(f))(subs(sigma)(args1))),
+%                flatten(map(get_args(f))(subs(sigma)(args2))), equal?(G))
 
 subs_flatten: LEMMA
     subs(sigma)(flatten(lst_args)) = flatten(map(subs(sigma))(lst_args))
@@ -600,6 +601,7 @@ supset_dom_equiv: LEMMA
 supset_dom_append: LEMMA
     supset_dom(append(sigma, delta)) = union(supset_dom(sigma), supset_dom(delta))
 
+
 nice_disjoint_dom_img: LEMMA
     nice?(sigma) IMPLIES disjoint?(dom(sigma), vars(img(sigma)))
 
@@ -666,10 +668,14 @@ equal_sub_trans: LEMMA
 equal_sub_append: LEMMA
    equal?(G)(sigma, sigma1) IMPLIES equal?(G)(append(sigma, delta), append(sigma1, delta))
 
+
 % equality between substitutions modulo AC, restricted to a set:
 equal_sub_subset: LEMMA
    equal?(G)(sigma, sigma1, set_vars) AND subset?(set_vars1, set_vars) IMPLIES
    equal?(G)(sigma, sigma1, set_vars1) 
+
+equal_sub_res_sym: LEMMA 
+   equal?(G)(sigma, sigma1, set_vars) = equal?(G)(sigma1, sigma, set_vars) 
 
 equal_sub_res_trans: LEMMA
    equal?(G)(delta, gamma, set_vars) AND equal?(G)(gamma, sigma, set_vars) IMPLIES
@@ -773,11 +779,12 @@ contained_supset: LEMMA
     IMPLIES contained?(delta, set_vars1)
 
 more_general_equal: LEMMA 
-    equal?(G)(sigma, sigma1) IMPLIES 
-    more_general?(G)(delta, sigma) = more_general?(G)(delta, sigma1)
+     equal?(G)(sigma, sigma1) IMPLIES 
+     more_general?(G)(delta, sigma) = more_general?(G)(delta, sigma1)
    
 more_general_append: LEMMA 
      more_general?(G)(sigma, sigma1) IMPLIES more_general?(G)(append(sigma, delta), append(sigma1, delta))
+
 
 more_general_supset: LEMMA 
     more_general?(G)(sigma, append(delta1, delta), set_vars1) AND subset?(set_vars, set_vars1)

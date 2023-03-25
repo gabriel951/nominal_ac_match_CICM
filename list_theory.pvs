@@ -33,6 +33,8 @@ coef, coef1, coef2, lst_nat, lst_nat1, lst_nat2: VAR list[nat]
 lst_pos_nat: VAR list[posnat]
 fin_set_nat: VAR finite_set[nat]
 
+P: VAR PRED[T]
+
 % an equivalence definition
 equiv: TYPE = {R: PRED[[T, T]]| equivalence?(R)}
 equal?: VAR equiv
@@ -531,6 +533,9 @@ member_nth: LEMMA
 
 member_nth2: LEMMA
     member(x, lst) = EXISTS (n:below[length(lst)]): x = nth(lst, n)
+
+every_nth2: LEMMA 
+      every(P)(lst) IFF FORALL x: member(x, lst) IMPLIES P(x)
 
 % dot product
 dot_product_sym: LEMMA

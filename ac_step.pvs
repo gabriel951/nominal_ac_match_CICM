@@ -13,6 +13,8 @@ BEGIN
 
 pre_nice_input: TYPE = [fresh_context, unif_prb, sub, finite_set[variable], finite_set[variable]]
 
+        IMPORTING list_theory[pre_nice_input]
+
 i, n: VAR nat
 
 f: VAR string
@@ -119,6 +121,10 @@ nice_input_dec_abs: LEMMA
    AND abs?(t) AND abs?(s) AND subset?(P1, P) IMPLIES
    nice_input?(G, append(decompose(body(t), ext(pi)(body(s)))`1, P1), sigma, V, PV)
 
+nice_input_initial_problem: LEMMA 
+   subset?(vars(t, s), V) AND well_formed?((t, s)) IMPLIES
+   nice_input?(null, cons((t, s), null), null, V, vars(s))
+
 % input_apply_ac
 input_apply_ac_mem: LEMMA 
     member(input1_, input_apply_ac(ac_results_subs, G, P, sigma, V, PV)) IFF 
@@ -165,6 +171,9 @@ choose_eq2_subset: LEMMA
 choose_eq_vars_rhs: LEMMA
    subset?(vars(rhs(choose_eq(P)`2)), vars(rhs(P)))
 
+choose_eq_vars_rhs2: LEMMA 
+   match_problem?(P, PV) IMPLIES subset?(vars(choose_eq(P)`1`2), PV)
+
 choose_eq_vars: LEMMA
    subset?(vars(choose_eq(P)`2), vars(P)) AND subset?(vars(choose_eq(P)`1), vars(P))
 
@@ -190,6 +199,14 @@ choose_eq_unifies: LEMMA
     unifies?(Delta, delta, P) = (unifies?(Delta, delta, choose_eq(P)`1) AND
     		    	         unifies?(Delta, delta, choose_eq(P)`2))
  
+choose_eq_nice_input: LEMMA 
+   nice_input?(G, P, sigma, V, PV) AND NOT null?(P) IMPLIES nice_input?(G, choose_eq(P)`2, sigma, V, PV)
+
+choose_eq_nice_input2: LEMMA 
+   LET (G, P, sigma, V, PV) = input,
+       (up, P1) = choose_eq(P), (t, s) = up IN
+   NOT null?(P) IMPLIES nice_input?(G, cons((t, s), P1), sigma, V, PV)
+
 % impossible cases that are used in the proof of completeness 
 choose_eq_not_unifies_atom: LEMMA 
     LET (up, P1) = choose_eq(P) IN 
@@ -220,6 +237,11 @@ choose_eq_not_unifies_abs: LEMMA
     disjoint?(dom(delta), PV) AND well_formed?(delta) IMPLIES
     abs?(s) AND decompose(body(t), body(s))`2
 
+choose_eq_not_unifies_ac_app: LEMMA 
+    LET (up, P1) = choose_eq(P), (t, s) = up IN 
+    unifies?(G, delta, up) AND match_problem?(P, PV) AND ac_app?(t) AND NOT null?(P)
+    AND disjoint?(dom(delta), PV) IMPLIES is_ac_sym?(s, ac_sym(t)) 
+
 %%% apply ac
 apply_ac(input): list[nice_input] = 
    LET (G, P, sigma, V, PV) = input IN 
@@ -243,6 +265,15 @@ apply_ac_mem5: LEMMA
 apply_ac_vars: LEMMA
     LET P = input`2, P1 = input1`2 IN 
     member(input1, apply_ac(input)) IMPLIES subset?(vars(P1), vars(P))
+
+apply_ac_vars2: LEMMA 
+    LET V = input`4, V1 = input1`4 IN 
+    member(input1, apply_ac(input)) IMPLIES subset?(V, V1)
+
+apply_ac_vars_ctx: LEMMA 
+   LET (G, P, sigma, V, PV) = input, (G1, P1, sigma1, V1, PV1) = input1 IN
+   member(input1, apply_ac(input)) IMPLIES
+   subset?(vars(G1), union(vars(P), vars(G)))
 
 apply_ac_max_size_le: LEMMA
    LET (G, P, sigma, V, PV) = input IN
@@ -277,15 +308,27 @@ apply_ac_sound: LEMMA
    AND is_sol?(Delta, delta)(input1`1, input1`2, input1`3, input1`5))
    IMPLIES is_sol?(Delta, delta)(G, P, sigma, PV)
 
-apply_ac_complete: CONJECTURE 
+apply_ac_complete: LEMMA 
    LET (G, P, sigma, V, PV) = input,  
        (up, P1) = choose_eq(P), (t, s) = up IN 
-   ac_prb?((t, s)) AND NOT null?(P) AND is_sol?(Delta, delta)(G, P, sigma, PV) 
+   ac_prb?((t, s)) AND NOT null?(P) AND is_sol?(Delta, delta)(G, P, sigma, PV)
+   AND contained?(delta, V) AND subset?(vars(Delta), V)
    IMPLIES EXISTS gamma, input1: 
       member(input1, apply_ac(G, cons((t, s), P1), sigma, V, PV)) AND 
       is_sol?(Delta, append(gamma, delta))(input1`1, input1`2, input1`3, input1`5)
       AND well_formed?(gamma, PV) AND subset?(dom(gamma), difference(input1`4, V)) AND
       contained?(gamma, input1`4)
+
+apply_ac_complete2: LEMMA  
+   LET (G, P, sigma, V, PV) = input,  
+       (up, P1) = choose_eq(P), (t, s) = up IN 
+   ac_prb?((t, s)) AND NOT null?(P) AND is_sol?(Delta, delta)(G, P, sigma, PV)
+   AND contained?(delta, V) AND subset?(vars(Delta), V)
+   IMPLIES EXISTS gamma, input1: 
+      member(input1, apply_ac(G, cons((t, s), P1), sigma, V, PV)) AND 
+      is_sol?(Delta, append(gamma, delta))(input1`1, input1`2, input1`3, input1`5) AND 
+      contained?(append(gamma, delta), input1`4) AND subset?(vars(Delta), input1`4)
+      AND equal?(Delta)(delta, append(gamma, delta), V) 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OLD STUFF 
 % number of unification pairs in P that are AC-unification pairs and whose size is n

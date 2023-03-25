@@ -22,6 +22,7 @@ coef, coef1: VAR list[nat]
 equiv: TYPE = {R: PRED[[T, T]]| equivalence?(R)}
 equal?: VAR equiv
 
+   
 select_greater(fin_set_nat): nat = select_greater[nat](finset2list(fin_set_nat))
 
 select_greater_finset2list2set: LEMMA 

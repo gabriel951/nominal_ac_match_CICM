@@ -12,12 +12,12 @@ BEGIN
 	IMPORTING unification, fresh_subs, diophantine, list_theory[number], list_theory[args], list_theory[basic_sub], 
 	          aux_unification
 
-sigma, sigma1, delta, sigma2, gamma, gamma1: VAR sub
+sigma, sigma1, delta, sigma2, gamma, gamma1, del: VAR sub
 rho: VAR renaming
 
 X, Y: VAR variable
 
-G, G1, G2, Delta, nabla: VAR fresh_context 
+G, G1, G2, Delta, nabla, Del: VAR fresh_context 
 pi: VAR perm
 
 i, j: VAR nat
@@ -251,7 +251,6 @@ inst_step_chooses_rhs: LEMMA
 inst_step_vars_context_aux: LEMMA
     subset?(vars(inst_step(PV, G, t, s)`1), union(vars(G), vars(t, s)))
 
-
 inst_step_well_formed_aux: LEMMA  
     well_formed?(t) AND well_formed?(s) IMPLIES well_formed?(inst_step(PV, G, t, s)`2)
 
@@ -310,6 +309,11 @@ inst_step_match_cond_dom2: LEMMA
     member(X, dom(delta)) AND match_condition?(cons((t, s), P), PV) AND member(X, vars(rhs(P)))
     AND NOT member(X, PV) IMPLIES member(X, vars(s))
 
+inst_step_match_cond_not_in_ctx: LEMMA 
+    LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
+    member(X, vars(rhs(cons((t, s), P)))) AND match_condition?(cons((t, s), P), PV) AND NOT member(X, PV)
+    AND NOT member(X, vars(G)) IMPLIES NOT member(X, vars(G1))
+
 inst_step_match_cond_subs: LEMMA
     LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
     member(X, vars(s)) AND match_condition?(cons((t, s), P), PV) AND NOT member(X, PV) AND NOT fail
@@ -335,6 +339,19 @@ inst_step_match_condition_cdr: LEMMA
     skip AND match_condition?(cons((t, s), P), PV) IMPLIES 
     match_condition?(P, PV)
 
+inst_step_unifies_not_fail_aux: LEMMA 
+    LET (G1, sigma, skip, fail) = inst_step(PV, G, t, s) IN
+    unifies?(Del, del, (t, s)) AND fresh_subs(Del)(del, G) AND disjoint?(dom(del), PV)
+    AND well_formed?((t, s)) IMPLIES NOT fail
+
+inst_step_unifies_equal_sub: LEMMA 
+    LET (G1, sigma, skip, fail) = inst_step(PV, G, t, s) IN
+    unifies?(Del, del, (t, s)) IMPLIES equal?(Del)(del, append(del, sigma))
+   
+inst_step_fresh_subs: LEMMA 
+    LET (G1, sigma, skip, fail) = inst_step(PV, G, t, s) IN
+    fresh_subs(Del)(del, G) AND unifies?(Del, del, (t, s)) AND match_condition?(cons((t, s), P), PV)
+    AND disjoint?(dom(del), PV) IMPLIES fresh_subs(Del)(del, G1)
 
 % inst_step when analysing unification problems
 inst_step_fail: LEMMA
@@ -538,16 +555,38 @@ inst_step_unifies: CONJECTURE
     AND disjoint?(dom(gamma1), vars(P)) IMPLIES  
     unifies?(G, sigma, P)
 
-inst_step_unifies_sub: CONJECTURE 
-    LET delta = inst_step(PV, G, P, null, null)`3,
-        fail = inst_step(PV, G, P, null, null)`4 IN
-        unifies?(G, sigma, P) AND NOT fail
-    IMPLIES equal?(G)(sigma, append(sigma, delta))
+inst_step_complete_equal: LEMMA 
+    LET sigma = inst_step(PV, G, P, null, null)`3 IN
+    unifies?(Del, del, P) IMPLIES equal?(Del)(del, append(del, sigma))
 
-inst_step_unifies_not_fail: CONJECTURE 
+inst_step_unifies_not_fail: LEMMA 
     LET fail = inst_step(PV, G, P, null, null)`4 IN
-        unifies?(G, sigma, P) AND well_formed?(P) IMPLIES NOT fail
+        unifies?(Del, del, P) AND well_formed?(P) AND disjoint?(dom(del), PV)
+	AND fresh_subs(Del)(del, G) AND match_condition?(P, PV) IMPLIES NOT fail
     
+inst_step_complete_fresh_subs: LEMMA  
+    LET G1 = inst_step(PV, G, P, null, null)`1 IN
+        unifies?(Del, del, P) AND well_formed?(P) AND disjoint?(dom(del), PV)
+	AND fresh_subs(Del)(del, G) AND match_condition?(P, PV) IMPLIES
+	fresh_subs(Del)(del, G1)
+    
+inst_step_complete_unifies: LEMMA 
+    LET (G1, P1, sigma1, fail) = inst_step(PV, G, P, null, null) IN 
+    unifies?(Del, del, P) AND well_formed?(P) AND disjoint?(dom(del), PV)
+    AND fresh_subs(Del)(del, G) AND match_condition?(P, PV) IMPLIES
+    unifies?(Del, del, P1) 
+
+inst_step_complete_more_general: LEMMA 
+    LET (G1, P1, sigma1, fail) = inst_step(PV, G, P, null, null) IN 
+    more_general?(Del)(sigma, delta) AND disjoint?(dom(sigma), vars(P)) AND
+    unifies?(Del, delta, P) IMPLIES more_general?(Del)(append(sigma1, sigma), delta)
+
+inst_step_complete: LEMMA 
+    LET (G1, P1, sigma1, fail) = inst_step(PV, G, P, null, null) IN 
+    is_sol?(Del, del)(G, P, sigma, PV) AND match_condition?(P, PV) AND well_formed?(P) AND
+    disjoint?(dom(sigma), vars(P)) IMPLIES
+    is_sol?(Del, del)(G1, P1, append(sigma1, sigma), PV)
+
 inst_step_lst_mem: CONJECTURE 
     LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
     unifies?(G, sigma, P) AND well_formed?(P) AND member(P, lst_P)
@@ -613,6 +652,11 @@ inst_step_match_dom: LEMMA
     NOT fail AND match_condition?(P, PV) AND member(X, vars(rhs(P))) AND NOT member(X, PV)
     IMPLIES member(X, dom(delta))
 
+inst_step_match_not_in_context: LEMMA
+    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
+    match_condition?(P, PV) AND member(X, vars(rhs(P))) AND NOT member(X, PV)
+    AND NOT member(X, vars(G)) IMPLIES NOT member(X, vars(G1))
+
 inst_step_skip_ind_mem: LEMMA
     LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
     member(up1, P1) IMPLIES
@@ -653,5 +697,15 @@ inst_step_mem: LEMMA
          P = inst_step(PV, G, P1, null, null)`2 AND
 	 sigma = inst_step(PV, G, P1, null, null)`3 AND
 	 NOT inst_step(PV, G, P1, null, null)`4
+
+inst_step_mem2: LEMMA 
+    (EXISTS P1:
+	 member(P1, lst_P) AND 
+	 G1 = inst_step(PV, G, P1, null, null)`1 AND
+         P = inst_step(PV, G, P1, null, null)`2 AND
+	 sigma = inst_step(PV, G, P1, null, null)`3 AND
+	 NOT inst_step(PV, G, P1, null, null)`4)
+    IMPLIES 
+    member((G1, P, sigma), inst_step(PV, G, lst_P))
 
 END inst_step

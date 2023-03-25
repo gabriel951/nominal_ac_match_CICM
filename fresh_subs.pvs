@@ -82,6 +82,13 @@ fresh_subs_fresh: LEMMA
 fresh_subs_equal: LEMMA 
    equal?(G1)(sigma, sigma1) IMPLIES fresh_subs(G1)(sigma, G) = fresh_subs(G1)(sigma1, G)
 
+fresh_subs_equal2: LEMMA  
+   equal?(G1)(sigma, sigma1, V1) AND subset?(vars(G), V1)
+   IMPLIES fresh_subs(G1)(sigma, G) = fresh_subs(G1)(sigma1, G)
+
+fresh_subs_disjoint_dom: LEMMA 
+   disjoint?(dom(sigma), vars(Delta)) IMPLIES fresh_subs(Delta)(sigma, Delta) 
+
 % substitution and their connection with fresh_subs
 subs_equal?: LEMMA  
     equal?(G)(t, s) AND fresh_subs(G1)(sigma, G) 
@@ -111,6 +118,14 @@ subs_same_count: LEMMA
 equal_sub_res_append: LEMMA 
    equal?(G)(sigma, sigma1, set_vars) AND fresh_subs(G1)(delta, G) IMPLIES
    equal?(G1)(append(delta, sigma), append(delta, sigma1), set_vars)
+
+equal_sub_fresh_subs_append: LEMMA 
+   equal?(G)(sigma, sigma1) AND fresh_subs(G1)(delta, G) IMPLIES
+   equal?(G1)(append(delta, sigma), append(delta, sigma1))
+
+more_general_append2: LEMMA 
+     more_general?(G)(sigma, delta) AND subset?(vars(G), V1) AND disjoint?(dom(gamma), V1)
+     IMPLIES more_general?(G)(sigma, append(gamma, delta))
 
 subs_count_ge: LEMMA
    (FORALL t1: count(t1, get_args(f)(s), equal?(G)) >= count(t1, get_args(f)(t), equal?(G)))

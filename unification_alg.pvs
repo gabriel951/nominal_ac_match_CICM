@@ -14,7 +14,7 @@ BEGIN
 
 IMPORTING map_theory[nice_input, [fresh_context, sub]]
 
-Delta, Nabla, Nabla_, G, Gamma, Gamma1: VAR fresh_context
+Delta, Nabla, Nabla_, G, G1, Gamma, Gamma1: VAR fresh_context
 pi: VAR perm
 
 a: VAR atom
@@ -151,6 +151,11 @@ unify_sound_cor: LEMMA
    member((Gamma, sigma), unify(null, cons((t, s), null), null, vars(t, s), vars(s))) IMPLIES 
    is_sol?(Delta, delta)(null, cons((t, s), null), null, vars(s)) 
 
+unify_vars_ctx: LEMMA 
+  LET (G, P, sigma, V, PV) = input IN 
+  member((G1, sigma1), unify(input)) IMPLIES 
+  subset?(vars(G1), union(vars(G), vars(P)))
+
 unify_completeness_inst: LEMMA 
    LET (G, P, sigma, V, PV) = input,  
        (up, P1) = choose_eq(P), (t, s) = up IN 
@@ -195,13 +200,21 @@ unify_completeness_abs: LEMMA
 	new_P = append(dec_P, P1) IN 
 	bool1 AND is_sol?(Delta, delta)(new_G, new_P, sigma, PV))
 
-unify_completeness: CONJECTURE 
+unify_completeness: LEMMA 
    LET (Gamma, P, sigma, V, PV) = input IN 
-   is_sol?(Delta, delta)(Gamma, P, sigma, PV) AND contained?(delta, V) IMPLIES 
+   is_sol?(Delta, delta)(Gamma, P, sigma, PV) AND contained?(delta, V)
+   AND subset?(vars(Delta), V) IMPLIES 
    EXISTS Gamma1, sigma1: 
       member((Gamma1, sigma1), unify(input)) AND
-      solves?(Delta, delta)(Gamma1, null, sigma1, PV)
+      solves?(Delta, delta)(Gamma1, null, sigma1, V, PV)
 
+unify_completeness_cor: LEMMA 
+   is_sol?(Delta, delta)(null, cons((t, s), null), null, vars(s))
+   AND contained?(delta, V) AND subset?(vars(Delta), V) AND subset?(vars(t, s), V) AND
+   well_formed?((t, s)) IMPLIES 
+   EXISTS Gamma1, sigma1: 
+      member((Gamma1, sigma1), unify(null, cons((t, s), null), null, V, vars(s))) AND
+      solves?(Delta, delta)(Gamma1, null, sigma1, V, vars(s))
 
 % some properties of the substitutions computed, needed for the lemmas of soundness and completeness
 unify_subs: CONJECTURE 

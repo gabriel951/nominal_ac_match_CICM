@@ -94,6 +94,10 @@ ds(pi1,pi2): set[atom] =
 ds_in_Atoms: LEMMA
    ds(pi1, pi2)(a) IMPLIES member(a, Atoms(pi1)) OR member(a, Atoms(pi2))
 
+ds_nonempty_append: LEMMA 
+   nonempty?(ds(append(pi1, pi2), null)) IMPLIES
+   nonempty?(ds(pi1, null)) OR nonempty?(ds(pi2, null))
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 IMPORTING list_theory[atom]

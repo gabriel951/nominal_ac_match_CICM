@@ -14,10 +14,10 @@ BEGIN
 
 a, b: VAR atom
 Delta, G, G1, Nabla: VAR fresh_context 
-sigma, sigma1, delta: VAR sub
+sigma, sigma1, delta, gamma: VAR sub
 rho: VAR renaming
 lst_sub: VAR list[sub]
-vars2avoid, set_vars, PV: VAR finite_set[variable]
+vars2avoid, set_vars, PV, PV2, V1, V2: VAR finite_set[variable]
 args1, args2: VAR args
 X: VAR variable
 pi: VAR perm
@@ -144,9 +144,9 @@ is_sol?(Delta, delta)(Nabla, P, sigma, PV): bool =
     well_formed?(delta)
 
 % TO DO: add a description here: 
-solves?(Delta, delta)(Nabla, P, sigma, PV): bool =
+solves?(Delta, delta)(Nabla, P, sigma, V1, PV): bool =
     fresh_subs(Delta)(delta, Nabla) AND unifies?(Delta, delta, P) AND 
-    more_general?(Delta)(sigma, delta, vars(P)) AND disjoint?(dom(delta), PV) AND
+    more_general?(Delta)(sigma, delta, V1) AND disjoint?(dom(delta), PV) AND
     well_formed?(delta)
 
 
@@ -570,6 +570,17 @@ unifies?_impossible2: LEMMA
    unifies?(G, sigma, (t, s)) AND NOT var?(t) AND well_formed?(t) IMPLIES  
    ord(t) = ord(s) OR (var?(s) AND NOT (member(V(s), vars(t))))
 
+unifies?_impossible3: LEMMA 
+   unifies?(G, sigma, (t, s)) AND disjoint?(dom(sigma), PV) AND var?(s) AND well_formed?(t) IMPLIES   
+   (var?(t) AND V(s) = V(t)) OR (var?(t) AND (NOT member(V(t), vars(s))) AND (NOT member(V(t), PV)))
+   OR ((NOT member(V(s), vars(t))) AND (NOT member(V(s), PV)))
+
+unifies?_impossible4: LEMMA 
+   unifies?(G, sigma, (t, s)) AND var?(t) AND NOT var?(s) AND disjoint?(dom(sigma), PV) AND
+   well_formed?(s) IMPLIES ((NOT member(V(t), PV)) AND (NOT member(V(t), vars(s))))
+   
+
+
 remove_common_not_null_count: LEMMA
    (EXISTS t1:
        count(t1, args1, equal?(G)) > count(t1, args2, equal?(G)))
@@ -732,6 +743,11 @@ unifies_is_more_general_basic_sub: LEMMA
     (LET sigma1 = cons((V(t), ext(reverse(p(t)))(s)), null) IN
          more_general?(G)(append(sigma1, sigma), delta)) 
 
+unifies_is_equal_sub: LEMMA 
+    unifies?(G, delta, (t, s)) AND var?(t) AND NOT member(V(t), vars(s)) IMPLIES 
+    (LET sigma1 = cons((V(t), ext(reverse(p(t)))(s)), null) IN
+         equal?(G)(delta, append(delta, sigma1)))
+
 unifies_sub_no_effect: LEMMA
     unifies?(Delta, append(delta, append(sigma1, sigma)), apply_sub(sigma1, (t, s)))
     AND disjoint?(dom(sigma), vars(img(sigma1))) AND idempotent?(sigma1) AND 
@@ -747,5 +763,12 @@ unifies_fresh_subs: LEMMA
     unifies?(Delta, delta, (t, s)) AND var?(t) AND var?(s) AND V(t) = V(s)
     AND disjoint?(dom(delta), vars(s)) IMPLIES 
     fresh_subs(Delta)(delta, fc(DS(p(t), p(s)), V(t)))
+
+% solves
+solves_elim_append: LEMMA 
+   equal?(Delta)(delta, append(gamma, delta), V1) AND subset?(vars(Nabla), V1)
+   AND subset?(V1, V2) AND solves?(Delta, append(gamma, delta))(Nabla, null, sigma, V2, PV2)
+   AND disjoint?(dom(delta), PV) AND well_formed?(delta) AND contained?(delta, V1)
+   IMPLIES solves?(Delta, delta)(Nabla, null, sigma, V1, PV)
 
 END unification 

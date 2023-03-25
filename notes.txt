@@ -1,18 +1,15 @@
 # Lema atual 
-
-
-# caso da instanciação
-subs_unify_alg_aux2
-fresh_subs?_complete2
-unifies_is_more_general_basic_sub
+inst_step_match_cond_not_in_ctx
+inst_step_match_cond_dom
+inst_step_vars_context
 
 # name-replace
 ## unify
-(name-replace "G" "input`1") 
-(name-replace "P" "input`2") 
-(name-replace "sig" "input`3") 
-(name-replace "V" "input`4") 
-(name-replace "PV" "input`5") 
+(name-replace "G" "inp`1") 
+(name-replace "P" "inp`2") 
+(name-replace "sig" "inp`3") 
+(name-replace "V" "inp`4") 
+(name-replace "PV" "inp`5") 
 (name-replace "up" "choose_eq(P)`1")
 (name-replace "P1" "choose_eq(P)`2")
 (name-replace "t" "up`1") 
@@ -24,6 +21,9 @@ unifies_is_more_general_basic_sub
 (name-replace "new_G" "append(G_, G)")
 (name-replace "new_sig" "append(sig_, sig)")
 (name-replace "new_P" "apply_sub(sig_, P1)")
+
+(name-replace "G_" "fc(DS(p(t), p(s)), V(t))")
+(name-replace "new_G" "append(G_, G)")
 
 (name-replace "f" "f_sym(t)") 
 (name-replace "dec_P" "decompose(arg(t), arg(s))`1")
@@ -68,7 +68,7 @@ unifies_is_more_general_basic_sub
 (name-replace "t" "car(P)`1") 
 (name-replace "s" "car(P)`2") 
 (name-replace "lst_V" "finset2list[variable](V)")
-(name-replace "ac_results"  "first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))")
+(name-replace "ac_results" "first_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV))")
 (name-replace "new_V"  "vars(sec_proj(solve_ac(G, s, t, lst_V, ac_sym(t), PV)))")
 (name-replace "ac_results_subs" "inst_step(PV, G, ac_results)")
 
