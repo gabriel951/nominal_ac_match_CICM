@@ -1,12 +1,3 @@
-% Authors:
-%		Gabriel Ferreira Silva (*)
-% 		Mauricio Ayala-Rincón (*)
-% 		Daniele Nantes Sobrinho (*)
-% 		Maribel Fernandez (**)
-%		(*) - University of Brasília			(**) - King's College London
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % definition of a term
 term[atom: TYPE+, perm: TYPE+, variable:TYPE+, f_symbol:TYPE, ac_symbol:TYPE]: DATATYPE 
     BEGIN
@@ -685,6 +676,17 @@ ext(pi)(t): RECURSIVE term =
    	 abs(a, bd): abs(act(pi)(a), ext(pi)(bd))
   ENDCASES
 MEASURE t BY <<
+
+% created to prove a TCC regarding ext
+ext_supset(pi, fin_set_t): RECURSIVE finite_set[term] = 
+   IF empty?(fin_set_t) THEN emptyset
+   ELSE LET t = choose(fin_set_t) IN
+        add(ext(pi)(t), ext_supset(pi, rest(fin_set_t)))
+   ENDIF
+MEASURE card(fin_set_t) 
+
+ext_supset_cor: LEMMA  
+    member(t, fin_set_t) IMPLIES member(ext(pi)(t), ext_supset(pi, fin_set_t)) 
 
 % action of a permutation in a finite set 
 ext(pi)(fin_set_t): finite_set[term] = {s | EXISTS t: member(t, fin_set_t) AND ext(pi)(t) = s} 

@@ -1,12 +1,3 @@
-% Authors:
-%		Gabriel Ferreira Silva (*)
-% 		Mauricio Ayala-Rincón (*)
-% 		Daniele Nantes Sobrinho (*)
-% 		Maribel Fernandez (**)
-%		(*) - University of Brasília			(**) - King's College London
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 substitution: THEORY
 BEGIN
 	IMPORTING equality, map_theory[term, term], map_theory[term, args], more_list_theory_props[term]
@@ -232,6 +223,9 @@ subs_func: LEMMA
 
 subs_abs2: LEMMA 
     abs?(subs(sigma)(t)) IMPLIES (abs?(t) OR var?(t))
+
+subs_basic_ext: LEMMA 
+   subs(sigma_basic, ext(pi)(t)) = ext(pi)(subs(sigma_basic, t))
 
 subs_ext_pi: LEMMA
     subs(sigma)(pi * X) = ext(pi)(subs(sigma)(X))

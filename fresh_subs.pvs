@@ -256,22 +256,22 @@ fresh_alpha_equivalent: LEMMA
    fresh(Nabla)(a, t) AND equal?(Nabla)(t, s) => fresh(Nabla)(a, s)
 
 % useful lemma that appear in the proof of correctness
-aux_lemma_fresh_sub_reverse1: CONJECTURE
-   fresh_subs(Nabla)(sigma, fresh?(a, t)`1) AND fresh?(a, t)`2 
-   => fresh(Nabla)(a, subs(sigma)(t))
+%aux_lemma_fresh_sub_reverse1: CONJECTURE
+%   fresh_subs(Nabla)(sigma, fresh?(a, t)`1) AND fresh?(a, t)`2 
+%   => fresh(Nabla)(a, subs(sigma)(t))
 
 % lemma to be used in the theorem of completeness   
-aux_lemma_fresh_sub: CONJECTURE
-   fresh_subs(Nabla)(sigma, Delta) AND more_general?(Nabla)(gamma, sigma) AND idempotent?(gamma) =>
-   fresh_subs(Nabla)(sigma, fresh_subs?(gamma, Delta)`1)
+%aux_lemma_fresh_sub: CONJECTURE
+%   fresh_subs(Nabla)(sigma, Delta) AND more_general?(Nabla)(gamma, sigma) AND idempotent?(gamma) =>
+%   fresh_subs(Nabla)(sigma, fresh_subs?(gamma, Delta)`1)
 
 % aux lemma for the one below
-aux_lemma_fresh_sub_aux: CONJECTURE
-   fresh(Nabla)(a, subs(sigma)(t)) => fresh?(a, t)`2
+%aux_lemma_fresh_sub_aux: CONJECTURE
+%   fresh(Nabla)(a, subs(sigma)(t)) => fresh?(a, t)`2
 
 % lemma to be used in the proof of completeness 
-aux_lemma_fresh_sub2: CONJECTURE 
-   fresh_subs(Nabla)(sigma, Delta) AND more_general?(Nabla)(gamma, sigma) AND idempotent?(gamma) 
-   => fresh_subs?(gamma, Delta)`2
+%aux_lemma_fresh_sub2: CONJECTURE 
+%   fresh_subs(Nabla)(sigma, Delta) AND more_general?(Nabla)(gamma, sigma) AND idempotent?(gamma) 
+%   => fresh_subs?(gamma, Delta)`2
 
 END fresh_subs
