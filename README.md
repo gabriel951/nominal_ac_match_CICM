@@ -1,5 +1,5 @@
 # Info 
-A repository that will contain (hopefully) a formalisation of nominal AC-matching. 
+A certified algorithm of nominal AC-matching. 
 
 # Contributors 
 * [Mauricio Ayala-Rincón](https://www.mat.unb.br/ayala/), University of Brasília, Brazil
