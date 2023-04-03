@@ -514,16 +514,6 @@ get_pre_new_args_nth: LEMMA
     nth(get_pre_new_args(lst_args, D, vars2avoid)`1, i) = 
     append(nth(lst_args, i), get_lst_mult(new_var_lst, get_col_i(D, i+1)))
 
-%get_pre_new_args_count: CONJECTURE
-%    matrix?(dio_matrix, length(lst_args)) IMPLIES
-%    dot_product(map(count(t, equal?(G)))(get_pre_new_args(lst_args, dio_matrix, vars2avoid)`1), mult_t1) =
-%    IF var?(t) AND V(t) > select_greater[nat](vars2avoid) AND
-%       V(t) <= select_greater[nat](vars2avoid) + length(dio_matrix) THEN
-%       LET n = V(t) - select_greater[nat](vars2avoid) IN 
-%       dot_product(nth(dio_matrix, n-1), mult_t1) +
-%       dot_product(map(count(t, equal?(G)))(lst_args), mult_t1)
-%    ELSE dot_product(map(count(t, equal?(G)))(lst_args), mult_t1)   
-%    ENDIF
 
 get_pre_new_args_nth_len: LEMMA
     n < length(lst_args) AND matrix?(dio_matrix, length(lst_args)) IMPLIES 
@@ -673,31 +663,6 @@ elim_com_arg_mem: LEMMA
 elim_com_arg_vars: LEMMA  
    subset?(vars(elim_com_arg(G, t1, t2, f)`1), vars((t1, t2)))
 
-% TO DO : I don't know if the context will be the same here
-%elim_com_arg_correct: CONJECTURE
-%   LET (args, mult_t1, mult_t2) = elim_com_arg(G, t1, t2, f),
-%       (args1, args2) = split(args, length(mult_t1)),  
-%       args1_cor_mult = get_lst_mult(args1, mult_t1),
-%       args2_cor_mult = get_lst_mult(args2, mult_t2), 
-%       new_t1 = get_ac_from_args(f)(args1_cor_mult),
-%       new_t2 = get_ac_from_args(f)(args2_cor_mult)
-%       IN are_ac?(t1, t2, f) AND unifies?(G, sigma, (new_t1, new_t2))
-%       AND NOT null?(args1) AND NOT null?(args2) IMPLIES
-%       unifies?(G, sigma, (t1, t2)) 
-
-%elim_com_arg_solve_ac_null: CONJECTURE
-%   LET (args, mult_t1, mult_t2) = elim_com_arg(G, t1, t2, f),
-%       (args1, args2) = split(args, length(mult_t1)) IN
-%   null?(args1) OR null?(args2) IMPLIES
-%   solve_ac(G, t1, t2, vars2avoid, f, PV) = null
-
-%elim_com_arg_null_args_mult: CONJECTURE
-%   LET (args, mult_t1, mult_t2) = elim_com_arg(G, t1, t2, f),
-%       (args1, args2) = split(args, length(mult_t1)) IN
-%   (null?(args1) IFF null?(mult_t1)) AND (null?(args2) IFF null?(mult_t2))
-   
-%elim_com_arg_count: CONJECTURE
-%   count(t, elim_com_arg(G, t1, t2, f)`1, =) <= 1
 
 elim_com_arg_no_common_arg: LEMMA 
    LET (args_t, coef_t) = count_elem2(get_args(f)(t), equal?(G)),
@@ -896,10 +861,6 @@ solve_ac_len: LEMMA
     member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) IMPLIES
     length(P) = length(elim_com_arg(G, s, t, f)`1)
 
-%solve_ac_args_not_null: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) IMPLIES
-%    LET args = elim_com_arg(G, t, s, f)`1 IN NOT null?(args)
-
 solve_ac_mult_not_null: LEMMA
     member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) IMPLIES
     LET (args, ms, mt) = elim_com_arg(G, s, t, f) IN NOT null?(ms) AND NOT null?(mt) 
@@ -918,53 +879,12 @@ solve_ac_vars_vars2avoid: LEMMA
     member(t1, subterms(unif_prb)) AND NOT member(t1, subterms((t, s))) AND
     member(X, vars(t1)) IMPLIES NOT member(X, vars2avoid) 
 
-%solve_ac_vars_rhs: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
-%    member(pi * X, rhs(unif_prb)) IMPLIES NOT member(X, vars2avoid)
 
 solve_ac_mem_lhs: LEMMA
     member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND
     member(t1, lhs(unif_prb)) IMPLIES
     (member(t1, get_args(f)(t)) OR member(t1, get_args(f)(s)))
     
-%solve_ac_mem_rhs: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND
-%    member(t1, rhs(unif_prb)) IMPLIES (var?(t1) OR
-%    is_ac_sym?(t1, f) AND all_var?(get_args(f)(t1)))
-
-%solve_ac_lhs_im_under: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t1, t2, vars2avoid, f, PV))) AND
-%    is_ac_sym?(t1, f) AND is_ac_sym?(t2, f) AND member(pi * X, lhs(unif_prb))
-%    IMPLIES EXISTS s:
-%        im_under?(X, s) AND (s = t1 OR s = t2)
-
-%solve_ac_disjoint_lhs_rhs: CONJECTURE 
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND
-%    subset?(vars((t, s)), vars2avoid) IMPLIES
-%    disjoint?(list2set(lhs(unif_prb)), list2set(rhs(unif_prb)))
-    
-%solve_ac_func: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
-%    func?(t1) AND member(t1, subterms(unif_prb)) AND NOT member(t1, subterms((t, s)))
-%    IMPLIES is_ac_sym?(t1, f)
-    
-%solve_ac_same_func: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
-%    func?(t1) AND member(t1, subterms(unif_prb)) AND NOT member(t1, subterms((t, s))) AND
-%    func?(t2) AND member(t2, subterms(unif_prb)) AND NOT member(t2, subterms((t, s))) 
-%    IMPLIES same_func?(t1, t2)
-
-%solve_ac_func_rhs: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
-%    func?(t1) AND member(t1, subterms(t2)) AND member(t2, rhs(unif_prb))
-%    IMPLIES is_ac_sym?(t1, f)
-
-%solve_ac_rhs_is_temp: CONJECTURE
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND
-%    member(unif_pair, unif_prb) AND t1 = unif_pair`2 AND NOT var?(t1)
-%    AND subset?(vars((t, s)), vars2avoid) 
-%    IMPLIES temp?(unif_pair, unif_prb)
-
 solve_ac_sec_proj_vars: LEMMA
     NOT null?(solve_ac(G, t, s, vars2avoid, f, PV)) IMPLIES 
     subset?(list2set(vars2avoid), vars(sec_proj(solve_ac(G, t, s, vars2avoid, f, PV))))
@@ -973,26 +893,6 @@ solve_ac_sec_proj_vars2: LEMMA
     member(P, first_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV)))
     IMPLIES subset?(V, vars(sec_proj(solve_ac(G, s, t, finset2list[variable](V), f, PV))))
 
-%solve_ac_sec_proj_vars_not_null: CONJECTURE   
-%   LET V1 = vars(sec_proj(solve_ac(G, t, s, lst_V, f, PV))),
-%       Z = select_greater[nat](lst_V), 
-%       Z1 = select_greater[nat](finset2list[nat](V1)) IN 
-%%   NOT null?(solve_ac(G, t, s, lst_V, f, PV)) IMPLIES 
-%   union(lst_V, from_min2max[nat](Z+1, Z1)) = V1
-
-%solve_ac_sec_proj_vars_select_gt: CONJECTURE  
-%   LET V1 = vars(sec_proj(solve_ac(G, t, s, lst_V, f, PV))),
-%       Z = select_greater[nat](lst_V), 
-%       Z1 = select_greater[nat](finset2list[nat](V1)) IN 
-%   NOT null?(solve_ac(G, t, s, lst_V, f, PV)) IMPLIES Z1 >= 1 + Z
-
-%solve_ac_sec_proj_vars_dio: CONJECTURE  
-%   LET (args, mult_t1, mult_t2) = elim_com_arg(G, t, s, f),  
-%       V1 = vars(sec_proj(solve_ac(G, t, s, lst_V, f, PV))),
-%       Z = select_greater[nat](lst_V), 
-%       Z1 = select_greater[nat](finset2list[nat](V1)) IN 
-%%   member(dio, extract_submatrices(dio_solver(mult_t1, mult_t2, calculate_upper_bound(mult_t1, mult_t2)), args, PV))
-%   IMPLIES Z1 >= Z + length(dio)  
 
 solve_ac_first_proj_sec_proj_vars: LEMMA
     member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV))) AND 
@@ -1070,11 +970,6 @@ solve_ac_lhs_elim_com_arg: LEMMA
     lhs(P) = elim_com_arg(G, s, t, f)`1
 
 % soundness of solve_ac
-%solve_ac_unify_sound: CONJECTURE 
-%    member(unif_prb, first_proj(solve_ac(G, t, s, vars2avoid, f, PV)))
-%    AND unifies?(G, sigma, unif_prb) AND is_ac_sym?(t, f) AND is_ac_sym?(s, f)
-%    IMPLIES unifies?(G, sigma, (t, s))
-
 solve_ac_sound_no_common: LEMMA 
     member(P, first_proj(solve_ac(G, s, t, lst_V, f, PV))) AND
     unifies?(Delta, delta, P) AND are_ac?(s, t, f) AND

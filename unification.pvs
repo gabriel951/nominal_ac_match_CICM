@@ -16,11 +16,12 @@ f: VAR string
 
 i, j: VAR nat 
 
-% a unification pair (t, s) is composed of terms t and s that must be unified
+% a unification pair (t, s) is composed of terms t and s that must be unified.
 unif_pair: TYPE = [term, term]
 unif_pair, unif_pair1, up: VAR unif_pair
 
-% in our PVS formalisation, we represent a unification problem as a list of unification pairs
+% in our PVS formalisation, we call a "unif_prb" a list of equation constraints 
+% and we represent it as a list of "unif_pair"
 unif_prb: TYPE = list[unif_pair]
 unif_prb, unif_prb1, unif_prb2, P, P1, P2: VAR unif_prb
 lst_unif_prb: VAR list[unif_prb]
@@ -48,7 +49,8 @@ member(t, lst_unif_prb): RECURSIVE bool =
    ENDIF
 MEASURE lst_unif_prb BY << 
 
-% left-hand side and right-hand side of a unification problem
+% left-hand side and right-hand side of a list of equation constraints.
+% The name "unif_prb" comes from the formalisation of first-order AC-unification
 lhs(unif_prb): args = first_proj(unif_prb)
 rhs(unif_prb): args = sec_proj(unif_prb) 
 
@@ -59,11 +61,11 @@ no_var_pair?(unif_prb): bool = FORALL t: member(t, unif_prb) IMPLIES NOT var?(t)
 
 no_pair?(unif_prb): bool = FORALL t: member(t, unif_prb) IMPLIES NOT pair?(t)
 
-% variables of a unification pair
+% variables of a unification pair - in our paper this is denoted as Vars(t, s)
 vars(unif_pair): finite_set[variable] =
     LET (t, s) = unif_pair IN union(vars(t), vars(s))
 
-% variables of a unification problem
+% variables of a unification problem - in our paper this corresponds to Vars(P)
 vars(unif_prb): RECURSIVE finite_set[variable] =
     IF null?(unif_prb) THEN emptyset
     ELSE LET unif_pair = car(unif_prb) IN
@@ -127,18 +129,20 @@ apply_sub(sigma, unif_prb): RECURSIVE unif_prb =
     ENDIF
 MEASURE unif_prb BY << 
 
-% TO DO: add a description here  
-is_sol?(Delta, delta)(Nabla, P, sigma, PV): bool =
-    fresh_subs(Delta)(delta, Nabla) AND unifies?(Delta, delta, P) AND 
-    more_general?(Delta)(sigma, delta) AND disjoint?(dom(delta), PV) AND
-    well_formed?(delta)
-
-% TO DO: add a description here: 
+%  Definition of solution to a quintuple
 solves?(Delta, delta)(Nabla, P, sigma, V1, PV): bool =
     fresh_subs(Delta)(delta, Nabla) AND unifies?(Delta, delta, P) AND 
     more_general?(Delta)(sigma, delta, V1) AND disjoint?(dom(delta), PV) AND
     well_formed?(delta)
 
+% This is a particular case of "solves?", where the set V1 is the set of all
+% variables. 
+is_sol?(Delta, delta)(Nabla, P, sigma, PV): bool =
+    fresh_subs(Delta)(delta, Nabla) AND unifies?(Delta, delta, P) AND 
+    more_general?(Delta)(sigma, delta) AND disjoint?(dom(delta), PV) AND
+    well_formed?(delta)
+
+is_instance?(Delta, delta)(Nabla, sigma, PV): bool = is_sol?(Delta, delta)(Nabla, null, sigma, PV)
 
 % size of a unification pair
 size(unif_pair): nat =

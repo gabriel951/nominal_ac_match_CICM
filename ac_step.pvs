@@ -39,6 +39,7 @@ ac_results_subs: VAR list[[fresh_context, unif_prb, sub]]
 
 ac_sol, ac_sol1, ac_sol2: VAR [unif_prb, sub, finite_set[variable]]
 
+% definition of nice input
 nice_input?(G, P, sigma, V, PV): bool =
    idempotent?(sigma) AND disjoint?(vars(P), dom(sigma)) AND 
    contained?(sigma, V) AND subset?(vars(P), V) AND
@@ -70,6 +71,7 @@ MEASURE P BY <<
 % returns the number of equations in P whose size is equal to the maximum size
 num_max_size(P): nat = num_size(P, max_size(P))
 
+% this function selects the equation constraint t =? s of maximum size in P
 choose_eq(P): RECURSIVE [unif_pair, unif_prb] = 
    IF null?(P) THEN ((unit, unit), null)
    ELSE IF size(car(P)) = max_size(P) THEN (car(P), cdr(P)) 
@@ -124,6 +126,10 @@ nice_input_dec_abs: LEMMA
 nice_input_initial_problem: LEMMA 
    subset?(vars(t, s), V) AND well_formed?((t, s)) IMPLIES
    nice_input?(null, cons((t, s), null), null, V, vars(s))
+
+nice_input_initial_problem_eq_check: LEMMA
+   subset?(vars(t, s), V) AND well_formed?((t, s)) IMPLIES
+   nice_input?(null, cons((t, s), null), null, V, vars(t, s))
 
 % input_apply_ac
 input_apply_ac_mem: LEMMA 

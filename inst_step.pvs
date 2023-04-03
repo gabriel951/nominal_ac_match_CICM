@@ -89,12 +89,12 @@ inst_step(PV, G, t, s): [fresh_context, sub, bool, bool] =
 % this function is refered in our paper as "instStep"
 % receives:
 %       1 - the context Gamma (G) that we are working with
+%       2 - list of protected variables we cannot instantiate
 %	2 - list of unification problem we still have not tried to instantiate
 %       3 - list of unification problem we already have tried to instantiate
-% 	4 - the substitution "sigma" computed so far
-%       5 - list of protected variables we cannot instantiate
+% 	5 - the substitution "sigma" computed so far
 % returns:
-%       1 - 
+%       1 - the new context we will be working with
 %	2 - the unification problem after we make all the instantiations
 % 	3 - the substitution computed
 % 	4 - a boolean that is TRUE if one of the unification pairs
@@ -215,9 +215,6 @@ inst_step_dom_PV_aux: LEMMA
 inst_step_ctx_correct_aux: LEMMA
     inst_step(PV, G, t, s)`1 = append(inst_step_ctx(PV, G, t, s), G)
 
-%inst_step_ctx_vars_aux: CONJECTURE
-%    subset?(vars(inst_step_ctx(PV, G, t, s)), vars(t, s))
-
 inst_step_sound_aux: LEMMA 
     LET (G1, delta, skip, fail) = inst_step(PV, G, t, s) IN
     NOT skip AND NOT fail AND disjoint?(dom(sigma), vars(t, s)) AND 
@@ -245,22 +242,6 @@ inst_step_vars_context_aux: LEMMA
 inst_step_well_formed_aux: LEMMA  
     well_formed?(t) AND well_formed?(s) IMPLIES well_formed?(inst_step(PV, G, t, s)`2)
 
-%inst_step_fail_ren: CONJECTURE 
-%   (FORALL X: 
-%      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, vars(t, s)))
-%   IMPLIES
-%   inst_step(PV, G, t, s)`4 = inst_step(PV, G, subs(rho)(t), subs(rho)(s))`4 AND
-%   inst_step(PV, G, t, s)`3 = inst_step(PV, G, subs(rho)(t), subs(rho)(s))`3 
-
-%inst_step_sub_ren: CONJECTURE   
-%   LET t_ = subs(rho)(t), s_ = subs(rho)(s), 
-%       sigma = inst_step(PV, G, t, s)`2,
-%       sigma_ = inst_step(PV, G, t_, s_)`2 IN 
-%   (FORALL X: 
-%      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V))
-%   AND subset?(vars(t, s), V) IMPLIES 
-%   equal_syn?(append(sigma_, rho), append(rho, sigma), V)
- 
 inst_step_idempotent2: LEMMA
     idempotent?(inst_step(PV, G, t, s)`2)
 
@@ -420,30 +401,6 @@ inst_step2_mem_rhs: LEMMA
     EXISTS s:
        member(s, rhs(P)) AND t = subs(delta)(s)
 
-% this is an interesting strenghtened version of the lemma
-%inst_step2_mem2: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member(t, inst_step(PV, G, P, null, null)`2) IMPLIES 
-%    EXISTS s, pi:
-%       (NOT var?(s) OR member(V(s), PV)) AND member(s, P) AND t = ext(pi)(subs(delta)(s))
-
-%inst_step1_mem_unif_pair: CONJECTURE 
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN 
-%    member(up1, inst_step(PV, G, P, null, null)`2) IMPLIES 
-%    EXISTS up:
-%       member(up, append(P, Ps)) AND up1 = apply_sub(delta, up)
-
-%inst_step1_subset: CONJECTURE  
-%    LET (G1, P2, delta, fail) = inst_step(PV, G, P, null, null) IN 
-%    EXISTS P1:
-%       P2 = apply_sub(delta, P1) AND subset?(P1, P)
-
-%inst_step3_mem: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member(t, img(delta)) AND NOT var?(t) IMPLIES 
-%    EXISTS s:
-%       NOT var?(s) AND member(s, P) AND t = subs(delta)(s)
-
 inst_step_vars_supset_dom: LEMMA 
     LET delta = inst_step(PV, G, P, null, null)`3 IN
     subset?(supset_dom(delta), vars(P))
@@ -464,88 +421,14 @@ inst_step_vars_unif2: LEMMA
     LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
     subset?(vars(P1), vars(P))
     
-%inst_step_mem3: CONJECTURE  
-%    (EXISTS P1: 
-%	 member(P1, lst_P) AND 
-%	 G1 = inst_step(PV, G, P1, null, null)`1 AND 
-%         P = inst_step(PV, G, P1, null, null)`2 AND
-%	 sigma = inst_step(PV, G, P1, null, null)`3 AND
-%	 NOT inst_step(PV, G, P1, null, null)`4)
-%    IMPLIES member((G1, P, sigma), inst_step(PV, G, lst_P))
-
-% TO DO: I don't think this will need to be adapted 
-%inst_step_sub_im_under: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member(t, subterms(img(delta))) AND im_under?(X, t) AND no_pair?(P) IMPLIES
-%    EXISTS Y, s:
-%        member(s, subterms(P)) AND subs(delta)(Y) = variable(X)
-%	AND im_under?(Y, s) AND same_func?(t, s)
-
-
-% TO DO: not sure how I will adapt these
-%inst_step_var_member: CONJECTURE
-%     LET delta = inst_step(PV, G, P, null, null)`3 IN 
-%     X /= Y AND subs(delta)(X) = variable(Y) IMPLIES
-%     member(pi * X, P) AND member(pi * Y, P)
-
-%inst_step_rhs_not_id: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3,
-%        fail = inst_step(PV, G, P, null, null)`4 IN 
-%    NOT fail AND member(variable(X), rhs(P)) AND NOT member(variable(X), lhs(P))
-%    IMPLIES subs(delta)(X) /= variable(X)
-
-%inst_step_sub_nice_aux: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member((X, t), delta) IMPLIES member(pi * X, P) AND
-%    subset?(vars(t), vars(P))
-    
-%inst_step_supset_dom_dom: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member(X, supset_dom(delta)) IMPLIES member(X, dom(delta))
-
-%inst_step_sub_nice: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    nice?(delta) 
-    
 inst_step_dom_PV: LEMMA 
     LET delta = inst_step(PV, G, P, null, null)`3 IN
     disjoint?(dom(delta), PV)
-
-%inst_step_dom2: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member(X, dom(delta)) IMPLIES member(pi * X, P)
-
-%inst_step_sec_proj: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN
-%    member(pi * X, sec_proj(delta)) IMPLIES member(pi * X, P)
 
 inst_step_cont: LEMMA 
     LET delta = inst_step(PV, G, P, null, null)`3 IN
     contained?(delta, vars(P))
     
-%inst_step_not_temp_unif_pair: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN 
-%    member(t, inst_step(P, null, null)`2)
-%    IMPLIES EXISTS s, unif_pair:
-%       NOT var?(s) AND t = subs(delta)(s) AND member(s, unif_pair) AND member(unif_pair, P) 
-%       AND NOT temp?(unif_pair, P)
-    
-%inst_step_get_args: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3 IN 
-%    member(t, img(delta)) AND member(s, get_args(f)(t)) IMPLIES
-%    EXISTS t1: 
-%       member(t1, P) AND
-%       EXISTS t2: 
-%          member(t2, get_args(f)(t1)) AND s = subs(delta)(t2) AND ord(t2) = ord(s) 
-    
-%inst_step_unifies: CONJECTURE
-%    LET delta = inst_step(PV, G, P, null, null)`3,
-%        fail = inst_step(PV, G, P, null, null)`4 IN
-%    (EXISTS gamma: sigma = append(gamma, append(delta, gamma1)))
-%    AND unifies?(G, sigma, inst_step(PV, G, P, null, null)`2) AND NOT fail
-%    AND disjoint?(dom(gamma1), vars(P)) IMPLIES  
-%    unifies?(G, sigma, P)
-
 inst_step_complete_equal: LEMMA 
     LET sigma = inst_step(PV, G, P, null, null)`3 IN
     unifies?(Del, del, P) IMPLIES equal?(Del)(del, append(del, sigma))
@@ -578,11 +461,6 @@ inst_step_complete: LEMMA
     disjoint?(dom(sigma), vars(P)) IMPLIES
     is_sol?(Del, del)(G1, P1, append(sigma1, sigma), PV)
 
-%inst_step_lst_mem: CONJECTURE 
-%    LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
-%    unifies?(G, sigma, P) AND well_formed?(P) AND member(P, lst_P)
-%    IMPLIES member((G1, P1, delta), inst_step(PV, G, lst_P))
-
 inst_step_well_formed: LEMMA 
     LET delta = inst_step(PV, G, P, null, null)`3 IN  
     well_formed?(P) IMPLIES well_formed?(delta)
@@ -598,37 +476,10 @@ inst_step_ctx_correct: LEMMA
     LET G1 = inst_step(PV, G, P, null, null)`1 IN
     G1 = append(inst_step_ctx(PV, G, P), G) 
 
-%inst_step_ctx_vars: CONJECTURE
-%    subset?(vars(inst_step_ctx(PV, G, P)), vars(P))
-
-%inst_step_ren3: CONJECTURE  
-%   LET sigma = inst_step(PV, G, P, null, null)`3,
-%       sigma_ = inst_step(PV, G, apply_sub(rho, P), null, null)`3 IN 
-%   (FORALL X: 
-%      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V))
-%   AND subset?(vars(P), V) IMPLIES 
-%   equal_syn?(append(sigma_, rho), append(rho, sigma), V)
-     
-%inst_step_ren4: CONJECTURE
-%   (FORALL X: 
-%      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, V)) 
-%   AND subset?(vars(P), V) IMPLIES 
-%   inst_step(PV, G, P, null, null)`4 =
-%   inst_step(PV, G, apply_sub(rho, P), null, null)`4    
-
-%inst_step_ren2: CONJECTURE 
-%   (FORALL X: 
-%%      member(X, vars(img(rho))) AND NOT member(X, dom(rho)) IMPLIES NOT member(X, vars(P)))
-%    IMPLIES
-%    inst_step(PV, G, apply_sub(rho, P), null, null)`2 =
-%    apply_sub(rho, inst_step(PV, G, P, null, null)`2)
-
 inst_step_match_img2: LEMMA
     LET delta = inst_step(PV, G, P, null, null)`3 IN 
     match_condition?(P, PV) IMPLIES subset?(vars(img(delta)), PV)
 
-% TO DO: I think this can be simplified by observing that Y must be in the image and that the
-% variables in the image are all protected. (the lemma above this) 
 inst_step_match_aux: LEMMA
     LET (G1, P1, delta, fail) = inst_step(PV, G, P, null, null) IN 
      match_condition?(P, PV) AND member(Y, vars(rhs(P))) AND NOT member(Y, PV) 

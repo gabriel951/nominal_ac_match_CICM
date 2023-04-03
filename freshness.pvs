@@ -84,7 +84,7 @@ x(Delta1, Delta2): [fresh_context, bool] =
    ENDIF
 
 % Function that computes the minimal context which derivates a#t.
-% Definition 3.12
+% returns a boolean if this minimal context indeed exists
 fresh?(a, t): RECURSIVE [fresh_context, bool] =
    CASES t OF
    	 at(b): ((::) , a /= b),
@@ -128,7 +128,7 @@ fresh_delete_select: LEMMA
     (fresh(Delta)(a, select(f, t)(i)) AND fresh(Delta)(a, delete(f, t)(i)))
     IFF fresh(Delta)(a, t)
 
-% definition of variables that appear in a context
+% definition of variables that appear in a context Δ
 vars(Delta): RECURSIVE finite_set[variable] = 
    IF null?(Delta) THEN emptyset 
    ELSE LET (a, X) = car(Delta) IN add(X, vars(cdr(Delta)))

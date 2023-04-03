@@ -13,7 +13,7 @@ sym, f: VAR string
 i, j, n: VAR nat
 coef, coef2, lst_nat: VAR list[nat]
 
-
+% alpha-equality of nominal terms with AC-operators. 
 equal?(Delta)(t, s): RECURSIVE bool =
     CASES t OF
         at(a): s = at(a),

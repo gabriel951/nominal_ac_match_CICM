@@ -21,24 +21,13 @@ id: VAR sub
 input, input_: VAR nice_input
 rho: VAR renaming
 
-% the AC-unification algorithm. In our paper we refer to it as ACUnif.
+% the AC-matching algorithm. In our paper we refer to it as ACMatch
 unify(input): RECURSIVE list[[fresh_context, sub]] =
   LET (G, P, sigma, V, PV) = input IN 
   IF null?(P) THEN cons((G, sigma), null)
   ELSE LET
      (up, P1) = choose_eq(P), 
      (t, s) = up IN 
-
-     % TO DO: this is omitted since the variable s is always protected in a matching problem
-     %IF var?(s) AND (NOT member(V(s), vars(t))) AND (NOT member(V(s), PV)) THEN LET
-        %sigma1 = cons((V(s), ext(reverse(p(s)))(t)), null),
-	%(G1, bool1) = fresh_subs?(sigma, G), 
-	%new_G = append(G1, G), 
-	%new_sigma = append(sigma1, sigma), 
-	%new_P = apply_sub(sigma1, P1)
-	%IF bool1 THEN unify(new_G, new_P, new_sigma, V, PV)
-	%ELSE null 
-	%ENDIF
 
      CASES t OF
         at(a):
@@ -137,7 +126,7 @@ unify_sound: LEMMA
    member((Gamma1, sigma1), unify(input)) IMPLIES
    is_sol?(Delta, delta)(Gamma, P, sigma, PV)
 
-unify_sound_cor: LEMMA 
+unify_sound_cor: COROLLARY  
    is_sol?(Delta, delta)(Gamma, null, sigma, vars(s)) AND well_formed?((t, s)) AND
    member((Gamma, sigma), unify(null, cons((t, s), null), null, vars(t, s), vars(s))) IMPLIES 
    is_sol?(Delta, delta)(null, cons((t, s), null), null, vars(s)) 
@@ -206,80 +195,5 @@ unify_completeness_cor: LEMMA
    EXISTS Gamma1, sigma1: 
       member((Gamma1, sigma1), unify(null, cons((t, s), null), null, V, vars(s))) AND
       solves?(Delta, delta)(Gamma1, null, sigma1, V, vars(s))
-
-% some properties of the substitutions computed, needed for the lemmas of soundness and completeness
-%unify_subs: CONJECTURE 
-%   LET (G, P, sigma, V, PV) = input IN 
-%   member((Nabla, delta), unify(G, P, sigma, V, PV)) IMPLIES
-%   EXISTS sigma1:
-%      delta = append(sigma1, sigma)
-
-%unify_well_formed: CONJECTURE  
-%   LET (G, P, sigma, V, PV) = input IN 
-%   member((Nabla, delta), unify(G, P, sigma, V, PV)) IMPLIES
-%   well_formed?(delta) 
-
-%renamed_inputs_unify_alg: CONJECTURE  
-%   renamed_inputs?(input, input_, fixed_vars) AND member((Nabla_, gamma_), unify(input_)) IMPLIES
-%   EXISTS rho, Nabla, gamma: 
-%       member((Nabla, gamma), unify(input)) AND equal_syn?(gamma_, append(rho, gamma), fixed_vars)
-
-% correctness of instantiation
-% TO DO: this will need to be adapted
-%unify_alg_correct_sub: CONJECTURE  
-%    LET sigma1 = cons((X, t), null), new_sigma = append(sigma1, sigma),
-%        new_P = apply_sub(sigma1, P) IN
-%    (NOT member(X, vars(t))) AND member(pi * X, P) AND member(t, unif_prb)
-%    AND nice_input?(G, P, sigma, V, PV) AND subset?(P, P) AND 
-%    unifies?(G, delta, new_P) AND member((Nabla, delta), unify(G, P, sigma, V, PV))
-%    IMPLIES
-%    unifies?(G, delta, (pi * X, t)) AND unifies?(G, delta, P)
-  
-% Main theorem to prove the corollary of Soundness. Here, "input" is of type nice input (see line 14, 26). 
-%unify_alg_correct: CONJECTURE  
-%    LET (G, P, sigma, V, PV) = input IN 
-%    member((Nabla, delta), unify(G, P, sigma, V, PV))
-%    IMPLIES unifies?(Nabla, delta, P)
-
-% theorem of correctness, corollary from the previous lemma
-%unify_alg_correct_cor: CONJECTURE
-%    well_formed?((t, s)) AND member((Nabla, delta), unify(null, cons((t, s), null), null, vars(t, s), vars(s))) 
-%    IMPLIES unifies?(Nabla, delta, cons((t, s), null))
-
-% used in the proof of completeness for the instantiation case
-%unify_alg_complete_sub: CONJECTURE    
-%    LET sigma1 = cons((X, t), null), new_sigma = append(sigma1, sigma),
-%        new_P = apply_sub(sigma1, P) IN
-%    (NOT member(X, vars(t))) AND member(pi * X, unif_pair) AND member(t, unif_pair)
-%    AND member(unif_pair, P) AND nice_input?(G, P, sigma, V, PV) AND
-%    subset?(P1, P) AND 
-%    unifies?(Nabla, delta, P) AND more_general?(G)(sigma, delta) IMPLIES
-%    more_general?(G)(new_sigma, delta) AND unifies?(Nabla, delta, apply_sub(sigma1, unif_prb1))
-
-% main theorem to prove the corollary of completeness. As was the case for soudness, here input is of type "nice_input". 
-%unify_alg_complete: CONJECTURE 
-%    LET (G, P, sigma, V, PV) = input IN 
-%    unifies?(Nabla, delta, P) AND more_general?(G)(sigma, delta) AND contained?(delta, V)
-%    AND well_formed?(delta) IMPLIES 
-%    EXISTS gamma:
-%       member((Nabla, gamma), unify(G, P, sigma, V, PV)) AND 
-%       more_general?(G)(gamma, delta, V)
-
-% theorem of completeness for the algorithm 
-%unify_alg_complete_cor: CONJECTURE 
-%    well_formed?((t, s)) AND unifies?(Nabla, delta, (t, s))  
-%    AND contained?(delta, V) AND subset?(vars(t, s), V) AND well_formed?(delta)
-%    IMPLIES 
-%    EXISTS Nabla, gamma: 
-%       member((Nabla, gamma), unify(null, cons((t, s), null), null, V, PV)) AND
-%       more_general?(G)(gamma, delta, V)
-
-%% completeness after we remove the hypthesis
-%unify_alg_complete_cor2: CONJECTURE   
-%    well_formed?((t, s)) AND unifies?(G, delta, (t, s)) AND well_formed?(delta)
-%    IMPLIES
-%    EXISTS gamma, Nabla:
-%       member((Nabla, gamma), unify(G, cons((t, s), null), null, vars(t, s), PV)) AND
-%       more_general?(G)(gamma, delta, vars(t, s))
     
 END unification_alg 

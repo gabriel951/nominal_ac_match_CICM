@@ -498,6 +498,7 @@ vars(fin_set_t): RECURSIVE finite_set[variable] =
    ENDIF
 MEASURE card(fin_set_t)
 
+% variable of a list of terms 
 vars(args): RECURSIVE finite_set[variable] = 
    IF null?(args) THEN emptyset
    ELSE union(vars(car(args)), vars(cdr(args)))
@@ -634,7 +635,8 @@ size2(t): RECURSIVE nat =
     ENDCASES
 MEASURE size(t)
 
-% definition of a well_formed term. Returns True if "s" is a well_formed term and False otherswise
+% definition of a well_formed term. Returns True if "s" is a well_formed term and False otherwise
+% a well_formed term is not a pair and every subterm that is an AC-function has at least two arguments. 
 well_formed?(s): bool =
     NOT pair?(s) AND
     FORALL t:
