@@ -142,7 +142,14 @@ is_sol?(Delta, delta)(Nabla, P, sigma, PV): bool =
     more_general?(Delta)(sigma, delta) AND disjoint?(dom(delta), PV) AND
     well_formed?(delta)
 
+% definition of (Delta, delta) being an instance of (Nabla, sigma) that does not instantiate
+% the variables in PV
 is_instance?(Delta, delta)(Nabla, sigma, PV): bool = is_sol?(Delta, delta)(Nabla, null, sigma, PV)
+
+
+% definition of (Delta, delta) being an instance of (Nabla, sigma) restricted to V1 that does not instantiate
+% the variables in PV
+is_instance?(Delta, delta)(Nabla, sigma, V1, PV): bool = solves?(Delta, delta)(Nabla, null, sigma, V1, PV)
 
 % size of a unification pair
 size(unif_pair): nat =
