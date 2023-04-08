@@ -2316,7 +2316,7 @@
     (posnat nonempty-type-eq-decl nil integers nil)
     (nonneg_int nonempty-type-eq-decl nil integers nil)
     (> const-decl "bool" reals nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil) nil
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
     (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil))
    shostak))
@@ -7373,7 +7373,7 @@
             (("" (hide -2)
               (("" (prop)
                 (("1" (rewrite "prod_equiv_dot_product")
-                  (("1" (rewrite "dot_product_sym") nil nil)) nil)
+                  (("1" (rewrite "dot_product_sym[nat]") nil nil)) nil)
                  ("2" (lemma "split_matrix_mem[nat]")
                   (("2" (inst?) (("2" (assert) nil nil)) nil)) nil))
                 nil))
@@ -7405,6 +7405,7 @@
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (every adt-def-decl "boolean" list_adt nil)
     (PRED type-eq-decl nil defined_types nil)
     (bool nonempty-type-eq-decl nil booleans nil)
     (boolean nonempty-type-decl nil booleans nil)
@@ -8214,8 +8215,7 @@
     (list type-decl nil list_adt nil)
     (boolean nonempty-type-decl nil booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)
-    (PRED type-eq-decl nil defined_types nil)
-    (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil) nil
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)

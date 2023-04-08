@@ -225,6 +225,9 @@ subs_func: LEMMA
 subs_abs2: LEMMA 
     abs?(subs(sigma)(t)) IMPLIES (abs?(t) OR var?(t))
 
+basic_subs_ext: LEMMA 
+   subs((X, s), ext(pi)(t)) = ext(pi)(subs((X, s), t)) 
+
 subs_basic_ext: LEMMA 
    subs(sigma_basic, ext(pi)(t)) = ext(pi)(subs(sigma_basic, t))
 
@@ -234,9 +237,6 @@ subs_ext_pi: LEMMA
 subs_ext_pi2: LEMMA 
    subs(sigma)(pi*X) = pi * X IMPLIES
    subs(sigma)(pi1*X) = pi1*X
-
-basic_subs_ext: LEMMA 
-   subs((X, s), ext(pi)(t)) = ext(pi)(subs((X, s), t)) 
    
 subs_ext: LEMMA 
     subs(sigma)(ext(pi)(t)) = ext(pi)(subs(sigma)(t))
