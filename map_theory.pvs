@@ -1,11 +1,3 @@
-% Authors:
-%		Gabriel Ferreira Silva (*)
-% 		Mauricio Ayala-Rincón (*)
-% 		Daniele Nantes Sobrinho (*)
-% 		Maribel Fernandez (**)
-%		(*) - University of Brasília			(**) - King's College London
-%%%%%%%%%%%%%%%%%%%%%%%
-
 map_theory [T1, T2: TYPE]: THEORY
  BEGIN
 	IMPORTING list_theory[T1], list_theory[T2]

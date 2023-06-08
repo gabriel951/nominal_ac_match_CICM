@@ -1,12 +1,3 @@
-% Authors:
-%		Gabriel Ferreira Silva (*)
-% 		Mauricio Ayala-Rincón (*)
-% 		Daniele Nantes Sobrinho (*)
-% 		Maribel Fernandez (**)
-%		(*) - University of Brasília			(**) - King's College London
-%
-%%%%%%%%%%%%%%%%%%%%%%%
-
 ac_step: THEORY
 BEGIN
 	IMPORTING aux_unification, inst_step
