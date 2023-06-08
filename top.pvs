@@ -14,5 +14,5 @@ top: THEORY
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 BEGIN
-IMPORTING unification_alg
+IMPORTING paper_theorems
 END top
