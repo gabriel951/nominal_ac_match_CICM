@@ -32,7 +32,7 @@ fresh_subs(Delta)(sigma, Nabla): RECURSIVE bool =
    MEASURE Nabla BY <<
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The next function is used in the unification algorithm.
+% The next funcion is denoted in our paper as "freshSubs?". The next function is used in the unification algorithm.
 % fresh_subs? does something very similar to fresh_subs. It applies a substitution
 % sigma to a context Nabla (to variables) and builds a context where freshness
 % holds, if possible.

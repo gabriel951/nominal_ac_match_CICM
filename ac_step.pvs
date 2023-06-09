@@ -62,7 +62,7 @@ MEASURE P BY <<
 % returns the number of equations in P whose size is equal to the maximum size
 num_max_size(P): nat = num_size(P, max_size(P))
 
-% this function selects the equation constraint t =? s of maximum size in P
+% In our paper, this is denoted as "chooseEq". this function selects the equation constraint t =? s of maximum size in P
 choose_eq(P): RECURSIVE [unif_pair, unif_prb] = 
    IF null?(P) THEN ((unit, unit), null)
    ELSE IF size(car(P)) = max_size(P) THEN (car(P), cdr(P)) 

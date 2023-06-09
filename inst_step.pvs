@@ -86,7 +86,7 @@ inst_step(PV, G, t, s): [fresh_context, sub, bool, bool] =
 
    ENDIF
 
-% this function is refered in our paper as "instStep"
+% this function is refered in our paper as "instantiateStep"
 % receives:
 %       1 - the context Gamma (G) that we are working with
 %       2 - list of protected variables we cannot instantiate
